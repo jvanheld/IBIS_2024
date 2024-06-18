@@ -1,2 +1,8 @@
 # IBIS_2024
-Participation to the IBIS nebchmarking for motif discovery approaches
+
+Evaluation of RSAT motif discovery tools for the IBIS challenge 2024. 
+
+<https://ibis.autosome.org/>
+
+
+
