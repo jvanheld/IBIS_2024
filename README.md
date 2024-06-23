@@ -1,4 +1,4 @@
-# IBIS_2024
+# IBIS challenge (2024)
 
 Evaluation of RSAT motif discovery tools for the IBIS challenge 2024. 
 
