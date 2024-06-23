@@ -1,0 +1,1 @@
+scripts/discover_motifs.mk
