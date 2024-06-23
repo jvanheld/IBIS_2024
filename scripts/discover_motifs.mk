@@ -9,12 +9,13 @@ list_targets:
 	@echo "	targets		list targets"
 	@echo "	param		list parameters"
 	@echo "	sequences	retrieve peak sequences from UCSC"
-	@echo "	peak-motifs	discover motifs in peak sequences"
+	@echo "	peakmo		discover motifs in peak sequences"
 	@echo
 
 param:
 	@echo
 	@echo "Parameters"
+	@echo "	SCHEDULER	${SCHEDULER}"
 #	@echo "	DISCIPLINE	${DISCIPLINE}"
 	@echo "	BOARD		${BOARD}"
 	@echo "	DATA_TYPE	${DATA_TYPE}"
@@ -44,10 +45,11 @@ FETCH_CMD=fetch-sequences -v 1 \
 	-header_format galaxy \
 	-i ${PEAK_COORD} -o ${PEAK_SEQ}
 sequences:
-	@echo ""
+	@echo
 	@echo "Retrieving peak sequences from UCSC"
 	@echo "	PEAK_COORD	${PEAK_COORD}"
 	${SCHEDULER} ${FETCH_CMD}
+	@echo
 	@echo "	PEAK_SEQ	${PEAK_SEQ}"
 
 ################################################################
@@ -65,14 +67,14 @@ PEAKMOTIFS_CMD=rsat peak-motifs  -v 1 -title 'IBIS24_${BOARD}_${TF}_${PEAKSET}' 
 	-prefix peak-motifs \
 	-noov \
 	-img_format png \
-	-motif_db Hocomoco_human tf ${RSAT}/public_html/motif_databases/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf \
-	-motif_db jaspar_core_nonredundant_vertebrates tf ${RSAT}/public_html/motif_databases/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf \
+	-motif_db Hocomoco_human tf data/motif_databases/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf \
+	-motif_db jaspar_core_nonredundant_vertebrates tf data/motif_databases/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf \
 	-outdir ${PEAKMO_DIR}
 
 
 #	-scan_markov 1 \
 #	-max_seq_len 1000
-peak_motifs:
+peakmo:
 	@echo "Running peak-motifs"
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 	@mkdir -p ${PEAKMO_DIR}
