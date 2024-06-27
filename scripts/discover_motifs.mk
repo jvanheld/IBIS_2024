@@ -3,7 +3,10 @@
 ##
 ## Participants: Jacques van Helden and Bruno Contreiras Moreira
 
-list_targets:
+include scripts/00_parameters.mk
+MAKEFILE=scripts/discover_motifs.mk
+
+targets:
 	@echo
 	@echo "Targets"
 	@echo "	targets		list targets"
@@ -28,27 +31,18 @@ param:
 	@echo "	PEAKSET		${PEAKSET}"
 	@echo "	PEAK_COORD	${PEAK_COORD}"
 	@echo "	PEAK_SEQ	${PEAK_SEQ}"
+	@echo "	RESULT_DIR	${RESULT_DIR}"
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 	@echo
 
+PEAKMO_DIR=${RESULT_DIR}/peak-motifs
 MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
 JASPAR_MOTIFS=${MOTIFDB_DIR}/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf
 HOCOMOCO_MOTIFS=${MOTIFDB_DIR}/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf
-SCHEDULER=srun time
-DISCIPLINE=WET
-BOARD=leaderboard
-DATA_TYPE=CHS
-TF=GABPA
-PEAKSET=THC_0866
-PEAK_PATH=data/${BOARD}/train/${DATA_TYPE}/${TF}/${PEAKSET}
-PEAK_COORD=${PEAK_PATH}.peaks
-PEAK_SEQ=${PEAK_PATH}.fasta
-PEAKMO_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${PEAKSET}
 
 ################################################################
 ## Build a table with the peak sets associated to each transcription
 ## factor.
-PEAKSET_TABLE=data/${BOARD}/TF_PEAKSET_${DATA_TYPE}.tsv
 datatable:
 	@echo
 	@echo "Building peakset table for ${DATA_TYPE} ${BOARD}"
@@ -69,7 +63,7 @@ peakseq:
 	@echo
 	@echo "Retrieving peak sequences from UCSC"
 	@echo "	PEAK_COORD	${PEAK_COORD}"
-	${SCHEDULER} ${FETCH_CMD}
+	${SCHEDULER} ${FETCH_CMD} ${POST_SCHEDULER}
 	@echo
 	@echo "	PEAK_SEQ	${PEAK_SEQ}"
 
@@ -99,6 +93,6 @@ peakmo:
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 	@mkdir -p ${PEAKMO_DIR}
 	@echo ${PEAKMOTIFS_CMD}
-	${SCHEDULER} ${PEAKMOTIFS_CMD}
+	${SCHEDULER} ${PEAKMOTIFS_CMD} ${POST_SCHEDULER}
 
 all:param peakseq peakmo
