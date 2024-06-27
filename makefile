@@ -1,1 +1,1 @@
-scripts/discover_motifs.mk
+scripts/01_oligo_counts.mk
