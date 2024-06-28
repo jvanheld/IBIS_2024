@@ -1,8 +1,7 @@
 ################################################################
 ## Parameters for the analysis of ChIP-seq peaks
 
-
-MAKE=make -f ${MAKEFILE}
+MAKE=make -s -f ${MAKEFILE}
 
 V=1
 
@@ -13,7 +12,6 @@ ERR_FILE=${ERR_DIR}/sbatch_error_${NOW}.txt
 
 SCHEDULER=srun time
 #SCHEDULER=echo \#!/bin/bash ; echo srun time 
-#POST_SCHEDULER= | sbatch -e ${ERR_FILE}
 SBATCH_HEADER="\#!/bin/bash"
 
 DISCIPLINE=WET
@@ -33,7 +31,6 @@ peak_param:
 	@echo "Peak parameters"
 	@echo "	SCHEDULER	${SCHEDULER}"
 	@echo "	SBATCH_HEADER	${SBATCH_HEADER}"
-	@echo "	POST_SCHEDULER	${POST_SCHEDULER}"
 #	@echo "	DISCIPLINE	${DISCIPLINE}"
 	@echo "	BOARD		${BOARD}"
 	@echo "	DATA_TYPE	${DATA_TYPE}"
