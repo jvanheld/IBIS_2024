@@ -43,6 +43,7 @@ oligo_table:
 	@echo "	SCRIPT	${SCRIPT}"
 	@sbatch ${SCRIPT}
 	@echo "OLIGO_TABLE	${OLIGO_TABLE}"
+
 ################################################################
 ## Iterate over oligonucleotide lengths
 MINOL=1
