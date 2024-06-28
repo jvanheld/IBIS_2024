@@ -85,7 +85,7 @@ peakmo:
 	@mkdir -p ${PEAKMO_DIR}
 	@echo ${SBATCH_HEADER} > ${SCRIPT}
 #	@echo ${PEAKMO_CMD}
-#	@echo ${FETCH_CMD} >> ${SCRIPT}
+	@echo ${FETCH_CMD} >> ${SCRIPT}
 	@echo ${PEAKMO_CMD} >> ${SCRIPT}
 	@echo "	SCRIPT	${SCRIPT}"
 	@echo "Running peak-motifs"

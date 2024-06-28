@@ -18,13 +18,18 @@ DISCIPLINE=WET
 BOARD=leaderboard
 PEAKSET_TABLE=metadata/${BOARD}/TF_PEAKSET_${DATA_TYPE}.tsv
 DATA_TYPE=CHS
-TF=GABPA
+#TF=GABPA
 PEAKSET=THC_0866
+TF=`awk '$$2=="${PEAKSET}" {print $$1}' ${PEAKSET_TABLE}`
 PEAK_PATH=data/${BOARD}/train/${DATA_TYPE}/${TF}/${PEAKSET}
 PEAK_COORD=${PEAK_PATH}.peaks
 PEAK_SEQ=${PEAK_PATH}.fasta
-
 RESULT_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${PEAKSET}
+
+## Iteration parameters
+TASK=oligo_tables
+PEAKSETS=`cut -f 2 ${PEAKSET_TABLE} | sort -u | xargs`
+TFS=`cut -f 1 ${PEAKSET_TABLE} | sort -u | xargs`b
 
 peak_param:
 	@echo
@@ -41,16 +46,31 @@ peak_param:
 	@echo "	PEAK_SEQ	${PEAK_SEQ}"
 	@echo "	SBATCH_HEADER	${SBATCH_HEADER}"
 	@echo "	RESULT_DIR	${RESULT_DIR}"
+	@echo
+	@echo "Iteration parameters"
+	@echo "	PEAKSETS	${PEAKSETS}"
+	@echo "	TFS		${TFS}"
+	@echo "	TASK		${TASK}"
 
 ################################################################
 ## Iterate a task over all peaksets of the leaderboard
-TASK=oligo_tables
 iterate_peaksets:
-	${MAKE} ${TASK} TF=GABPA PEAKSET=THC_0866
-	${MAKE} ${TASK} TF=PRDM5 PEAKSET=THC_0307.Rep-DIANA_0293
-	${MAKE} ${TASK} TF=PRDM5 PEAKSET=THC_0307.Rep-MICHELLE_0314
-	${MAKE} ${TASK} TF=SP140 PEAKSET=THC_0193
-	${MAKE} ${TASK} TF=ZNF362 PEAKSET=THC_0364.Rep-DIANA_0293
-	${MAKE} ${TASK} TF=ZNF362 PEAKSET=THC_0364.Rep-MICHELLE_0314
-	${MAKE} ${TASK} TF=ZNF362 PEAKSET=THC_0411.Rep-DIANA_0293
-	${MAKE} ${TASK} TF=ZNF407 PEAKSET=THC_0668
+	@echo 
+	@echo "Iterating over peaksets"
+	@echo "	PEAKSETS	${PEAKSETS}"
+	@for peakset in ${PEAKSETS} ; do ${MAKE} one_task PEAKSET=$${peakset}; done
+
+one_task:
+#	@echo
+	@echo "	TF=${TF}	PEAKSET=${PEAKSET}"; \
+	${MAKE} ${TASK} TF=${TF} PEAKSET=${PEAKSET} ; \
+
+
+#	${MAKE} ${TASK} TF=GABPA PEAKSET=THC_0866
+#	${MAKE} ${TASK} TF=PRDM5 PEAKSET=THC_0307.Rep-DIANA_0293
+#	${MAKE} ${TASK} TF=PRDM5 PEAKSET=THC_0307.Rep-MICHELLE_0314
+#	${MAKE} ${TASK} TF=SP140 PEAKSET=THC_0193
+#	${MAKE} ${TASK} TF=ZNF362 PEAKSET=THC_0364.Rep-DIANA_0293
+#	${MAKE} ${TASK} TF=ZNF362 PEAKSET=THC_0364.Rep-MICHELLE_0314
+#	${MAKE} ${TASK} TF=ZNF362 PEAKSET=THC_0411.Rep-DIANA_0293
+#	${MAKE} ${TASK} TF=ZNF407 PEAKSET=THC_0668
