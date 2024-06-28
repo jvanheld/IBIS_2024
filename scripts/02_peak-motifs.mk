@@ -24,12 +24,22 @@ param: peak_param
 	@echo "	JASPAR_MOTIFS	${JASPAR_MOTIFS}"
 	@echo "	HOCOMOCO_MOTIFS	${HOCOMOCO_MOTIFS}"
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
+	@echo "	PEAKMO_MATRICES	${PEAKMO_MATRICES}"
 	@echo
 
 PEAKMO_DIR=${RESULT_DIR}/peak-motifs
 MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
 JASPAR_MOTIFS=${MOTIFDB_DIR}/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf
 HOCOMOCO_MOTIFS=${MOTIFDB_DIR}/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf
+
+PEAKMO_MATRICES=results/leaderboard/train/CHS/GABPA/THC_0866/peak-motifs//results/discovered_motifs/peak-motifs_motifs_discovered
+CONVERT_CMD=rsat convert-matrix -from transfac -to transfac \
+		-rescale 1 -decimals 5 	\
+		-i ${PEAKMO_MATRICES}.tf \
+		-o ${PEAKMO_MATRICES}_freq.tf ; \
+	rsat convert-matrix -from transfac -to cluster-buster \
+		-i ${PEAKMO_MATRICES}_freq.tf \
+		-o ${PEAKMO_MATRICES}_freq.txt
 
 ################################################################
 ## Build a table with the peak sets associated to each transcription
@@ -86,12 +96,24 @@ peakmo:
 	@echo ${SBATCH_HEADER} > ${SCRIPT}
 #	@echo ${PEAKMO_CMD}
 	@echo ${FETCH_CMD} >> ${SCRIPT}
+	@echo >> ${SCRIPT}
 	@echo ${PEAKMO_CMD} >> ${SCRIPT}
+	@echo >> ${SCRIPT}
+	@echo ${CONVERT_CMD} >> ${SCRIPT}
 	@echo "	SCRIPT	${SCRIPT}"
 	@echo "Running peak-motifs"
 	@sbatch ${SCRIPT}
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 #	${SCHEDULER} ${PEAKMO_CMD} ${POST_SCHEDULER}
+
+
+convert_motifs:
+	@echo "Converting matrices from format transfac to clusterbuster"
+	@echo "	PEAKMO_MATRICES	${PEAKMO_MATRICES}"
+	@${CONVERT_CMD}
+	@echo "	transfac counts	${PEAKMO_MATRICES}.tf"
+	@echo "	transfac freq	${PEAKMO_MATRICES}_freq.tf"
+	@echo "	cb format	${PEAKMO_MATRICES}_freq.txt"
 
 all:param peakseq peakmo
 
