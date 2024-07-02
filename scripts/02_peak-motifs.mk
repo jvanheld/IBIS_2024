@@ -132,7 +132,7 @@ CLUSTER_CMD=rsat matrix-clustering -v ${V} \
 	-max_matrices 50 \
 	-matrix ${TF}_${PEAKSET} ${PEAKMO_MATRICES}.tf transfac \
 	-hclust_method average -calc sum \
-	-title '${TF} ${PEAKSET} peak-motifs result' \
+	-title '${TF}_${PEAKSET}' \
 	-metric_build_tree 'Ncor' \
 	-lth w 5 -lth cor 0.6 -lth Ncor 0.4 \
 	-quick \
@@ -141,6 +141,8 @@ CLUSTER_CMD=rsat matrix-clustering -v ${V} \
 	-o ${PEAKMO_CLUSTERS} \
 	2> ${PEAKMO_CLUSTERS}_err.txt
 
+################################################################
+## Cluster matrices discovered by peak-motifs
 cluster_matrices:
 	@mkdir -p ${PEAKMO_CLUSTERS_DIR}
 #	@echo "	CLUSTER_CMD	${CLUSTER_CMD}"
