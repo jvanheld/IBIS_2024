@@ -46,7 +46,8 @@ CONVERT_CMD=rsat convert-matrix -from transfac -to transfac \
 		-o ${PEAKMO_MATRICES}_freq.tf ; \
 	rsat convert-matrix -from transfac -to cluster-buster \
 		-i ${PEAKMO_MATRICES}_freq.tf \
-		-o ${PEAKMO_MATRICES}_freq.txt
+		| perl -pe 's|^>|>${TF} ${PEAKSET}_|; s|positions_|pos_|' \
+		> ${PEAKMO_MATRICES}_freq.txt
 
 ################################################################
 ## Build a table with the peak sets associated to each transcription
