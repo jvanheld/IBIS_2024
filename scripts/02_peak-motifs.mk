@@ -102,11 +102,11 @@ peakmo:
 	@mkdir -p ${PEAKMO_DIR}
 	@echo ${SBATCH_HEADER} > ${SCRIPT}
 	@echo >> ${SCRIPT}
-#	@echo ${FETCH_CMD} >> ${SCRIPT}
+	@echo ${FETCH_CMD} >> ${SCRIPT}
 	@echo >> ${SCRIPT}
-#	@echo ${PEAKMO_CMD} >> ${SCRIPT}
+	@echo ${PEAKMO_CMD} >> ${SCRIPT}
 	@echo >> ${SCRIPT}
-#	@echo ${CONVERT_CMD} >> ${SCRIPT}
+	@echo ${CONVERT_CMD} >> ${SCRIPT}
 	@echo >> ${SCRIPT}
 	@mkdir -p ${PEAKMO_CLUSTERS_DIR}
 	@echo ${CLUSTER_CMD} >> ${SCRIPT}
