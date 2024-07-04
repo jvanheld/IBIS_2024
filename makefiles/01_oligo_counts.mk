@@ -1,8 +1,8 @@
 ################################################################
 ## Count occurrences of oligonucleotides (k-mers) in peakn sequences
 
-include scripts/00_parameters.mk
-MAKEFILE=scripts/01_oligo_counts.mk
+include makefiles/00_parameters.mk
+MAKEFILE=makefiles/01_oligo_counts.mk
 MAKE=make -f ${MAKEFILE}
 
 targets:

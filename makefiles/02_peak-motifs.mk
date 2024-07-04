@@ -3,8 +3,8 @@
 ##
 ## Participants: Jacques van Helden and Bruno Contreiras Moreira
 
-include scripts/00_parameters.mk
-MAKEFILE=scripts/02_peak-motifs.mk
+include makefiles/00_parameters.mk
+MAKEFILE=makefiles/02_peak-motifs.mk
 
 targets:
 	@echo
@@ -14,8 +14,8 @@ targets:
 	@echo "	datatable		build a table with the names of peaksets associated to each transcription factor"
 	@echo "	peakseq			retrieve peak sequences from UCSC"
 	@echo "	peakmo			discover motifs in peak sequences"
-	@echo "	peakmo_all_peaksets	run peak-motifs in all the peak sets"
 	@echo "	cluster_matrices	run matrix-clustering on the motifs discovered with peak-motifs"
+	@echo "	peakmo_all_peaksets	run peak-motifs in all the peak sets"
 	@echo
 
 param: peak_param
@@ -46,7 +46,7 @@ CONVERT_CMD=rsat convert-matrix -from transfac -to transfac \
 		-o ${PEAKMO_MATRICES}_freq.tf ; \
 	rsat convert-matrix -from transfac -to cluster-buster \
 		-i ${PEAKMO_MATRICES}_freq.tf \
-		| perl -pe 's|^>|>${TF} ${PEAKSET}_|; s|positions_|pos_|' \
+		| perl -pe 's/^>/>${TF} ${PEAKSET}_/' \
 		> ${PEAKMO_MATRICES}_freq.txt
 
 ################################################################
