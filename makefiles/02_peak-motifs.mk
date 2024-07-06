@@ -24,13 +24,18 @@ param: peak_param
 	@echo "	MOTIFDB_DIR		${MOTIFDB_DIR}"
 	@echo "	JASPAR_MOTIFS		${JASPAR_MOTIFS}"
 	@echo "	HOCOMOCO_MOTIFS		${HOCOMOCO_MOTIFS}"
+	@echo "	PEAKMO_OPT		${PEAKMO_OPT}"
 	@echo "	PEAKMO_DIR		${PEAKMO_DIR}"
 	@echo "	PEAKMO_MATRICES		${PEAKMO_MATRICES}"
 	@echo "	PEAKMO_CLUSTERS_DIR	${PEAKMO_CLUSTERS_DIR}"
 	@echo "	PEAKMO_CLUSTERS		${PEAKMO_CLUSTERS}"
+	@echo "	PEAKMO_TASKS		${PEAKMO_TASKS}"
+	@echo "	PEAKMO_CMD		${PEAKMO_CMD}"
+	@echo "	PEAKMO_SCRIPT		${PEAKMO_SCRIPT}"
 	@echo
 
-PEAKMO_DIR=${RESULT_DIR}/peak-motifs
+PEAKMO_OPT=
+PEAKMO_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}
 MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
 JASPAR_MOTIFS=${MOTIFDB_DIR}/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf
 HOCOMOCO_MOTIFS=${MOTIFDB_DIR}/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf
@@ -40,14 +45,7 @@ PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs_motifs_disco
 PEAKMO_CLUSTERS_DIR=${PEAKMO_DIR}/results/clustered_motifs
 PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
 
-CONVERT_CMD=rsat convert-matrix -from transfac -to transfac \
-		-rescale 1 -decimals 5 	\
-		-i ${PEAKMO_MATRICES}.tf \
-		-o ${PEAKMO_MATRICES}_freq.tf ; \
-	rsat convert-matrix -from transfac -to cluster-buster \
-		-i ${PEAKMO_MATRICES}_freq.tf \
-		| perl -pe 's/^>/>${TF} ${PEAKSET}_/' \
-		> ${PEAKMO_MATRICES}_freq.txt
+CONVERT_CMD="rsat convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -o ${PEAKMO_MATRICES}_freq.tf ; rsat convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf | perl -pe 's/^>/>${TF} ${PEAKSET}_/' > ${PEAKMO_MATRICES}_freq.txt"
 
 ################################################################
 ## Build a table with the peak sets associated to each transcription
@@ -78,7 +76,8 @@ peakseq:
 
 ################################################################
 ## Run peak-motifs to discover motifs in peak sequences
-PEAKMO_CMD=${SCHEDULER} rsat peak-motifs  -v 1 -title 'IBIS24_${BOARD}_${TF}_${PEAKSET}' \
+PEAKMO_TASKS=purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,timelog,archive,synthesis,small_summary,motifs_vs_db
+PEAKMO_CMD=${SCHEDULER} rsat peak-motifs -v ${V} -title 'IBIS24_${BOARD}_${TF}_${PEAKSET}' \
 	-i ${PEAK_SEQ} \
 	-2str \
 	-noov \
@@ -90,42 +89,42 @@ PEAKMO_CMD=${SCHEDULER} rsat peak-motifs  -v 1 -title 'IBIS24_${BOARD}_${TF}_${P
 	-markov auto \
 	-nmotifs 5 \
 	-no_merge_lengths \
-	-task purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,timelog,archive,synthesis,small_summary,motifs_vs_db \
 	-prefix peak-motifs \
 	-img_format png \
 	-motif_db Hocomoco_human tf ${HOCOMOCO_MOTIFS} \
 	-motif_db jaspar_core_nonredundant_vertebrates tf ${JASPAR_MOTIFS} \
-	-outdir ${PEAKMO_DIR}
-SCRIPT=${PEAKMO_DIR}/peak-motif_cmd.sh
+	-task ${PEAKMO_TASKS} \
+	-outdir ${PEAKMO_DIR} ${PEAKMO_OPT}
+PEAKMO_SCRIPT=${PEAKMO_DIR}/peak-motif_cmd.sh
 peakmo: 
 	@echo
 	@echo "Writing peak-motif script"
 	@mkdir -p ${PEAKMO_DIR}
-	@echo ${SBATCH_HEADER} > ${SCRIPT}
-	@echo >> ${SCRIPT}
-	@echo ${FETCH_CMD} >> ${SCRIPT}
-	@echo >> ${SCRIPT}
-	@echo ${PEAKMO_CMD} >> ${SCRIPT}
-	@echo >> ${SCRIPT}
-	@echo ${CONVERT_CMD} >> ${SCRIPT}
-	@echo >> ${SCRIPT}
+	@echo ${SBATCH_HEADER} > ${PEAKMO_SCRIPT}
+	@echo >> ${PEAKMO_SCRIPT}
+	@echo ${FETCH_CMD} >> ${PEAKMO_SCRIPT}
+	@echo >> ${PEAKMO_SCRIPT}
+	@echo ${PEAKMO_CMD} >> ${PEAKMO_SCRIPT}
+	@echo >> ${PEAKMO_SCRIPT}
+	@echo ${CONVERT_CMD} >> ${PEAKMO_SCRIPT}
+	@echo >> ${PEAKMO_SCRIPT}
 	@mkdir -p ${PEAKMO_CLUSTERS_DIR}
-	@echo ${CLUSTER_CMD} >> ${SCRIPT}
-	@echo "	SCRIPT	${SCRIPT}"
+	@echo ${CLUSTER_CMD} >> ${PEAKMO_SCRIPT}
+	@echo "	PEAKMO_SCRIPT	${PEAKMO_SCRIPT}"
 	@echo "Running peak-motifs"
-	@sbatch ${SCRIPT}
+	@${SBATCH} ${PEAKMO_SCRIPT}
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 #	${SCHEDULER} ${PEAKMO_CMD} ${POST_SCHEDULER}
 
 ################################################################
 ## Convert matrices from Transfac to cluster-buster format
-convert_matrices:
-	@echo "Converting matrices from transfac to cluster-buster format"
-	@echo "	PEAKMO_MATRICES	${PEAKMO_MATRICES}"
-	@${CONVERT_CMD}
-	@echo "	transfac counts	${PEAKMO_MATRICES}.tf"
-	@echo "	transfac freq	${PEAKMO_MATRICES}_freq.tf"
-	@echo "	cb format	${PEAKMO_MATRICES}_freq.txt"
+# convert_matrices:
+# 	@echo "Converting matrices from transfac to cluster-buster format"
+# 	@echo "	PEAKMO_MATRICES	${PEAKMO_MATRICES}"
+# 	@${CONVERT_CMD}
+# 	@echo "	transfac counts	${PEAKMO_MATRICES}.tf"
+# 	@echo "	transfac freq	${PEAKMO_MATRICES}_freq.tf"
+# 	@echo "	cb format	${PEAKMO_MATRICES}_freq.txt"
 
 ################################################################
 ## matrix-clusering command
