@@ -41,7 +41,7 @@ oligo_table:
 	@echo ${SBATCH_HEADER} > ${SCRIPT}
 	@echo ${CMD} >> ${SCRIPT}
 	@echo "	SCRIPT	${SCRIPT}"
-	@sbatch ${SCRIPT}
+	@${SBATCH} ${SCRIPT}
 	@echo "OLIGO_TABLE	${OLIGO_TABLE}"
 
 ################################################################
