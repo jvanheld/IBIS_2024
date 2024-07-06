@@ -1,4 +1,4 @@
-################################################################
+###############################################################
 ## Motif discovery for the IBIS challenge 2024
 ##
 ## Participants: Jacques van Helden and Bruno Contreiras Moreira
@@ -33,6 +33,8 @@ param: peak_param
 	@echo "	PEAKMO_CMD		${PEAKMO_CMD}"
 	@echo "	PEAKMO_SCRIPT		${PEAKMO_SCRIPT}"
 	@echo
+	@echo "	CONVERT_CMD		${CONVERT_CMD}"
+	@echo
 
 PEAKMO_OPT=
 PEAKMO_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}
@@ -45,7 +47,7 @@ PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs_motifs_disco
 PEAKMO_CLUSTERS_DIR=${PEAKMO_DIR}/results/clustered_motifs
 PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
 
-CONVERT_CMD="rsat convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -o ${PEAKMO_MATRICES}_freq.tf ; rsat convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf | perl -pe 's/^>/>${TF} ${PEAKSET}_/' > ${PEAKMO_MATRICES}_freq.txt"
+CONVERT_CMD=rsat convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -o ${PEAKMO_MATRICES}_freq.tf ; rsat convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf | perl -pe 's/^>/>${TF} ${PEAKSET}_/; s/oligos_/oli_/; s/positions_/pos_/' > ${PEAKMO_MATRICES}_freq.txt
 
 ################################################################
 ## Build a table with the peak sets associated to each transcription
@@ -76,7 +78,7 @@ peakseq:
 
 ################################################################
 ## Run peak-motifs to discover motifs in peak sequences
-PEAKMO_TASKS=purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,timelog,archive,synthesis,small_summary,motifs_vs_db
+PEAKMO_TASKS=purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,motifs_vs_db,timelog,archive,synthesis,small_summary
 PEAKMO_CMD=${SCHEDULER} rsat peak-motifs -v ${V} -title 'IBIS24_${BOARD}_${TF}_${PEAKSET}' \
 	-i ${PEAK_SEQ} \
 	-2str \
@@ -106,7 +108,7 @@ peakmo:
 	@echo >> ${PEAKMO_SCRIPT}
 	@echo ${PEAKMO_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
-	@echo ${CONVERT_CMD} >> ${PEAKMO_SCRIPT}
+	@echo "${CONVERT_CMD}" >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
 	@mkdir -p ${PEAKMO_CLUSTERS_DIR}
 	@echo ${CLUSTER_CMD} >> ${PEAKMO_SCRIPT}
