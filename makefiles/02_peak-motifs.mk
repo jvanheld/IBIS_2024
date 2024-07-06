@@ -47,7 +47,7 @@ PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs_motifs_disco
 PEAKMO_CLUSTERS_DIR=${PEAKMO_DIR}/results/clustered_motifs
 PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
 
-CONVERT_CMD=rsat convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -o ${PEAKMO_MATRICES}_freq.tf ; rsat convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf | perl -pe 's/^>/>${TF} ${PEAKSET}_/; s/oligos_/oli_/; s/positions_/pos_/' > ${PEAKMO_MATRICES}_freq.txt
+CONVERT_CMD=rsat convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -o ${PEAKMO_MATRICES}_freq.tf ; rsat convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf -o ${PEAKMO_MATRICES}_freq.cb ; cat ${PEAKMO_MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${PEAKSET}_/; s/oligos_/oli_/; s/positions_/pos_/' > ${PEAKMO_MATRICES}_freq.txt
 
 ################################################################
 ## Build a table with the peak sets associated to each transcription
