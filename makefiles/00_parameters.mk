@@ -12,6 +12,7 @@ ERR_FILE=${ERR_DIR}/sbatch_error_${NOW}.txt
 
 SCHEDULER=srun time
 #SCHEDULER=echo \#!/bin/bash ; echo srun time 
+SBATCH=sbatch
 SBATCH_HEADER="\#!/bin/bash"
 
 DISCIPLINE=WET
@@ -35,6 +36,7 @@ peak_param:
 	@echo
 	@echo "Peak parameters"
 	@echo "	SCHEDULER	${SCHEDULER}"
+	@echo "	SBATCH		${SBATCH}"
 	@echo "	SBATCH_HEADER	${SBATCH_HEADER}"
 #	@echo "	DISCIPLINE	${DISCIPLINE}"
 	@echo "	BOARD		${BOARD}"
@@ -44,7 +46,6 @@ peak_param:
 	@echo "	PEAKSET		${PEAKSET}"
 	@echo "	PEAK_COORD	${PEAK_COORD}"
 	@echo "	PEAK_SEQ	${PEAK_SEQ}"
-	@echo "	SBATCH_HEADER	${SBATCH_HEADER}"
 	@echo "	RESULT_DIR	${RESULT_DIR}"
 	@echo
 	@echo "Iteration parameters"
