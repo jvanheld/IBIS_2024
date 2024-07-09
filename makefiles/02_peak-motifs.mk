@@ -6,19 +6,14 @@
 include makefiles/00_parameters.mk
 MAKEFILE=makefiles/02_peak-motifs.mk
 
-targets:
-	@echo
-	@echo "Targets"
-	@echo "	targets			list targets"
-	@echo "	param			list parameters"
-	@echo "	datatable		build a table with the names of peaksets associated to each transcription factor"
-	@echo "	peakseq			retrieve peak sequences from UCSC"
+targets: targets_00
+	@echo "Peak-motifs targets (${MAKEFILE})"
 	@echo "	peakmo			discover motifs in peak sequences"
 	@echo "	cluster_matrices	run matrix-clustering on the motifs discovered with peak-motifs"
 	@echo "	peakmo_all_peaksets	run peak-motifs in all the peak sets"
 	@echo
 
-param: peak_param
+param: param_00
 	@echo
 	@echo "Peak-motif parameters"
 	@echo "	MOTIFDB_DIR		${MOTIFDB_DIR}"
@@ -47,34 +42,8 @@ PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs_motifs_disco
 PEAKMO_CLUSTERS_DIR=${PEAKMO_DIR}/results/clustered_motifs
 PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
 
-CONVERT_CMD=rsat convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -o ${PEAKMO_MATRICES}_freq.tf ; rsat convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf -o ${PEAKMO_MATRICES}_freq.cb ; cat ${PEAKMO_MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${PEAKSET}_/; s/oligos_/oli_/; s/positions_/pos_/' > ${PEAKMO_MATRICES}_freq.txt
+CONVERT_CMD=rsat convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -rescale 1 -decimals 4 -o ${PEAKMO_MATRICES}_freq.tf ; rsat convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf -o ${PEAKMO_MATRICES}_freq.cb ; cat ${PEAKMO_MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${PEAKSET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' > ${PEAKMO_MATRICES}_freq.txt
 
-################################################################
-## Build a table with the peak sets associated to each transcription
-## factor.
-datatable:
-	@echo
-	@echo "Building peakset table for ${DATA_TYPE} ${BOARD}"
-	wc -l data/${BOARD}/train/${DATA_TYPE}/*/*.peaks  \
-		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.peaks||' \
-		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2}'  > ${PEAKSET_TABLE}
-	@echo "	PEAKSET_TABLE	${PEAKSET_TABLE}"
-	@echo
-
-################################################################
-## Run fetch-sequences to retrieve fasta sequences from the peak
-## coordinates (bed) from the UCSC genome browser
-FETCH_CMD=fetch-sequences -v 1 \
-	-genome hg38 \
-	-header_format galaxy \
-	-i ${PEAK_COORD} -o ${PEAK_SEQ}
-peakseq:
-	@echo
-	@echo "Retrieving peak sequences from UCSC"
-	@echo "	PEAK_COORD	${PEAK_COORD}"
-	${SCHEDULER} ${FETCH_CMD} ${POST_SCHEDULER}
-	@echo
-	@echo "	PEAK_SEQ	${PEAK_SEQ}"
 
 ################################################################
 ## Run peak-motifs to discover motifs in peak sequences
@@ -152,7 +121,7 @@ cluster_matrices:
 	@echo "	PEAKMO_CLUSTERS_DIR	${PEAKMO_CLUSTERS_DIR}"
 	@echo "	PEAKMO_CLUSTERS		${PEAKMO_CLUSTERS}"
 
-all: param peakseq peakmo
+# all: param sequences peakmo
 
 TASK=peakmo
 peakmo_all_peaksets:

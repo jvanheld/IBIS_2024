@@ -5,20 +5,18 @@ include makefiles/00_parameters.mk
 MAKEFILE=makefiles/01_oligo_counts.mk
 MAKE=make -f ${MAKEFILE}
 
-targets:
-	@echo
-	@echo "Targets"
-	@echo "	targets		list targets"
-	@echo "	param		list parameters"
+targets: targets_00
+	@echo "oligo-analysis targets (${MAKEFILE})"
 	@echo "	oligo_table	count oligos of a given size (k) in one peakset"
 	@echo "	oligo_tables	count oligos of sizes from ${MINOL} to ${MAXOL} in one peakset"
+	@echo
 
-param: peak_param
+param: param_00
 	@echo
 	@echo "oligo-analysis parameters"
 	@echo "	OLIGO_DIR	${OLIGO_DIR}"
 	@echo "	OL		${OL}"
-	@echo "	NOOV		${NOOV)"
+	@echo "	NOOV		${NOOV}"
 	@echo "	OLIGO_DIR	${OLIGO_DIR}"
 	@echo "	OLIGO_TABLE	${OLIGO_TABLE}"
 
