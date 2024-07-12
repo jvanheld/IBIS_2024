@@ -17,17 +17,18 @@ SBATCH_HEADER="\#!/bin/bash"
 
 DISCIPLINE=WET
 BOARD=leaderboard
-DATA_TYPE=CHS
 PEAKSET_TABLE=metadata/${BOARD}/TF_PEAKSET_${DATA_TYPE}.tsv
 #TF=GABPA
-#PEAKSET=THC_0866
+DATA_TYPE=GHTS
 PEAKSET=YWE_B_AffSeq_C12_GABPA.C2
+#DATA_TYPE=CHS
+#PEAKSET=THC_0866
 #PEAKSET=`head -n 1 ${PEAKSET_TABLE} | cut -f 2`
 TF=`awk '$$2=="${PEAKSET}" {print $$1}' ${PEAKSET_TABLE}`
 PEAK_PATH=data/${BOARD}/train/${DATA_TYPE}/${TF}/${PEAKSET}
 PEAK_COORD=${PEAK_PATH}.peaks
 PEAK_SEQ=${PEAK_PATH}.fasta
-RESULT_DIR=results/${BOARD}/traint/${DATA_TYPE}/${TF}/${PEAKSET}
+RESULT_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${PEAKSET}
 
 ## Iteration parameters
 TASK=oligo_tables
