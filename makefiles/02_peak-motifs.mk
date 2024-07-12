@@ -31,15 +31,14 @@ param: param_00
 	@echo "	CONVERT_CMD		${CONVERT_CMD}"
 	@echo
 
-PEAKMO_OPT=
+PEAKMO_OPT=-nopurge
 PEAKMO_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}
 MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
 JASPAR_MOTIFS=${MOTIFDB_DIR}/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf
 HOCOMOCO_MOTIFS=${MOTIFDB_DIR}/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf
 
 PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs_motifs_discovered
-
-PEAKMO_CLUSTERS_DIR=${PEAKMO_DIR}/results/clustered_motifs
+PEAKMO_CLUSTERS_DIR=${PEAKMO_DIR}/clustered_motifs
 PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
 
 CONVERT_CMD=rsat convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -rescale 1 -decimals 4 -o ${PEAKMO_MATRICES}_freq.tf ; rsat convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf -o ${PEAKMO_MATRICES}_freq.cb ; cat ${PEAKMO_MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${PEAKSET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' > ${PEAKMO_MATRICES}_freq.txt
@@ -47,20 +46,20 @@ CONVERT_CMD=rsat convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES
 
 ################################################################
 ## Run peak-motifs to discover motifs in peak sequences
-PEAKMO_TASKS=purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,motifs_vs_db,timelog,archive,synthesis,small_summary
-PEAKMO_CMD=${SCHEDULER} rsat peak-motifs -v ${V} -title 'IBIS24_${BOARD}_${TF}_${PEAKSET}' \
+PEAKMO_TASKS=purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,motifs_vs_db,scan,timelog,synthesis,small_summary
+PEAKMO_CMD=${SCHEDULER} rsat peak-motifs -v ${V} -title 'IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${PEAKSET}' \
 	-i ${PEAK_SEQ} \
 	-2str \
 	-noov \
 	-origin center \
-	-max_seq_len 1000 \
+	-max_seq_len 500 \
 	-minol 6 -maxol 7 \
 	-scan_markov 1 \
-	-disco oligos,positions \
+	-disco oligos,positions,dyads,local_words \
 	-markov auto \
 	-nmotifs 5 \
 	-no_merge_lengths \
-	-prefix peak-motifs \
+	-prefix peak-motifs${PEAKMO_OPT} \
 	-img_format png \
 	-motif_db Hocomoco_human tf ${HOCOMOCO_MOTIFS} \
 	-motif_db jaspar_core_nonredundant_vertebrates tf ${JASPAR_MOTIFS} \
