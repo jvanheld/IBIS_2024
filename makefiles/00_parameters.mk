@@ -3,7 +3,7 @@
 
 MAKE=make -s -f ${MAKEFILE}
 
-V=1
+V=2
 
 ## Job scheduler parameters
 NOW=`date +%Y-%m-%d_%H%M`
@@ -13,20 +13,22 @@ ERR_FILE=${ERR_DIR}/sbatch_error_${NOW}.txt
 SCHEDULER=srun time
 #SCHEDULER=echo \#!/bin/bash ; echo srun time 
 SBATCH=sbatch
-SBATCH_HEADER="\#!/bin/bash"
+SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ./slurm_out/slurm-%j.out"
 
 DISCIPLINE=WET
 BOARD=leaderboard
 PEAKSET_TABLE=metadata/${BOARD}/TF_PEAKSET_${DATA_TYPE}.tsv
-#TF=GABPA
-DATA_TYPE=GHTS
-PEAKSET=YWE_B_AffSeq_C12_GABPA.C2
-#DATA_TYPE=CHS
-#PEAKSET=THC_0866
+
+## Load data-type specific configuration
+DATA_TYPE=HTS
+include makefiles/config_${DATA_TYPE}.mk
+
+
 #PEAKSET=`head -n 1 ${PEAKSET_TABLE} | cut -f 2`
 TF=`awk '$$2=="${PEAKSET}" {print $$1}' ${PEAKSET_TABLE}`
 PEAK_PATH=data/${BOARD}/train/${DATA_TYPE}/${TF}/${PEAKSET}
 PEAK_COORD=${PEAK_PATH}.peaks
+PEAK_FASTQ=${PEAK_PATH}.fastq.gz
 PEAK_SEQ=${PEAK_PATH}.fasta
 RESULT_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${PEAKSET}
 
@@ -53,6 +55,7 @@ param_00:
 	@echo "	PEAK_COORD	${PEAK_COORD}"
 	@echo "	PEAK_SEQ	${PEAK_SEQ}"
 	@echo "	FETCH_CMD	${FETCH_CMD}"
+	@echo "	FASTQ2FASTA_CMD	${FASTQ2FASTA_CMD}"
 	@echo
 	@echo "Iteration parameters"
 	@echo "	PEAKSETS	${PEAKSETS}"
@@ -66,7 +69,8 @@ targets_00:
 	@echo "	targets			list targets"
 	@echo "	param			list parameters"
 	@echo "	peakset_table		build a table with the names of peaksets associated to each transcription factor"
-	@echo "	sequences		retrieve peak sequences from UCSC"
+	@echo "	fetch_sequences		retrieve peak sequences from UCSC (for CHS and GHTS data)"
+	@echo "	convert_fastq		convert sequences from fastq to fasta format (for HTS and SMS data)"
 	@echo
 
 ################################################################
@@ -76,13 +80,23 @@ FETCH_CMD=fetch-sequences -v 1 \
 	-genome hg38 \
 	-header_format galaxy \
 	-i ${PEAK_COORD} -o ${PEAK_SEQ}
-sequences:
+fetch_sequences:
 	@echo
 	@echo "Retrieving peak sequences from UCSC"
 	@echo "	PEAK_COORD	${PEAK_COORD}"
-	${SCHEDULER} ${FETCH_CMD} ${POST_SCHEDULER}
+	@${FETCH_CMD}
 	@echo
 	@echo "	PEAK_SEQ	${PEAK_SEQ}"
+
+FASTQ2FASTA_CMD=convert-seq -from fastq -to fasta -i ${PEAK_FASTQ} -o ${PEAK_SEQ}
+convert_fastq:
+	@echo
+	@echo "Converting sequences from fastq.gz to fasta"
+	@echo "	PEAK_FASTQ	${PEAK_FASTQ}"
+	@${FASTQ2FASTA_CMD}
+	@echo
+	@echo "	PEAK_SEQ	${PEAK_SEQ}"
+
 
 ################################################################
 ## Iterate a task over all peaksets of the leaderboard
@@ -110,11 +124,24 @@ one_task:
 ################################################################
 ## Build a table with the peak sets associated to each transcription
 ## factor.
-peakset_table:
+peakset_table: peakset_table_${SEQ_FORMAT}
+
+peakset_table_fasta:
 	@echo
-	@echo "Building peakset table for ${DATA_TYPE} ${BOARD}"
+	@echo "Building peakset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
 	wc -l data/${BOARD}/train/${DATA_TYPE}/*/*.peaks  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.peaks||' \
 		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2}'  > ${PEAKSET_TABLE}
+	@echo
+	@echo "	PEAKSET_TABLE	${PEAKSET_TABLE}"
+	@echo
+
+peakset_table_fastq:
+	@echo
+	@echo "Building peakset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
+	du -sk data/${BOARD}/train/${DATA_TYPE}/*/*.fastq.gz  \
+		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.fastq.*||' \
+		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1}'  > ${PEAKSET_TABLE}
+	@echo
 	@echo "	PEAKSET_TABLE	${PEAKSET_TABLE}"
 	@echo

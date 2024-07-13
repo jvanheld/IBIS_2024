@@ -68,12 +68,19 @@ PEAKMO_CMD=${SCHEDULER} rsat peak-motifs -v ${V} -title 'IBIS24_${BOARD}_${DATA_
 PEAKMO_SCRIPT=${PEAKMO_DIR}/peak-motif_cmd.sh
 peakmo: 
 	@echo
-	@echo "Writing peak-motif script"
+	@echo "Writing peak-motif script	${PEAKMO_SCRIPT}"
 	@mkdir -p ${PEAKMO_DIR}
 	@echo ${SBATCH_HEADER} > ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
+ifeq (${SEQ_FORMAT}, fasta)
+	@echo "Including fetch-sequences command in the script"
 	@echo ${FETCH_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
+else
+	@echo "Including command in the script to convert fastq.gz to fasta sequences"
+	@echo ${FASTQ2FASTA_CMD} >> ${PEAKMO_SCRIPT}
+	@echo >> ${PEAKMO_SCRIPT}
+endif
 	@echo ${PEAKMO_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
 	@echo "${CONVERT_CMD}" >> ${PEAKMO_SCRIPT}
@@ -84,7 +91,7 @@ peakmo:
 	@echo "Running peak-motifs"
 	@${SBATCH} ${PEAKMO_SCRIPT}
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
-#	${SCHEDULER} ${PEAKMO_CMD} ${POST_SCHEDULER}
+
 
 ################################################################
 ## Convert matrices from Transfac to cluster-buster format
