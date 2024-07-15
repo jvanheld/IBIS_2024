@@ -9,7 +9,6 @@ param:
 	@echo "dataset parameters"
 	@echo "	BOARD		${BOARD}"
 	@echo "	DATA_TUPE	${DATA_TYPE}"
-	@echo "	TEST_SEQ	${TEST_SEQ}"
 	@echo oligo-anlaysis parameters
 	@echo "	MINOL		${MINOL}"
 	@echo "	MAXOL		${MAXOL}"
@@ -27,28 +26,35 @@ V=1
 OL=6
 MINOL=6
 MAXOL=7
-TEST_SEQ=data/${BOARD}/test/${DATA_TYPE}_participants.fasta
 SEQ_SET=YWE_B_AffSeq_C12
 TRAIN_PATH=data/${BOARD}/train/${DATA_TYPE}/${TF}/${SEQSET}_${TF}.C2
 TRAIN_COORD=${TRAIN_PATH}.peaks
 TRAIN_SEQ=${TRAIN_PATH}.fasta
-BG_DIR=bg_models/${BOARD}/${DATA_TYPE}
-BG_FILE=${BG_DIR}/${DATA_TYPE}_${OL}nt-noov-2str.tsv
 
 ################################################################
 ## Compute background frequencies for oligonucleotide
 
 bg_freq:
-	@echo "Computing background frequencies from ${MINOL}nt to ${MAXOL}nt for ${BOARD} ${DATA_TYPE}"
-	@for ol in `seq ${MINOL} ${MAXOL}`; do \
-		${MAKE} bg_freq_one_size OL=$${ol}; \
+	@echo "Computing background frequencies from 1nt to ${MAXOL}nt for ${BOARD} ${DATA_TYPE}"
+	@for ol in `seq 1 ${MAXOL}`; do \
+		${MAKE} bg_freq_one_size BG_OL=$${ol}; \
 	done
 
 bg_freq_one_size:
 	@echo
-	@echo "Computing background frequencies for ${OL}nt"
+	@echo "Computing background frequencies for ${BG_OL}nt"
 	@mkdir -p ${BG_DIR}
-	time oligo-analysis -quick -v ${V} -i ${TEST_SEQ} -l ${OL} -noov -2str -grouprc -return occ,freq -format fasta -seqtype dna -noov -l ${OL} -type dna -return freq,occ -o ${BG_FILE}
+	time oligo-analysis -quick -v ${V} \
+		-i ${TEST_SEQ} \
+		-l ${BG_OL} \
+		-noov \
+		-2str \
+		-grouprc \
+		-format fasta \
+		-seqtype dna \
+		-type dna \
+		-return freq,occ \
+		-o ${BG_FILE}
 	@echo "	BG_FILE	${BG_FILE}"
 
 ################################################################
