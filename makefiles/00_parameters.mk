@@ -3,26 +3,26 @@
 
 MAKE=make -s -f ${MAKEFILE}
 
+## Load data-type specific configuration
+DATA_TYPE=HTS
+include makefiles/config_${DATA_TYPE}.mk
+
 V=2
 
 ## Job scheduler parameters
 NOW=`date +%Y-%m-%d_%H%M`
 ERR_DIR=sbatch_errors
 ERR_FILE=${ERR_DIR}/sbatch_error_${NOW}.txt
-
 SCHEDULER=srun time
 #SCHEDULER=echo \#!/bin/bash ; echo srun time 
 SBATCH=sbatch
-SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ./slurm_out/slurm-%j.out"
+SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ./slurm_out/slurm_${BOARD}_${DATA_TYPE}_${TF}_${PEAKSET}_%j.out"
 
 DISCIPLINE=WET
 BOARD=leaderboard
 PEAKSET_TABLE=metadata/${BOARD}/TF_PEAKSET_${DATA_TYPE}.tsv
 
-## Load data-type specific configuration
-DATA_TYPE=HTS
-include makefiles/config_${DATA_TYPE}.mk
-
+TEST_SEQ=data/${BOARD}/test/${DATA_TYPE}_participants.fasta
 
 #PEAKSET=`head -n 1 ${PEAKSET_TABLE} | cut -f 2`
 TF=`awk '$$2=="${PEAKSET}" {print $$1}' ${PEAKSET_TABLE}`
@@ -32,10 +32,15 @@ PEAK_FASTQ=${PEAK_PATH}.fastq.gz
 PEAK_SEQ=${PEAK_PATH}.fasta
 RESULT_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${PEAKSET}
 
+## Background models estimated based on the test sequences
+BG_DIR=bg_models/${BOARD}/${DATA_TYPE}
+BG_OL=2
+BG_FILE=${BG_DIR}/${DATA_TYPE}_${BG_OL}nt-noov-2str.tsv
+
 ## Iteration parameters
 TASK=oligo_tables
 PEAKSETS=`cut -f 2 ${PEAKSET_TABLE} | sort -u | xargs`
-TFS=`cut -f 1 ${PEAKSET_TABLE} | sort -u | xargs`b
+TFS=`cut -f 1 ${PEAKSET_TABLE} | sort -u | xargs`
 
 param_00:
 	@echo
@@ -47,6 +52,7 @@ param_00:
 	@echo "	BOARD		${BOARD}"
 	@echo "	DATA_TYPE	${DATA_TYPE}"
 	@echo "	PEAKSET_TABLE	${PEAKSET_TABLE}"
+	@echo "	TEST_SEQ	${TEST_SEQ}"
 	@echo "	TF		${TF}"
 	@echo "	RESULT_DIR	${RESULT_DIR}"
 	@echo
