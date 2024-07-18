@@ -4,7 +4,7 @@
 MAKE=make -s -f ${MAKEFILE}
 
 ## Load data-type specific configuration
-DATA_TYPE=HTS
+DATA_TYPE=PBM
 include makefiles/config_${DATA_TYPE}.mk
 
 V=2
@@ -16,21 +16,23 @@ ERR_FILE=${ERR_DIR}/sbatch_error_${NOW}.txt
 SCHEDULER=srun time
 #SCHEDULER=echo \#!/bin/bash ; echo srun time 
 SBATCH=sbatch
-SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ./slurm_out/slurm_${BOARD}_${DATA_TYPE}_${TF}_${PEAKSET}_%j.out"
+SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ./slurm_out/slurm_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}_%j.out"
 
 DISCIPLINE=WET
 BOARD=leaderboard
-PEAKSET_TABLE=metadata/${BOARD}/TF_PEAKSET_${DATA_TYPE}.tsv
+DATASET_TABLE=metadata/${BOARD}/TF_DATASET_${DATA_TYPE}.tsv
 
 TEST_SEQ=data/${BOARD}/test/${DATA_TYPE}_participants.fasta
 
-#PEAKSET=`head -n 1 ${PEAKSET_TABLE} | cut -f 2`
-TF=`awk '$$2=="${PEAKSET}" {print $$1}' ${PEAKSET_TABLE}`
-PEAK_PATH=data/${BOARD}/train/${DATA_TYPE}/${TF}/${PEAKSET}
-PEAK_COORD=${PEAK_PATH}.peaks
-PEAK_FASTQ=${PEAK_PATH}.fastq.gz
-PEAK_SEQ=${PEAK_PATH}.fasta
-RESULT_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${PEAKSET}
+#DATASET=`head -n 1 ${DATASET_TABLE} | cut -f 2`
+TF=`awk '$$2=="${DATASET}" {print $$1}' ${DATASET_TABLE}`
+DATASET_DIR=data/${BOARD}/train/${DATA_TYPE}/${TF}
+DATASET_PATH=${DATASET_DIR}/${DATASET}
+PEAK_COORD=${DATASET_PATH}.peaks
+FASTA_SEQ=${DATASET_PATH}.fasta
+TSV_SEQ=${DATASET_PATH}.tsv
+FASTQ_SEQ=${DATASET_PATH}.fastq.gz
+RESULT_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${DATASET}
 
 ## Background models estimated based on the test sequences
 BG_DIR=bg_models/${BOARD}/${DATA_TYPE}
@@ -39,8 +41,8 @@ BG_FILE=${BG_DIR}/${DATA_TYPE}_${BG_OL}nt-noov-2str.tsv
 
 ## Iteration parameters
 TASK=oligo_tables
-PEAKSETS=`cut -f 2 ${PEAKSET_TABLE} | sort -u | xargs`
-TFS=`cut -f 1 ${PEAKSET_TABLE} | sort -u | xargs`
+DATASETS=`cut -f 2 ${DATASET_TABLE} | sort -u | xargs`
+TFS=`cut -f 1 ${DATASET_TABLE} | sort -u | xargs`
 
 param_00:
 	@echo
@@ -51,20 +53,21 @@ param_00:
 #	@echo "	DISCIPLINE	${DISCIPLINE}"
 	@echo "	BOARD		${BOARD}"
 	@echo "	DATA_TYPE	${DATA_TYPE}"
-	@echo "	PEAKSET_TABLE	${PEAKSET_TABLE}"
+	@echo "	DATASET_TABLE	${DATASET_TABLE}"
 	@echo "	TEST_SEQ	${TEST_SEQ}"
 	@echo "	TF		${TF}"
 	@echo "	RESULT_DIR	${RESULT_DIR}"
 	@echo
 	@echo "Fetch-sequences"
-	@echo "	PEAKSET		${PEAKSET}"
+	@echo "	DATASET_DIR	${DATASET_DIR}"
+	@echo "	DATASET		${DATASET}"
 	@echo "	PEAK_COORD	${PEAK_COORD}"
-	@echo "	PEAK_SEQ	${PEAK_SEQ}"
+	@echo "	FASTA_SEQ	${FASTA_SEQ}"
 	@echo "	FETCH_CMD	${FETCH_CMD}"
 	@echo "	FASTQ2FASTA_CMD	${FASTQ2FASTA_CMD}"
 	@echo
 	@echo "Iteration parameters"
-	@echo "	PEAKSETS	${PEAKSETS}"
+	@echo "	DATASETS	${DATASETS}"
 	@echo "	TFS		${TFS}"
 	@echo "	TASK		${TASK}"
 	@echo
@@ -74,9 +77,10 @@ targets_00:
 	@echo "Common targets (makefiles/00_parameters.mk)"
 	@echo "	targets			list targets"
 	@echo "	param			list parameters"
-	@echo "	peakset_table		build a table with the names of peaksets associated to each transcription factor"
+	@echo "	dataset_table		build a table with the names of datasets associated to each transcription factor"
 	@echo "	fetch_sequences		retrieve peak sequences from UCSC (for CHS and GHTS data)"
-	@echo "	convert_fastq		convert sequences from fastq to fasta format (for HTS and SMS data)"
+	@echo "	fastq2fasta		convert sequences from fastq to fasta format (for HTS and SMS data)"
+	@echo "	tsv2fasta		convert sequences from tsv files to fasta format (for PBM data)"
 	@echo
 
 ################################################################
@@ -85,69 +89,91 @@ targets_00:
 FETCH_CMD=fetch-sequences -v 1 \
 	-genome hg38 \
 	-header_format galaxy \
-	-i ${PEAK_COORD} -o ${PEAK_SEQ}
+	-i ${PEAK_COORD} -o ${FASTA_SEQ}
 fetch_sequences:
 	@echo
 	@echo "Retrieving peak sequences from UCSC"
 	@echo "	PEAK_COORD	${PEAK_COORD}"
 	@${FETCH_CMD}
 	@echo
-	@echo "	PEAK_SEQ	${PEAK_SEQ}"
+	@echo "	FASTA_SEQ	${FASTA_SEQ}"
 
-FASTQ2FASTA_CMD=convert-seq -from fastq -to fasta -i ${PEAK_FASTQ} -o ${PEAK_SEQ}
-convert_fastq:
+################################################################
+## For HTS and SMS data, convert fastq sequences to fasta format
+FASTQ2FASTA_CMD=convert-seq -from fastq -to fasta -i ${FASTQ_SEQ} -o ${FASTA_SEQ}
+fastq2fasta:
 	@echo
 	@echo "Converting sequences from fastq.gz to fasta"
-	@echo "	PEAK_FASTQ	${PEAK_FASTQ}"
+	@echo "	FASTQ_SEQ	${FASTQ_SEQ}"
 	@${FASTQ2FASTA_CMD}
 	@echo
-	@echo "	PEAK_SEQ	${PEAK_SEQ}"
+	@echo "	FASTA_SEQ	${FASTA_SEQ}"
+
+################################################################
+## Extract  fasta sequence file from the PBM data, sorted according to scores
+PBM_SEQ_ID=${TF}_${}
+TSV2FASTA_CMD=awk -F'\t' '$$4 =="FALSE" {print ">\n"$$6""}' ${TSV_SEQ} | head -n 20
+tsv2fasta:
+	@echo "Extracting fasta sequences from TSV file"
+	@echo "	TSV_SEQ		${TSV_SEQ}"
+	${TSV2FASTA_CMD}
+	@echo "	FASTA_SEQ	${FASTA_SEQ}"
 
 
 ################################################################
-## Iterate a task over all peaksets of the leaderboard
-iterate_peaksets:
+## Iterate a task over all datasets of the leaderboard
+iterate_datasets:
 	@echo 
-	@echo "Iterating over peaksets"
-	@echo "	PEAKSETS	${PEAKSETS}"
-	@for peakset in ${PEAKSETS} ; do ${MAKE} one_task PEAKSET=$${peakset}; done
+	@echo "Iterating over datasets"
+	@echo "	DATASETS	${DATASETS}"
+	@for dataset in ${DATASETS} ; do ${MAKE} one_task DATASET=$${dataset}; done
 
 one_task:
 #	@echo
-	@echo "	TF=${TF}	PEAKSET=${PEAKSET}"; \
-	${MAKE} ${TASK} TF=${TF} PEAKSET=${PEAKSET} ; \
+	@echo "	TF=${TF}	DATASET=${DATASET}"; \
+	${MAKE} ${TASK} TF=${TF} DATASET=${DATASET} ; \
 
 
-#	${MAKE} ${TASK} TF=GABPA PEAKSET=THC_0866
-#	${MAKE} ${TASK} TF=PRDM5 PEAKSET=THC_0307.Rep-DIANA_0293
-#	${MAKE} ${TASK} TF=PRDM5 PEAKSET=THC_0307.Rep-MICHELLE_0314
-#	${MAKE} ${TASK} TF=SP140 PEAKSET=THC_0193
-#	${MAKE} ${TASK} TF=ZNF362 PEAKSET=THC_0364.Rep-DIANA_0293
-#	${MAKE} ${TASK} TF=ZNF362 PEAKSET=THC_0364.Rep-MICHELLE_0314
-#	${MAKE} ${TASK} TF=ZNF362 PEAKSET=THC_0411.Rep-DIANA_0293
-#	${MAKE} ${TASK} TF=ZNF407 PEAKSET=THC_0668
+#	${MAKE} ${TASK} TF=GABPA DATASET=THC_0866
+#	${MAKE} ${TASK} TF=PRDM5 DATASET=THC_0307.Rep-DIANA_0293
+#	${MAKE} ${TASK} TF=PRDM5 DATASET=THC_0307.Rep-MICHELLE_0314
+#	${MAKE} ${TASK} TF=SP140 DATASET=THC_0193
+#	${MAKE} ${TASK} TF=ZNF362 DATASET=THC_0364.Rep-DIANA_0293
+#	${MAKE} ${TASK} TF=ZNF362 DATASET=THC_0364.Rep-MICHELLE_0314
+#	${MAKE} ${TASK} TF=ZNF362 DATASET=THC_0411.Rep-DIANA_0293
+#	${MAKE} ${TASK} TF=ZNF407 DATASET=THC_0668
 
 ################################################################
 ## Build a table with the peak sets associated to each transcription
 ## factor.
-peakset_table: peakset_table_${SEQ_FORMAT}
+dataset_table: dataset_table_${SEQ_FORMAT}
 
-peakset_table_fasta:
+dataset_table_fasta:
 	@echo
-	@echo "Building peakset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
+	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
 	wc -l data/${BOARD}/train/${DATA_TYPE}/*/*.peaks  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.peaks||' \
-		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2}'  > ${PEAKSET_TABLE}
+		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2}'  > ${DATASET_TABLE}
 	@echo
-	@echo "	PEAKSET_TABLE	${PEAKSET_TABLE}"
+	@echo "	DATASET_TABLE	${DATASET_TABLE}"
 	@echo
 
-peakset_table_fastq:
+dataset_table_fastq:
 	@echo
-	@echo "Building peakset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
+	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
 	du -sk data/${BOARD}/train/${DATA_TYPE}/*/*.fastq.gz  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.fastq.*||' \
-		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1}'  > ${PEAKSET_TABLE}
+		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1}'  > ${DATASET_TABLE}
 	@echo
-	@echo "	PEAKSET_TABLE	${PEAKSET_TABLE}"
+	@echo "	DATASET_TABLE	${DATASET_TABLE}"
+	@echo
+
+dataset_table_tsv:
+	@echo
+	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
+	du -sk data/${BOARD}/train/${DATA_TYPE}/*/*.tsv  \
+		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.tsv||' \
+		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1}'  > ${DATASET_TABLE}
+	@echo
+	@echo "	DATASET_TABLE	${DATASET_TABLE}"
 	@echo

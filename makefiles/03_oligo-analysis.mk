@@ -69,15 +69,15 @@ bg_freq_one_size:
 ## Detect over-represented oligonucleotides
 OLIGO_DIR=${RESULT_DIR}/oligos
 OLIGOS=
-OLIGO_PATH=${OLIGO_DIR}/${OL}nt-noov-2str_${BOARD}_${TF}_${PEAKSET}
+OLIGO_PATH=${OLIGO_DIR}/${OL}nt-noov-2str_${BOARD}_${TF}_${DATASET}
 OLIGOS=${OLIGO_PATH}.tsv
-MERGED_OLIGO_PATH=${OLIGO_DIR}/${MINOL}-${MAXOL}nt-noov-2str_${BOARD}_${TF}_${PEAKSET}
+MERGED_OLIGO_PATH=${OLIGO_DIR}/${MINOL}-${MAXOL}nt-noov-2str_${BOARD}_${TF}_${DATASET}
 MERGED_OLIGOS=${MERGED_OLIGO_PATH}.tsv
 ASSEMBLY=${MERGED_OLIGO_PATH}_asmb.txt
 MATRICES=${MERGED_OLIGO_PATH}_pssm
 
 OLIGO_CMD=oligo-analysis -v ${V} \
-	-i ${PEAK_SEQ} \
+	-i ${FASTA_SEQ} \
 	-l ${OL} \
 	–noov \
 	-2str \
@@ -102,7 +102,7 @@ ASSEMBLY_CMD=pattern-assembly -v ${V} \
 MATRIX_CMD=matrix-from-patterns \
 	-v ${V} \
 	-logo  \
-	-seq ${PEAK_SEQ} \
+	-seq ${FASTA_SEQ} \
 	-format fasta \
 	-asmb ${ASSEMBLY} \
 	-min_weight 5 \

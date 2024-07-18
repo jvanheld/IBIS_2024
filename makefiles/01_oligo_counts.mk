@@ -7,8 +7,8 @@ MAKE=make -f ${MAKEFILE}
 
 targets: targets_00
 	@echo "oligo-analysis targets (${MAKEFILE})"
-	@echo "	oligo_table	count oligos of a given size (k) in one peakset"
-	@echo "	oligo_tables	count oligos of sizes from ${MINOL} to ${MAXOL} in one peakset"
+	@echo "	oligo_table	count oligos of a given size (k) in one dataset"
+	@echo "	oligo_tables	count oligos of sizes from ${MINOL} to ${MAXOL} in one dataset"
 	@echo
 
 param: param_00
@@ -31,10 +31,10 @@ OLIGO_PREFIX=${OLIGO_DIR}/${OL}nt-2str${NOOV}
 OLIGO_TABLE=${OLIGO_PREFIX}.tsv
 OLIGO_OUT=${OLIGO_PREFIX}_out.txt
 OLIGO_ERR=${OLIGO_PREFIX}_err.txt
-CMD=${SCHEDULER} oligo-analysis -v ${V} -i ${PEAK_SEQ} -l ${OL} -2str ${NOOV} -table -o ${OLIGO_TABLE} > ${OLIGO_OUT} 2> ${OLIGO_ERR}
+CMD=${SCHEDULER} oligo-analysis -v ${V} -i ${FASTA_SEQ} -l ${OL} -2str ${NOOV} -table -o ${OLIGO_TABLE} > ${OLIGO_OUT} 2> ${OLIGO_ERR}
 SCRIPT=${OLIGO_PREFIX}_cmd.sh
 oligo_table:
-	@echo "Running oligo-analysis	${OL}	${BOARD} ${TF} ${PEAKSET}"
+	@echo "Running oligo-analysis	${OL}	${BOARD} ${TF} ${DATASET}"
 	@mkdir -p ${OLIGO_DIR}
 	@echo ${SBATCH_HEADER} > ${SCRIPT}
 	@echo ${CMD} >> ${SCRIPT}
