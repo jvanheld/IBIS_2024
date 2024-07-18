@@ -1,0 +1,74 @@
+; oligo-analysis  -quick -v 1 -i data/leaderboard/test/CHS_participants.fasta -l 3 -noov -2str -grouprc -format fasta -seqtype dna -type dna -return freq,occ -o bg_models/leaderboard/CHS/CHS_3nt-noov-2str.tsv
+; Citation: van Helden et al. (1998). J Mol Biol 281(5), 827-42. 
+; Program version              	1.169
+; Quick counting mode          
+; Oligomer length              	3
+; Input file                   	data/leaderboard/test/CHS_participants.fasta
+; Input format                 	fasta
+; Output file                  	bg_models/leaderboard/CHS/CHS_3nt-noov-2str.tsv
+; Discard overlapping matches
+; Counted on both strands
+; 	grouped by pairs of reverse complements
+; Background model             	Bernoulli
+; Background estimation method 	
+; Sequence type                	DNA
+; Nb of sequences              	751794
+; Sum of sequence lengths      	226289994
+; discarded residues           	NA (quick mode)	 (other letters than ACGT)
+; discarded occurrences        	NA (quick mode)	 (contain discarded residues)
+; nb possible positions        	NA (quick mode)
+; total oligo occurrences      	224786403
+; total overlapping occurrences	21893939
+; total non overlapping occ    	202892464
+; alphabet size                	4
+; nb possible oligomers        	32
+; oligomers tested for significance	0
+;
+; column headers
+;	1	seq            	oligomer sequence
+;	2	id             	oligomer identifier
+;	3	obs_freq       	observed relative frequency
+;	4	occ            	observed occurrences
+;	5	ovl_occ        	number of overlapping occurrences (discarded from the count)
+;	6	forbocc        	forbidden positions (to avoid self-overlap)
+#seq	id	obs_freq	occ	ovl_occ	forbocc
+aaa	aaa|ttt	0.0433206051168	9737883	5943081	19475766
+aac	aac|gtt	0.0266857333003	5998590	0	11997180
+aag	aag|ctt	0.0373063845859	8385968	0	16771936
+aat	aat|att	0.0342411947399	7696955	1329302	15393910
+aca	aca|tgt	0.0343395770250	7719070	679422	15438140
+acc	acc|ggt	0.0253309938858	5694063	0	11388126
+acg	acg|cgt	0.0057841220939	1300192	188148	2600384
+act	act|agt	0.0307690229822	6916458	0	13832916
+aga	aga|tct	0.0384153751506	8635254	813026	17270508
+agc	agc|gct	0.0270544566701	6081474	1098698	12162948
+agg	agg|cct	0.0403407941004	9068062	0	18136124
+ata	ata|tat	0.0228301086343	5131898	1837578	10263796
+atc	atc|gat	0.0219749190079	4939663	581975	9879326
+atg	atg|cat	0.0282708158287	6354895	1071967	12709790
+caa	caa|ttg	0.0347587393887	7813292	0	15626584
+cac	cac|gtg	0.0305613324842	6869772	588256	13739544
+cag	cag|ctg	0.0459160512480	10321304	0	20642608
+cca	cca|tgg	0.0405291062022	9110392	0	18220784
+ccc	ccc|ggg	0.0264760275558	5951451	1953791	11902902
+ccg	ccg|cgg	0.0090177251513	2027062	405143	4054124
+cga	cga|tcg	0.0055122818083	1239086	137292	2478172
+cgc	cgc|gcg	0.0076183656002	1712505	481687	3425010
+cta	cta|tag	0.0204491550141	4596692	570964	9193384
+ctc	ctc|gag	0.0363417132486	8169123	568466	16338246
+gaa	gaa|ttc	0.0359558269189	8082381	0	16164762
+gac	gac|gtc	0.0202278693876	4546950	0	9093900
+gca	gca|tgc	0.0265442256309	5966781	1203038	11933562
+gcc	gcc|ggc	0.0278971677838	6270904	925268	12541808
+gga	gga|tcc	0.0343521044732	7721886	0	15443772
+gta	gta|tac	0.0183989464879	4135833	358232	8271666
+taa	taa|tta	0.0282760474618	6356071	1158605	12712142
+tca	tca|tga	0.0371043527931	8340554	0	16681108
+; Host name	core-login3
+; Job started	2024-07-13.160707
+; Job done	2024-07-13.160725
+; Seconds	2.57
+;	user	2.57
+;	system	0.33
+;	cuser	16.25
+;	csystem	0.34
