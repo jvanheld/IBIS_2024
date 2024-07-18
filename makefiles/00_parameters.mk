@@ -2,6 +2,7 @@
 ## Parameters for the analysis of ChIP-seq peaks
 
 MAKE=make -s -f ${MAKEFILE}
+MAKEFILE=makefiles/00_parameters.mk
 
 ## Load data-type specific configuration
 DATA_TYPE=PBM
@@ -111,14 +112,15 @@ fastq2fasta:
 
 ################################################################
 ## Extract  fasta sequence file from the PBM data, sorted according to scores
-PBM_SEQ_ID=${TF}_${}
-TSV2FASTA_CMD=awk -F'\t' '$$4 =="FALSE" {print ">\n"$$6""}' ${TSV_SEQ} | head -n 20
+PBM_SEQ_ID=${TF}_${DATASET}
+TSV2FASTA_CMD=sort -nr -k 8 ${TSV_SEQ} \
+	| awk -F'\t' '$$4 =="FALSE" {sig=sprintf("%.3f",$$8); bg=sprintf("%.3f", $$9); print ">${DATASET}_"spot-$$1"-"$$2"-"$$3"_signal_"sig"_bg_"bg"\n"$$6""}'\
+	> ${FASTA_SEQ}
 tsv2fasta:
 	@echo "Extracting fasta sequences from TSV file"
 	@echo "	TSV_SEQ		${TSV_SEQ}"
 	${TSV2FASTA_CMD}
 	@echo "	FASTA_SEQ	${FASTA_SEQ}"
-
 
 ################################################################
 ## Iterate a task over all datasets of the leaderboard
@@ -129,8 +131,8 @@ iterate_datasets:
 	@for dataset in ${DATASETS} ; do ${MAKE} one_task DATASET=$${dataset}; done
 
 one_task:
-#	@echo
-	@echo "	TF=${TF}	DATASET=${DATASET}"; \
+	@echo
+	@echo "	BOARD=${BOARD}	DATATYPE=${DATA_TYPE}	TF=${TF}	DATASET=${DATASET}"; \
 	${MAKE} ${TASK} TF=${TF} DATASET=${DATASET} ; \
 
 
@@ -148,6 +150,8 @@ one_task:
 ## factor.
 dataset_table: dataset_table_${SEQ_FORMAT}
 
+################################################################
+## CHS and GHTS data (genomic data): peak coordinates, .peak files
 dataset_table_fasta:
 	@echo
 	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
@@ -158,6 +162,8 @@ dataset_table_fasta:
 	@echo "	DATASET_TABLE	${DATASET_TABLE}"
 	@echo
 
+################################################################
+## HTS and SMS data: fastq.gz files
 dataset_table_fastq:
 	@echo
 	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
@@ -167,7 +173,8 @@ dataset_table_fastq:
 	@echo
 	@echo "	DATASET_TABLE	${DATASET_TABLE}"
 	@echo
-
+################################################################
+## PBM data: TSV files
 dataset_table_tsv:
 	@echo
 	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
