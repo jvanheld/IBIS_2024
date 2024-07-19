@@ -114,13 +114,35 @@ fastq2fasta:
 ## Extract  fasta sequence file from the PBM data, sorted according to scores
 PBM_SEQ_ID=${TF}_${DATASET}
 TSV2FASTA_CMD=sort -nr -k 8 ${TSV_SEQ} \
-	| awk -F'\t' '$$4 =="FALSE" {sig=sprintf("%.3f",$$8); bg=sprintf("%.3f", $$9); print ">${DATASET}_"spot-$$1"-"$$2"-"$$3"_signal_"sig"_bg_"bg"\n"$$6""}'\
+	| awk -F'\t' '$$4 =="FALSE" {rank++; sig=sprintf("%.3f",$$8); bg=sprintf("%.3f", $$9); print ">${DATASET}_"spot-$$1"-"$$2"-"$$3"_signal_"sig"_bg_"bg"_rank_"rank"\n"$$6""}'\
 	> ${FASTA_SEQ}
 tsv2fasta:
 	@echo "Extracting fasta sequences from TSV file"
 	@echo "	TSV_SEQ		${TSV_SEQ}"
 	${TSV2FASTA_CMD}
 	@echo "	FASTA_SEQ	${FASTA_SEQ}"
+
+################################################################
+## For PBM datasets, select an aribtrary number of top-ranking oligos
+## and consider them as binding sites, and the bottom-ranking oligos
+## as background
+N_TOP_SPOTS=250
+N_TOP_ROWS=500
+N_BG_SPOTS=380000
+N_BG_ROWS=76000
+TOP_FASTA_SEQ=${DATASET_PATH}_top${N_TOP_SPOTS}.fasta
+BG_FASTA_SEQ=${DATASET_PATH}_bg${N_BG_SPOTS}.fasta
+top_vs_bg_seq:
+	@echo
+	@echo "Selecting top-raking spot sequences as signal"
+	@echo "	N_TOP_SPOTS	${N_TOP_SPOTS}"
+	@echo "	N_TOP_ROWS	${N_TOP_ROWS}"
+	@echo "	N_BG_SPOTS	${N_BG_SPOTS}"
+	@echo "	N_BG_ROWS	${N_BG_ROWS}"
+	@head -n ${N_TOP_ROWS} ${FASTA_SEQ} > ${TOP_FASTA_SEQ}
+	@tail -n ${N_BG_ROWS} ${FASTA_SEQ} > ${BG_FASTA_SEQ}
+	@echo "	TOP_FASTA_SEQ	${TOP_FASTA_SEQ}"
+	@echo "	BG_FASTA_SEQ	${BG_FASTA_SEQ}"
 
 ################################################################
 ## Iterate a task over all datasets of the leaderboard
