@@ -14,8 +14,9 @@ Support of the challenge presentation teleconference (video + slides): <https://
 
 The software suite Regulatory Sequence Analysis Tools (RSAT) used for these anlayses is available as a Docker container 
 
-<https://hub.docker.com/r/eeadcsiccompbio/rsat>
-
+```
+docker pull eeadcsiccompbio/rsat:20240709
+```
 
 
 # Methods
