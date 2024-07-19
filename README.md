@@ -10,6 +10,16 @@ Docker image: rsat:20240507_cv1 at https://hub.docker.com/r/biocontainers/rsat/t
 
 Support of the challenge presentation teleconference (video + slides): <https://disk.yandex.ru/d/82FEnwPn158pog>
 
+# RSAT distribution
+
+The software suite Regulatory Sequence Analysis Tools (RSAT) used for these anlayses is available as a Docker container 
+
+<https://hub.docker.com/r/eeadcsiccompbio/rsat>
+
+
+
+# Methods
+
 ## Motif discovery approaches
 
 We ran different approaches and statistical models to detect exceptional motifs. 
