@@ -64,6 +64,8 @@ title: PBM data analysis
 subtitle: IBIS challenge 2024
 font-family: Garamond
 transition: linear
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r include=FALSE, echo=FALSE, eval=TRUE}
@@ -72,7 +74,10 @@ library(kableExtra)
 library(rprojroot)
 # library(formattable)
 
-options(width = 300)
+root_dir = rprojroot::find_rstudio_root_file()
+knitr::opts_knit$set(root.dir = root_dir)
+#setwd(root_dir)
+
 # options(encoding = 'UTF-8')
 knitr::opts_chunk$set(
   fig.width = 7, 
@@ -85,6 +90,7 @@ knitr::opts_chunk$set(
   warning = FALSE, 
   message = FALSE, 
   results = TRUE, 
+  root.dir = root_dir,
   comment = "")
 
 options(scipen = 12) ## Max number of digits for non-scientific notation
@@ -93,9 +99,6 @@ options(scipen = 12) ## Max number of digits for non-scientific notation
 options(width = 300)
 # options(encoding = 'UTF-8')
 
-root_dir = rprojroot::find_rstudio_root_file()
-knitr::opts_knit$set(root.dir = root_dir)
-setwd(root_dir)
 # getwd()
 ```
 
@@ -110,6 +113,8 @@ board <- "train"
 ```{r load_metadata}
 ## Load metadata
 metadata_file <- file.path("metadata", "leaderboard", paste0("TF_DATASET_", data_type, ".tsv"))
+setwd(root_dir)
+getwd()
 metadata <- read.table(metadata_file, header = FALSE, sep="\t")
 colnames(metadata) <- c("TF", "dataset", "size")
 
@@ -130,7 +135,7 @@ experiments <- unique(metadata$experiment)
 
 ## Initialise with the first experiment
 exp <- experiments[1]
-
+setwd(root_dir)
 #### Load all the data ####
 message("Loading PBM data")
 pbm_data <- list()
@@ -159,9 +164,9 @@ for (i in 1:nrow(metadata)) {
 
 ## Signal intensities 
 
-### Comparison between normalisation method
+### Impact of normalization method (SD vs QNZS)
 
-```{r signal_intensities, fig.width=10, fig.height=10, out.width="100%", fig.cap="Comparison of mean signal intensities between normalisation methods SD and QNZS. "}
+```{r SD_vs_QNZS, fig.width=10, fig.height=10, out.width="100%", fig.cap="Comparison of mean signal intensities between normalisation methods SD and QNZS. "}
 
 #### Analyse distribution of signal ####
 
@@ -187,8 +192,9 @@ for (experiment in experiments) {
   ## Compare signal between normalisation methods
   plot(SD$mean_signal_intensity, QNZS$mean_signal_intensity,
        main = paste(TF, experiment),
-       xlab = "SD signal",
+       xlab = "SD signal (log scale)",
        ylab = "QNZS signal",
+       log="x",
        col="#0044FF",
        panel.first = grid(col= "#888888"))
 }
@@ -198,4 +204,42 @@ par(mfrow=c(1,1))
 ```
 
 
+
+## Distribution of signal intenties
+
+```{r signal_distrib_SD, fig.width=15, fig.height=10, out.width="100%", fig.cap="Distribution of mean signal intensities. "}
+#### Plot the distribution of mean signal intensities ####
+
+
+experiment <- experiments[1]
+
+par(mfrow=c(4,2))
+
+for (experiment in experiments) {
+  
+  TF <- unique(metadata[metadata$experiment == experiment, "TF"])
+  
+  SD <- pbm_data[[paste0("SD_", experiment)]]
+  QNZS <- pbm_data[[paste0("QNZS_", experiment)]]
+  spot_IDs <- sort(unique(c(SD$id_spot, QNZS$id_spot)))
+  
+  ## Make sure the two datasets have the same spot IDS
+  SD <- SD[spot_IDs, ]
+  QNZS <- QNZS[spot_IDs, ]
+
+  
+  SD_q95 <- quantile(x = SD$mean_signal_intensity, probs = 0.95, na.rm = TRUE)
+  QNZS_q95 <- quantile(x = SD$mean_signal_intensity, probs = 0.95, na.rm = TRUE)
+  
+  
+  ## Compare signal between normalisation methods
+  hist(SD$mean_signal_intensity, breaks=1000, xlim=c(0,SD_q95),
+       main=paste(TF, experiment, "SD signal"))
+  hist(log(SD$mean_signal_intensity), breaks=1000, xlim=c(1,log(SD_q95)),
+       main=paste(TF, experiment, "SD log(signal)"))
+}
+par(mfrow=c(1,1))
+
+
+```
 
