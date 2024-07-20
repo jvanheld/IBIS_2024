@@ -52,13 +52,13 @@ PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs${PEAKMO_OPT}
 PEAKMO_CLUSTERS_DIR=${PEAKMO_DIR}/clustered_motifs
 PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
 
-CONVERT_CMD=rsat convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -rescale 1 -decimals 4 -o ${PEAKMO_MATRICES}_freq.tf ; rsat convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf -o ${PEAKMO_MATRICES}_freq.cb ; cat ${PEAKMO_MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' > ${PEAKMO_MATRICES}_freq.txt
+CONVERT_CMD=${RSAT_CMD} convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -rescale 1 -decimals 4 -o ${PEAKMO_MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf -o ${PEAKMO_MATRICES}_freq.cb ; cat ${PEAKMO_MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' > ${PEAKMO_MATRICES}_freq.txt
 
 
 ################################################################
 ## Run peak-motifs to discover motifs in peak sequences
 PEAKMO_TASKS=purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,motifs_vs_db,scan,timelog,synthesis,small_summary
-PEAKMO_CMD=${SCHEDULER} rsat peak-motifs \
+PEAKMO_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs \
 	-v ${V} \
 	-title 'IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}' \
 	-i ${FASTA_SEQ} \
@@ -126,7 +126,7 @@ endif
 
 ################################################################
 ## matrix-clusering command
-CLUSTER_CMD=rsat matrix-clustering -v ${V} \
+CLUSTER_CMD=${RSAT_CMD} matrix-clustering -v ${V} \
 	-max_matrices 50 \
 	-matrix ${TF}_${DATASET} ${PEAKMO_MATRICES}.tf transfac \
 	-hclust_method average -calc sum \
@@ -154,7 +154,7 @@ cluster_matrices:
 BG_OL=2
 QUALITY_DIR=${PEAKMO_DIR}/matrix-quality
 QUALITY_PREFIX=${QUALITY_DIR}/matrix-quality
-QUALITY_CMD=matrix-quality  -v ${V} \
+QUALITY_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
 	-html_title 'IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}'  \
 	-ms ${PEAKMO_MATRICES}.tf \
 	-matrix_format transfac \

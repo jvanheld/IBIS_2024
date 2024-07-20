@@ -51,7 +51,7 @@ bg_freq_one_size:
 	@echo
 	@echo "Computing background frequencies for ${BG_OL}nt"
 	@mkdir -p ${BG_DIR}
-	time oligo-analysis ${QUICK} \
+	time ${RSAT_CMD} oligo-analysis ${QUICK} \
 		-v ${V} \
 		-i ${TEST_SEQ} \
 		-l ${BG_OL} \
@@ -76,7 +76,7 @@ MERGED_OLIGOS=${MERGED_OLIGO_PATH}.tsv
 ASSEMBLY=${MERGED_OLIGO_PATH}_asmb.txt
 MATRICES=${MERGED_OLIGO_PATH}_pssm
 
-OLIGO_CMD=oligo-analysis -v ${V} \
+OLIGO_CMD=${RSAT_CMD} oligo-analysis -v ${V} \
 	-i ${FASTA_SEQ} \
 	-l ${OL} \
 	–noov \
@@ -92,14 +92,14 @@ OLIGO_CMD=oligo-analysis -v ${V} \
 	-uth rank 50 \
 	-lth occ_sig 1 \
 	-o ${OLIGOS}
-ASSEMBLY_CMD=pattern-assembly -v ${V} \
+ASSEMBLY_CMD=${RSAT_CMD} pattern-assembly -v ${V} \
 	-subst 1 \
 	-toppat 50 \
 	-2str \
 	-max_asmb_nb 20 \
 	-i ${OLIGOS} \
 	-o ${ASSEMBLY}
-MATRIX_CMD=matrix-from-patterns \
+MATRIX_CMD=${RSAT_CMD} matrix-from-patterns \
 	-v ${V} \
 	-logo  \
 	-seq ${FASTA_SEQ} \
@@ -131,8 +131,8 @@ oligos:
 	@echo ${MATRIX_CMD} >> ${OLIGO_SCRIPT}
 	@echo
 	@echo "	OLIGO_SCRIPT	${OLIGO_SCRIPT}"
-	@echo "Running peak-motifs"
-#	@${SBATCH} ${OLIGO_SCRIPT}
+	@echo "Running oligo-analysis to detect over-represented motifs"
+	@${SBATCH} ${OLIGO_SCRIPT}
 	@echo
 	@echo "	OLIGO_DIR	${OLIGO_DIR}"
 	@echo "	OLIGOS		${OLIGOS}"

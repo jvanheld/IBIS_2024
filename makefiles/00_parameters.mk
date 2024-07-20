@@ -4,20 +4,33 @@
 MAKE=make -s -f ${MAKEFILE}
 MAKEFILE=makefiles/00_parameters.mk
 
+################################################################
+## Path or command to run RSAT command, depending on the local
+## configuration. Byb default, it is set to "rsat" (the main command,
+## which runs all the rsat tools as sub-commands), but can be adapted
+## to run rsat from a specific path, or from a container (e.g. docker
+## or apptainer)
+
+# RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out eeadcsiccompbio/rsat:20240709 rsat
+RSAT_CMD=rsat
+
+
+################################################################
+## Job scheduler parameters
+NOW=`date +%Y-%m-%d_%H%M`
+ERR_DIR=sbatch_errors
+ERR_FILE=${ERR_DIR}/sbatch_error_${NOW}.txt
+SCHEDULER=srun time # this can be used to run commands either from the shell or in a script
+#SCHEDULER=echo \#!/bin/bash ; echo srun time 
+SBATCH=sbatch
+SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ./slurm_out/slurm_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}_%j.out"
+
+################################################################
 ## Load data-type specific configuration
 DATA_TYPE=PBM
 include makefiles/config_${DATA_TYPE}.mk
 
 V=2
-
-## Job scheduler parameters
-NOW=`date +%Y-%m-%d_%H%M`
-ERR_DIR=sbatch_errors
-ERR_FILE=${ERR_DIR}/sbatch_error_${NOW}.txt
-SCHEDULER=srun time
-#SCHEDULER=echo \#!/bin/bash ; echo srun time 
-SBATCH=sbatch
-SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ./slurm_out/slurm_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}_%j.out"
 
 DISCIPLINE=WET
 BOARD=leaderboard
@@ -87,7 +100,7 @@ targets_00:
 ################################################################
 ## Run fetch-sequences to retrieve fasta sequences from the peak
 ## coordinates (bed) from the UCSC genome browser
-FETCH_CMD=fetch-sequences -v 1 \
+FETCH_CMD=${RSAT_CMD} = fetch-sequences -v 1 \
 	-genome hg38 \
 	-header_format galaxy \
 	-i ${PEAK_COORD} -o ${FASTA_SEQ}
@@ -101,7 +114,7 @@ fetch_sequences:
 
 ################################################################
 ## For HTS and SMS data, convert fastq sequences to fasta format
-FASTQ2FASTA_CMD=convert-seq -from fastq -to fasta -i ${FASTQ_SEQ} -o ${FASTA_SEQ}
+FASTQ2FASTA_CMD=${RSAT_CMD} convert-seq -from fastq -to fasta -i ${FASTQ_SEQ} -o ${FASTA_SEQ}
 fastq2fasta:
 	@echo
 	@echo "Converting sequences from fastq.gz to fasta"
