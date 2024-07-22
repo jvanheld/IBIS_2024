@@ -11,7 +11,8 @@ targets: targets_00
 	@echo "	peakmo			discover motifs in peak sequences"
 	@echo "	peakmo_diff		run peak-motifs tp detect over-represented motifs in top versus background sequences"
 	@echo "	cluster_matrices	run matrix-clustering on the motifs discovered with peak-motifs"
-	@echo "	peakmo_all_datasets	run peak-motifs in all the peak sets"
+	@echo "	peakmo_all_datasets	run peak-motifs in all the datasets"
+	@echo "	peakmodiff_all_datasets	run peak-motifs differential analysis in all the datasets"
 	@echo
 
 param: param_00
@@ -31,6 +32,8 @@ param: param_00
 	@echo
 	@echo "peak-motifs differential analysis options"
 	@echo "	PEAKMODIFF_CMD		${PEAKMODIFF_CMD}"
+	@echo "	PEAKMODIFF_SCRIPT	${PEAKMODIFF_SCRIPT}"
+	@echo
 	@echo "matrix-clustering options"
 	@echo "	PEAKMO_CLUSTERS_DIR	${PEAKMO_CLUSTERS_DIR}"
 	@echo "	PEAKMO_CLUSTERS		${PEAKMO_CLUSTERS}"
@@ -81,7 +84,7 @@ PEAKMO_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs \
 	-motif_db jaspar_core_nonredundant_vertebrates tf ${JASPAR_MOTIFS} \
 	-task ${PEAKMO_TASKS} \
 	-outdir ${PEAKMO_DIR} ${PEAKMO_OPT}
-PEAKMO_SCRIPT=${PEAKMO_DIR}/peak-motif_cmd.sh
+PEAKMO_SCRIPT=${PEAKMO_DIR}/peak-motif${PEAKMO_OPT}_cmd.sh
 peakmo: 
 	@echo
 	@echo "Writing peak-motif script	${PEAKMO_SCRIPT}"
@@ -183,12 +186,6 @@ matrix_quality:
 	@echo "	QUALITY_PREFIX	${QUALITY_PREFIX}"
 
 
-# all: param sequences peakmo
-
-TASK=peakmo
-peakmo_all_datasets:
-	@${MAKE} iterate_datasets
-
 ################################################################
 ## Run differential analysis with peak-motifs, to discover motifs in
 ## train sequences that are over-represented with respecct to
@@ -205,8 +202,7 @@ PEAKMODIFF_CMD=	${RSAT_CMD} peak-motifs  \
 	-disco oligos \
 	-nmotifs 5  \
 	-minol 6 \
-	-maxol 8  \
-	-merge_lengths \
+	-maxol 7  \
 	-2str  \
 	-origin center  \
 	-motif_db Hocomoco_human tf ${MOTIFDB_DIR}/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf \
@@ -217,10 +213,29 @@ PEAKMODIFF_CMD=	${RSAT_CMD} peak-motifs  \
 	-noov \
 	-img_format png  \
 	-outdir ${PEAKMODIFF_DIR}
-
+PEAKMODIFF_SCRIPT=${PEAKMODIFF_DIR}/peak-motif${PEAKMO_OPT}-diff_cmd.sh
 peakmo_diff:
 	@echo
 	@echo "Running peak-motifs in differential analysis mode"
+	@echo
+	@echo "Writing peak-motif script for differential analysis	${PEAKMODIFF_SCRIPT}"
+	@mkdir -p ${PEAKMODIFF_DIR}
+	@echo ${SBATCH_HEADER} > ${PEAKMODIFF_SCRIPT}
+	@echo >> ${PEAKMODIFF_SCRIPT}
+	@echo ${PEAKMODIFF_CMD} >> ${PEAKMODIFF_SCRIPT}
+	@echo
+	@echo "	PEAKMODIFF_SCRIPT	${PEAKMODIFF_SCRIPT}"
+	@echo "Running peak-motifs"
+	@${SBATCH} ${PEAKMODIFF_SCRIPT}
 	@echo "	PEAKMODIFF_DIR	${PEAKMODIFF_DIR}"
-	${PEAKMODIFF_CMD}
+
+# all: param sequences peakmo
+################################################################
+## Iterate over all datasets of a given data type
+TASK=peakmo
+peakmo_all_datasets:
+	@${MAKE} iterate_datasets TASK=peakmo
+peakmodiff_all_datasets:
+	@${MAKE} iterate_datasets TASK=peakmo_diff
+
 
