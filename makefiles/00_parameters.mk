@@ -85,6 +85,17 @@ param_00:
 	@echo "	TFS		${TFS}"
 	@echo "	TASK		${TASK}"
 	@echo
+	@echo "PBM top / background sequences"
+	@echo "	N_TOP_SPOTS	${N_TOP_SPOTS}"
+	@echo "	N_TOP_ROWS	${N_TOP_ROWS}"
+	@echo "	TOP_SUFFIX	${TOP_SUFFIX}"
+	@echo "	TOP_SEQ		${TOP_SEQ}"
+	@echo "	N_BG_SPOTS	${N_BG_SPOTS}"
+	@echo "	N_BG_ROWS	${N_BG_ROWS}"
+	@echo "	BG_SUFFIX	${BG_SUFFIX}"
+	@echo "	BG_SEQ		${BG_SEQ}"
+	@echo
+
 
 targets_00:
 	@echo
@@ -143,11 +154,13 @@ tsv2fasta:
 ## For PBM datasets, select an aribtrary number of top-ranking oligos
 ## and consider them as binding sites, and the bottom-ranking oligos
 ## as background
-N_TOP_SPOTS=250
-N_TOP_ROWS=500
-N_BG_SPOTS=380000
-N_BG_ROWS=76000
-TOP_SEQ=${DATASET_PATH}_top${N_TOP_SPOTS}.fasta
+N_TOP_SPOTS=0250
+N_TOP_ROWS=0500
+N_BG_SPOTS=35000
+N_BG_ROWS=70000
+TOP_SUFFIX=top${N_TOP_SPOTS}
+BG_SUFFIX=bg${N_BG_SPOTS}
+TOP_SEQ=${DATASET_PATH}_${TOP_SUFFIX}.fasta
 BG_SEQ=${DATASET_PATH}_bg${N_BG_SPOTS}.fasta
 top_vs_bg_seq:
 	@echo
