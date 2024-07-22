@@ -96,6 +96,10 @@ targets_00:
 	@echo "	fastq2fasta		convert sequences from fastq to fasta format (for HTS and SMS data)"
 	@echo "	tsv2fasta		convert sequences from tsv files to fasta format (for PBM data)"
 	@echo
+	@echo "PBM tasks"
+	@echo "	top_vs_bg_seq		extract top-raking ${TOP_SPOTS} sequences as test and bottom ${BG_SPOTS} sequences as background"
+	@echo "	top_vs_bg_all_datasets	iterated top_vs_bg_seq over all datasets"
+	@echo
 
 ################################################################
 ## Run fetch-sequences to retrieve fasta sequences from the peak
@@ -143,8 +147,8 @@ N_TOP_SPOTS=250
 N_TOP_ROWS=500
 N_BG_SPOTS=380000
 N_BG_ROWS=76000
-TOP_FASTA_SEQ=${DATASET_PATH}_top${N_TOP_SPOTS}.fasta
-BG_FASTA_SEQ=${DATASET_PATH}_bg${N_BG_SPOTS}.fasta
+TOP_SEQ=${DATASET_PATH}_top${N_TOP_SPOTS}.fasta
+BG_SEQ=${DATASET_PATH}_bg${N_BG_SPOTS}.fasta
 top_vs_bg_seq:
 	@echo
 	@echo "Selecting top-raking spot sequences as signal"
@@ -152,10 +156,13 @@ top_vs_bg_seq:
 	@echo "	N_TOP_ROWS	${N_TOP_ROWS}"
 	@echo "	N_BG_SPOTS	${N_BG_SPOTS}"
 	@echo "	N_BG_ROWS	${N_BG_ROWS}"
-	@head -n ${N_TOP_ROWS} ${FASTA_SEQ} > ${TOP_FASTA_SEQ}
-	@tail -n ${N_BG_ROWS} ${FASTA_SEQ} > ${BG_FASTA_SEQ}
-	@echo "	TOP_FASTA_SEQ	${TOP_FASTA_SEQ}"
-	@echo "	BG_FASTA_SEQ	${BG_FASTA_SEQ}"
+	@head -n ${N_TOP_ROWS} ${FASTA_SEQ} > ${TOP_SEQ}
+	@tail -n ${N_BG_ROWS} ${FASTA_SEQ} > ${BG_SEQ}
+	@echo "	TOP_SEQ	${TOP_SEQ}"
+	@echo "	BG_SEQ	${BG_SEQ}"
+
+top_vs_bg_all_datasets:
+	${MAKE} iterate_datasets TASK=top_vs_bg_seq
 
 ################################################################
 ## Iterate a task over all datasets of the leaderboard

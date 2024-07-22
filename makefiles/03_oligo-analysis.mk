@@ -5,7 +5,7 @@
 include makefiles/00_parameters.mk
 MAKEFILE=makefiles/03_oligo-analysis.mk
 
-param: param_00
+param: param
 	@echo "dataset parameters"
 	@echo "	BOARD		${BOARD}"
 	@echo "	DATA_TUPE	${DATA_TYPE}"
@@ -24,7 +24,7 @@ param: param_00
 	@echo "	MATRICES	${MATRICES}"
 	@echo 
 
-targets: targets_00
+targets: targets
 	@echo "Targets"
 	@echo "	bg_freq		compute background frequencies"
 	@echo "	oligos		detect over-represented oligos"
@@ -143,5 +143,3 @@ oligos_one_len:
 	@echo "oligo-analysis	${OL}nt"
 	@echo >> ${OLIGO_SCRIPT}
 	@echo ${OLIGO_CMD} >> ${OLIGO_SCRIPT}
-
-

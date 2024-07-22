@@ -9,6 +9,7 @@ MAKEFILE=makefiles/02_peak-motifs.mk
 targets: targets_00
 	@echo "Peak-motifs targets (${MAKEFILE})"
 	@echo "	peakmo			discover motifs in peak sequences"
+	@echo "	peakmo_diff		run peak-motifs tp detect over-represented motifs in top versus background sequences"
 	@echo "	cluster_matrices	run matrix-clustering on the motifs discovered with peak-motifs"
 	@echo "	peakmo_all_datasets	run peak-motifs in all the peak sets"
 	@echo
@@ -28,6 +29,8 @@ param: param_00
 	@echo "	PEAKMO_CMD		${PEAKMO_CMD}"
 	@echo "	PEAKMO_SCRIPT		${PEAKMO_SCRIPT}"
 	@echo
+	@echo "peak-motifs differential analysis options"
+	@echo "	PEAKMODIFF_CMD		${PEAKMODIFF_CMD}"
 	@echo "matrix-clustering options"
 	@echo "	PEAKMO_CLUSTERS_DIR	${PEAKMO_CLUSTERS_DIR}"
 	@echo "	PEAKMO_CLUSTERS		${PEAKMO_CLUSTERS}"
@@ -185,3 +188,39 @@ matrix_quality:
 TASK=peakmo
 peakmo_all_datasets:
 	@${MAKE} iterate_datasets
+
+################################################################
+## Run differential analysis with peak-motifs, to discover motifs in
+## train sequences that are over-represented with respecct to
+## background sequences.
+PEAKMODIFF_DIR=${PEAKMO_DIR}-diff
+PEAKMODIFF_CMD=	${RSAT_CMD} peak-motifs  \
+	-v ${V} \
+	-title ${BOARD}_${DATA_TYPE}_${TF}_${DATASET}_train_vs_bg  \
+	-i ${TOP_SEQ} \
+	-ctrl ${BG_SEQ} \
+	${PEAKMO_OPT} \
+	-max_seq_len 1000 \
+	-markov auto \
+	-disco oligos \
+	-nmotifs 5  \
+	-minol 6 \
+	-maxol 8  \
+	-merge_lengths \
+	-2str  \
+	-origin center  \
+	-motif_db Hocomoco_human tf ${MOTIFDB_DIR}/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf \
+	-motif_db jaspar_core_redundant_vertebrates tf ${MOTIFDB_DIR}/JASPAR/Jaspar_2020/redundant/JASPAR2020_CORE_vertebrates_redundant_pfms.tf \
+	-scan_markov 1 \
+	-task purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,timelog,synthesis,small_summary,motifs_vs_db,scan \
+	-prefix peak-motifs \
+	-noov \
+	-img_format png  \
+	-outdir ${PEAKMODIFF_DIR}
+
+peakmo_diff:
+	@echo
+	@echo "Running peak-motifs in differential analysis mode"
+	@echo "	PEAKMODIFF_DIR	${PEAKMODIFF_DIR}"
+	${PEAKMODIFF_CMD}
+
