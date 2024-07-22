@@ -190,7 +190,8 @@ matrix_quality:
 ## Run differential analysis with peak-motifs, to discover motifs in
 ## train sequences that are over-represented with respecct to
 ## background sequences.
-PEAKMODIFF_DIR=${PEAKMO_DIR}-diff
+DIFF_SUFFIX=${TOP_SUFFIX}_vs_${BG_SUFFIX}
+PEAKMODIFF_DIR=${PEAKMO_DIR}_${DIFF_SUFFIX}
 PEAKMODIFF_CMD=	${RSAT_CMD} peak-motifs  \
 	-v ${V} \
 	-title ${BOARD}_${DATA_TYPE}_${TF}_${DATASET}_train_vs_bg  \
@@ -199,7 +200,7 @@ PEAKMODIFF_CMD=	${RSAT_CMD} peak-motifs  \
 	${PEAKMO_OPT} \
 	-max_seq_len 1000 \
 	-markov auto \
-	-disco oligos \
+	-disco oligos,dyads \
 	-nmotifs 5  \
 	-minol 6 \
 	-maxol 7  \
@@ -213,7 +214,7 @@ PEAKMODIFF_CMD=	${RSAT_CMD} peak-motifs  \
 	-noov \
 	-img_format png  \
 	-outdir ${PEAKMODIFF_DIR}
-PEAKMODIFF_SCRIPT=${PEAKMODIFF_DIR}/peak-motif${PEAKMO_OPT}-diff_cmd.sh
+PEAKMODIFF_SCRIPT=${PEAKMODIFF_DIR}/peak-motif${PEAKMO_OPT}_${DIFF_SUFFIX}_cmd.sh
 peakmo_diff:
 	@echo
 	@echo "Running peak-motifs in differential analysis mode"
