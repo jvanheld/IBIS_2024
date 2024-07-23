@@ -1,0 +1,52 @@
+; oligo-analysis  quick -v 1 -i data/leaderboard/test/PBM_participants.fasta -l 2 -noov -2str -grouprc -format fasta -seqtype dna -type dna -return freq,occ -o bg_models/leaderboard/PBM/PBM_2nt-noov-2str.tsv
+; Citation: van Helden et al. (1998). J Mol Biol 281(5), 827-42. 
+; Program version              	1.169
+; Slow counting mode           
+; Oligomer length              	2
+; Input file                   	data/leaderboard/test/PBM_participants.fasta
+; Input format                 	fasta
+; Output file                  	bg_models/leaderboard/PBM/PBM_2nt-noov-2str.tsv
+; Discard overlapping matches
+; Counted on both strands
+; 	grouped by pairs of reverse complements
+; Background model             	Bernoulli
+; Background estimation method 	
+; Sequence type                	DNA
+; Nb of sequences              	40329
+; Sum of sequence lengths      	2419740
+; discarded residues           		 (other letters than ACGT)
+; discarded occurrences        		 (contain discarded residues)
+; nb possible positions        	2379411
+; total oligo occurrences      	2379411
+; total overlapping occurrences	109400
+; total non overlapping occ    	2270011
+; alphabet size                	4
+; nb possible oligomers        	10
+; oligomers tested for significance	0
+;
+; column headers
+;	1	seq            	oligomer sequence
+;	2	id             	oligomer identifier
+;	3	obs_freq       	observed relative frequency
+;	4	occ            	observed occurrences
+;	5	ovl_occ        	number of overlapping occurrences (discarded from the count)
+;	6	forbocc        	forbidden positions (to avoid self-overlap)
+#seq	id	obs_freq	occ	ovl_occ	forbocc
+aa	aa|tt	0.1120773166132	266678	75740	261786
+ac	ac|gt	0.1229283213367	292497	0	287388
+ag	ag|ct	0.1228396439287	292286	0	287247
+at	at|at	0.0699206652403	166370	0	327694
+ca	ca|tg	0.1439448670280	342504	0	337425
+cc	cc|gg	0.0920021803715	218911	33660	213730
+cg	cg|cg	0.0529626869843	126020	0	247190
+ga	ga|tc	0.1272491385473	302778	0	297717
+gc	gc|gc	0.0528815744737	125827	0	246634
+ta	ta|ta	0.0572158403908	136140	0	267260
+; Host name	core-login3
+; Job started	2024-07-20.071925
+; Job done	2024-07-20.071933
+; Seconds	7.89
+;	user	7.89
+;	system	0.1
+;	cuser	0
+;	csystem	0

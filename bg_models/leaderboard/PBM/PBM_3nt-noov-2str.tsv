@@ -1,0 +1,74 @@
+; oligo-analysis  quick -v 1 -i data/leaderboard/test/PBM_participants.fasta -l 3 -noov -2str -grouprc -format fasta -seqtype dna -type dna -return freq,occ -o bg_models/leaderboard/PBM/PBM_3nt-noov-2str.tsv
+; Citation: van Helden et al. (1998). J Mol Biol 281(5), 827-42. 
+; Program version              	1.169
+; Slow counting mode           
+; Oligomer length              	3
+; Input file                   	data/leaderboard/test/PBM_participants.fasta
+; Input format                 	fasta
+; Output file                  	bg_models/leaderboard/PBM/PBM_3nt-noov-2str.tsv
+; Discard overlapping matches
+; Counted on both strands
+; 	grouped by pairs of reverse complements
+; Background model             	Bernoulli
+; Background estimation method 	
+; Sequence type                	DNA
+; Nb of sequences              	40329
+; Sum of sequence lengths      	2419740
+; discarded residues           		 (other letters than ACGT)
+; discarded occurrences        		 (contain discarded residues)
+; nb possible positions        	2339082
+; total oligo occurrences      	2339082
+; total overlapping occurrences	247946
+; total non overlapping occ    	2091136
+; alphabet size                	4
+; nb possible oligomers        	32
+; oligomers tested for significance	0
+;
+; column headers
+;	1	seq            	oligomer sequence
+;	2	id             	oligomer identifier
+;	3	obs_freq       	observed relative frequency
+;	4	occ            	observed occurrences
+;	5	ovl_occ        	number of overlapping occurrences (discarded from the count)
+;	6	forbocc        	forbidden positions (to avoid self-overlap)
+#seq	id	obs_freq	occ	ovl_occ	forbocc
+aaa	aaa|ttt	0.0316936302361	74134	10216	144986
+aac	aac|gtt	0.0350334019927	81946	0	160240
+aag	aag|ctt	0.0220359953178	51544	0	99303
+aat	aat|att	0.0328274083593	76786	45329	149964
+aca	aca|tgt	0.0522589631317	122238	42803	240681
+acc	acc|ggt	0.0178433248599	41737	0	79662
+acg	acg|cgt	0.0155954344482	36479	5072	69404
+act	act|agt	0.0177804796925	41590	0	79441
+aga	aga|tct	0.0339988080794	79526	4874	155331
+agc	agc|gct	0.0328064599702	76737	5019	149911
+agg	agg|cct	0.0350633282630	82016	0	160124
+ata	ata|tat	0.0317244115426	74206	10245	144976
+atc	atc|gat	0.0329133395067	76987	5087	150351
+atg	atg|cat	0.0156356211539	36573	5004	69448
+caa	caa|ttg	0.0360470475169	84317	0	164826
+cac	cac|gtg	0.0339881201258	79501	42665	155109
+cag	cag|ctg	0.0392880625818	91898	0	179974
+cca	cca|tgg	0.0187748869001	43916	0	83870
+ccc	ccc|ggg	0.0137348754768	32127	9714	60749
+ccg	ccg|cgg	0.0329317227870	77030	5038	150270
+cga	cga|tcg	0.0164500432221	38478	5732	73284
+cgc	cgc|gcg	0.0308762155410	72222	9564	141053
+cta	cta|tag	0.0199125126866	46577	7499	89538
+ctc	ctc|gag	0.0340364296763	79614	12639	155440
+gaa	gaa|ttc	0.0360812489686	84397	0	165061
+gac	gac|gtc	0.0177573937126	41536	0	79286
+gca	gca|tgc	0.0164094289982	38383	5666	73032
+gcc	gcc|ggc	0.0156022747386	36495	5058	69513
+gga	gga|tcc	0.0361936862410	84660	0	165538
+gta	gta|tac	0.0167788046764	39247	5071	74878
+taa	taa|tta	0.0347461097986	81274	5651	159020
+tca	tca|tga	0.0371791155676	86965	0	170147
+; Host name	core-login3
+; Job started	2024-07-20.071934
+; Job done	2024-07-20.071942
+; Seconds	8.26
+;	user	8.26
+;	system	0.1
+;	cuser	0
+;	csystem	0
