@@ -11,16 +11,9 @@ targets: targets_00
 	@echo "	peakmo			discover motifs in peak sequences"
 	@echo "	peakmo_diff		run peak-motifs tp detect over-represented motifs in top versus background sequences"
 	@echo "	cluster_matrices	run matrix-clustering on the motifs discovered with peak-motifs"
-	@echo "	peakmo_all_datasets	run peak-motifs in all the datasets"
-	@echo "	peakmodiff_all_datasets	run peak-motifs differential analysis in all the datasets"
 	@echo
 
 param: param_00
-	@echo
-	@echo "Peak-motif parameters"
-	@echo "	MOTIFDB_DIR		${MOTIFDB_DIR}"
-	@echo "	JASPAR_MOTIFS		${JASPAR_MOTIFS}"
-	@echo "	HOCOMOCO_MOTIFS		${HOCOMOCO_MOTIFS}"
 	@echo
 	@echo "peak-motifs options"
 	@echo "	PEAKMO_OPT		${PEAKMO_OPT}"
@@ -30,36 +23,6 @@ param: param_00
 	@echo "	PEAKMO_CMD		${PEAKMO_CMD}"
 	@echo "	PEAKMO_SCRIPT		${PEAKMO_SCRIPT}"
 	@echo
-	@echo "peak-motifs differential analysis options"
-	@echo "	PEAKMODIFF_CMD		${PEAKMODIFF_CMD}"
-	@echo "	PEAKMODIFF_SCRIPT	${PEAKMODIFF_SCRIPT}"
-	@echo
-	@echo "matrix-clustering options"
-	@echo "	PEAKMO_CLUSTERS_DIR	${PEAKMO_CLUSTERS_DIR}"
-	@echo "	PEAKMO_CLUSTERS		${PEAKMO_CLUSTERS}"
-	@echo "	CLUSTER_CMD		${CLUSTER_CMD}"
-	@echo
-	@echo "convert-matrix"
-	@echo "	CONVERT_CMD		${CONVERT_CMD}"
-	@echo
-	@echo "matrix-quality"
-	@echo "	QUALITY_DIR		${QUALITY_DIR}"
-	@echo "	QUALITY_PREFIX		${QUALITY_PREFIX}"
-	@echo "	QUALITY_CMD		${QUALITY_CMD}"
-	@echo
-
-PEAKMO_OPT=-nopurge
-PEAKMO_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}
-MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
-JASPAR_MOTIFS=${MOTIFDB_DIR}/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf
-HOCOMOCO_MOTIFS=${MOTIFDB_DIR}/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf
-
-PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs${PEAKMO_OPT}_motifs_discovered
-PEAKMO_CLUSTERS_DIR=${PEAKMO_DIR}/clustered_motifs
-PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
-
-CONVERT_CMD=${RSAT_CMD} convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -rescale 1 -decimals 4 -o ${PEAKMO_MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf -o ${PEAKMO_MATRICES}_freq.cb ; cat ${PEAKMO_MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' > ${PEAKMO_MATRICES}_freq.txt
-
 
 ################################################################
 ## Run peak-motifs to discover motifs in peak sequences
@@ -106,7 +69,7 @@ else ifeq (${SEQ_FORMAT}, fastq)
 endif
 	@echo ${PEAKMO_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
-	@echo "${CONVERT_CMD}" >> ${PEAKMO_SCRIPT}
+	@echo "${CONVERT_MATRIX_CMD}" >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
 	@mkdir -p ${PEAKMO_CLUSTERS_DIR}
 	@echo ${CLUSTER_CMD} >> ${PEAKMO_SCRIPT}
@@ -120,123 +83,11 @@ endif
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 
 
-################################################################
-## Convert matrices from Transfac to cluster-buster format
-# convert_matrices:
-# 	@echo "Converting matrices from transfac to cluster-buster format"
-# 	@echo "	PEAKMO_MATRICES	${PEAKMO_MATRICES}"
-# 	@${CONVERT_CMD}
-# 	@echo "	transfac counts	${PEAKMO_MATRICES}.tf"
-# 	@echo "	transfac freq	${PEAKMO_MATRICES}_freq.tf"
-# 	@echo "	cb format	${PEAKMO_MATRICES}_freq.txt"
-
-################################################################
-## matrix-clusering command
-CLUSTER_CMD=${RSAT_CMD} matrix-clustering -v ${V} \
-	-max_matrices 50 \
-	-matrix ${TF}_${DATASET} ${PEAKMO_MATRICES}.tf transfac \
-	-hclust_method average -calc sum \
-	-title '${TF}_${DATASET}' \
-	-metric_build_tree 'Ncor' \
-	-lth w 5 -lth cor 0.6 -lth Ncor 0.4 \
-	-quick \
-	-label_in_tree name \
-	-return json,heatmap \
-	-o ${PEAKMO_CLUSTERS} \
-	2> ${PEAKMO_CLUSTERS}_err.txt
-
-################################################################
-## Cluster matrices discovered by peak-motifs
-cluster_matrices:
-	@mkdir -p ${PEAKMO_CLUSTERS_DIR}
-#	@echo "	CLUSTER_CMD	${CLUSTER_CMD}"
-	${CLUSTER_CMD}
-	@echo "	PEAKMO_CLUSTERS_DIR	${PEAKMO_CLUSTERS_DIR}"
-	@echo "	PEAKMO_CLUSTERS		${PEAKMO_CLUSTERS}"
-
-################################################################
-## Run matrix-quality on discovered motifs in order to measure the
-## peak enrichment
-BG_OL=2
-QUALITY_DIR=${PEAKMO_DIR}/matrix-quality
-QUALITY_PREFIX=${QUALITY_DIR}/matrix-quality
-QUALITY_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
-	-html_title 'IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}'  \
-	-ms ${PEAKMO_MATRICES}.tf \
-	-matrix_format transfac \
-	-pseudo 1 \
-	-seq ${TF}_${DATASET} ${FASTA_SEQ} \
-	-seq_format fasta \
-	-plot ${TF}_${DATASET} nwd \
-	-seq 'test_seq' ${TEST_SEQ} \
-	-plot 'test_seq' nwd \
-	-perm ${TF}_${DATASET} 1 \
-	-perm 'test_seq' 1 \
-	-bgfile ${BG_FILE} \
-	-bg_format oligo-analysis \
-	-archive \
-	-o ${QUALITY_PREFIX}
-#	-bg_pseudo 0.01 \
-
-matrix_quality:
-	@mkdir -p ${QUALITY_DIR}
-	@echo "	QUALITY_DIR	${QUALITY_DIR}"
-	@echo "	QUALITY_CMD	${QUALITY_CMD}"
-	${QUALITY_CMD}
-	@echo "	QUALITY_PREFIX	${QUALITY_PREFIX}"
-
-
-################################################################
-## Run differential analysis with peak-motifs, to discover motifs in
-## train sequences that are over-represented with respecct to
-## background sequences.
-DIFF_SUFFIX=${TOP_SUFFIX}_vs_${BG_SUFFIX}
-PEAKMODIFF_DIR=${PEAKMO_DIR}_${DIFF_SUFFIX}
-PEAKMODIFF_CMD=	${RSAT_CMD} peak-motifs  \
-	-v ${V} \
-	-title ${BOARD}_${DATA_TYPE}_${TF}_${DATASET}_train_vs_bg  \
-	-i ${TOP_SEQ} \
-	-ctrl ${BG_SEQ} \
-	${PEAKMO_OPT} \
-	-max_seq_len 1000 \
-	-markov auto \
-	-disco oligos,dyads \
-	-nmotifs 5  \
-	-minol 6 \
-	-maxol 7  \
-	-2str  \
-	-origin center  \
-	-motif_db Hocomoco_human tf ${MOTIFDB_DIR}/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf \
-	-motif_db jaspar_core_redundant_vertebrates tf ${MOTIFDB_DIR}/JASPAR/Jaspar_2020/redundant/JASPAR2020_CORE_vertebrates_redundant_pfms.tf \
-	-scan_markov 1 \
-	-task purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,timelog,synthesis,small_summary,motifs_vs_db,scan \
-	-prefix peak-motifs \
-	-noov \
-	-img_format png  \
-	-outdir ${PEAKMODIFF_DIR}
-PEAKMODIFF_SCRIPT=${PEAKMODIFF_DIR}/peak-motif${PEAKMO_OPT}_${DIFF_SUFFIX}_cmd.sh
-peakmo_diff:
-	@echo
-	@echo "Running peak-motifs in differential analysis mode"
-	@echo
-	@echo "Writing peak-motif script for differential analysis	${PEAKMODIFF_SCRIPT}"
-	@mkdir -p ${PEAKMODIFF_DIR}
-	@echo ${SBATCH_HEADER} > ${PEAKMODIFF_SCRIPT}
-	@echo >> ${PEAKMODIFF_SCRIPT}
-	@echo ${PEAKMODIFF_CMD} >> ${PEAKMODIFF_SCRIPT}
-	@echo
-	@echo "	PEAKMODIFF_SCRIPT	${PEAKMODIFF_SCRIPT}"
-	@echo "Running peak-motifs"
-	@${SBATCH} ${PEAKMODIFF_SCRIPT}
-	@echo "	PEAKMODIFF_DIR	${PEAKMODIFF_DIR}"
-
 # all: param sequences peakmo
 ################################################################
 ## Iterate over all datasets of a given data type
 TASK=peakmo
 peakmo_all_datasets:
 	@${MAKE} iterate_datasets TASK=peakmo
-peakmodiff_all_datasets:
-	@${MAKE} iterate_datasets TASK=peakmo_diff
 
 

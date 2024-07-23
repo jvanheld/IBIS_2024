@@ -34,12 +34,12 @@ V=2
 
 DISCIPLINE=WET
 BOARD=leaderboard
-DATASET_TABLE=metadata/${BOARD}/TF_DATASET_${DATA_TYPE}.tsv
+METADATA=metadata/${BOARD}/TF_DATASET_${DATA_TYPE}.tsv
 
 TEST_SEQ=data/${BOARD}/test/${DATA_TYPE}_participants.fasta
 
-#DATASET=`head -n 1 ${DATASET_TABLE} | cut -f 2`
-TF=`awk '$$2=="${DATASET}" {print $$1}' ${DATASET_TABLE}`
+#DATASET=`head -n 1 ${METADATA} | cut -f 2`
+TF=`awk '$$2=="${DATASET}" {print $$1}' ${METADATA}`
 DATASET_DIR=data/${BOARD}/train/${DATA_TYPE}/${TF}
 DATASET_PATH=${DATASET_DIR}/${DATASET}
 PEAK_COORD=${DATASET_PATH}.peaks
@@ -55,19 +55,21 @@ BG_FILE=${BG_DIR}/${DATA_TYPE}_${BG_OL}nt-noov-2str.tsv
 
 ## Iteration parameters
 TASK=oligo_tables
-DATASETS=`cut -f 2 ${DATASET_TABLE} | sort -u | xargs`
-TFS=`cut -f 1 ${DATASET_TABLE} | sort -u | xargs`
+DATASETS=`cut -f 2 ${METADATA} | sort -u | xargs`
+TFS=`cut -f 1 ${METADATA} | sort -u | xargs`
 
 param_00:
 	@echo
-	@echo "Common parameters"
+	@echo "Task execution parameters"
 	@echo "	SCHEDULER	${SCHEDULER}"
 	@echo "	SBATCH		${SBATCH}"
 	@echo "	SBATCH_HEADER	${SBATCH_HEADER}"
+	@echo
+	@echo "Data set specification"
 #	@echo "	DISCIPLINE	${DISCIPLINE}"
 	@echo "	BOARD		${BOARD}"
 	@echo "	DATA_TYPE	${DATA_TYPE}"
-	@echo "	DATASET_TABLE	${DATASET_TABLE}"
+	@echo "	METADATA	${METADATA}"
 	@echo "	TEST_SEQ	${TEST_SEQ}"
 	@echo "	TF		${TF}"
 	@echo "	RESULT_DIR	${RESULT_DIR}"
@@ -80,21 +82,31 @@ param_00:
 	@echo "	FETCH_CMD	${FETCH_CMD}"
 	@echo "	FASTQ2FASTA_CMD	${FASTQ2FASTA_CMD}"
 	@echo
+	@echo "matrix-clustering options"
+	@echo "	PEAKMO_CLUSTERS_DIR	${PEAKMO_CLUSTERS_DIR}"
+	@echo "	PEAKMO_CLUSTERS		${PEAKMO_CLUSTERS}"
+	@echo "	CLUSTER_CMD		${CLUSTER_CMD}"
+	@echo
+	@echo "convert-matrix"
+	@echo "	CONVERT_MATRIX_CMD		${CONVERT_MATRIX_CMD}"
+	@echo
+	@echo "matrix-quality"
+	@echo "	QUALITY_DIR		${QUALITY_DIR}"
+	@echo "	QUALITY_PREFIX		${QUALITY_PREFIX}"
+	@echo "	QUALITY_CMD		${QUALITY_CMD}"
+	@echo
+	@echo "Motif databases"
+	@echo "	MOTIFDB_DIR		${MOTIFDB_DIR}"
+	@echo "	JASPAR_MOTIFS		${JASPAR_MOTIFS}"
+	@echo "	HOCOMOCO_MOTIFS		${HOCOMOCO_MOTIFS}"
+	@echo
 	@echo "Iteration parameters"
 	@echo "	DATASETS	${DATASETS}"
 	@echo "	TFS		${TFS}"
 	@echo "	TASK		${TASK}"
 	@echo
-	@echo "PBM top / background sequences"
-	@echo "	N_TOP_SPOTS	${N_TOP_SPOTS}"
-	@echo "	N_TOP_ROWS	${N_TOP_ROWS}"
-	@echo "	TOP_SUFFIX	${TOP_SUFFIX}"
-	@echo "	TOP_SEQ		${TOP_SEQ}"
-	@echo "	N_BG_SPOTS	${N_BG_SPOTS}"
-	@echo "	N_BG_ROWS	${N_BG_ROWS}"
-	@echo "	BG_SUFFIX	${BG_SUFFIX}"
-	@echo "	BG_SEQ		${BG_SEQ}"
-	@echo
+
+PEAKMO_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}
 
 
 targets_00:
@@ -102,14 +114,10 @@ targets_00:
 	@echo "Common targets (makefiles/00_parameters.mk)"
 	@echo "	targets			list targets"
 	@echo "	param			list parameters"
-	@echo "	dataset_table		build a table with the names of datasets associated to each transcription factor"
+	@echo "	metadata		build metadata table for one data type"
 	@echo "	fetch_sequences		retrieve peak sequences from UCSC (for CHS and GHTS data)"
 	@echo "	fastq2fasta		convert sequences from fastq to fasta format (for HTS and SMS data)"
 	@echo "	tsv2fasta		convert sequences from tsv files to fasta format (for PBM data)"
-	@echo
-	@echo "PBM tasks"
-	@echo "	top_vs_bg_seq		extract top-raking ${TOP_SPOTS} sequences as test and bottom ${BG_SPOTS} sequences as background"
-	@echo "	top_vs_bg_all_datasets	iterated top_vs_bg_seq over all datasets"
 	@echo
 
 ################################################################
@@ -150,32 +158,6 @@ tsv2fasta:
 	${TSV2FASTA_CMD}
 	@echo "	FASTA_SEQ	${FASTA_SEQ}"
 
-################################################################
-## For PBM datasets, select an aribtrary number of top-ranking oligos
-## and consider them as binding sites, and the bottom-ranking oligos
-## as background
-N_TOP_SPOTS=0250
-N_TOP_ROWS=0500
-N_BG_SPOTS=35000
-N_BG_ROWS=70000
-TOP_SUFFIX=top${N_TOP_SPOTS}
-BG_SUFFIX=bg${N_BG_SPOTS}
-TOP_SEQ=${DATASET_PATH}_${TOP_SUFFIX}.fasta
-BG_SEQ=${DATASET_PATH}_bg${N_BG_SPOTS}.fasta
-top_vs_bg_seq:
-	@echo
-	@echo "Selecting top-raking spot sequences as signal"
-	@echo "	N_TOP_SPOTS	${N_TOP_SPOTS}"
-	@echo "	N_TOP_ROWS	${N_TOP_ROWS}"
-	@echo "	N_BG_SPOTS	${N_BG_SPOTS}"
-	@echo "	N_BG_ROWS	${N_BG_ROWS}"
-	@head -n ${N_TOP_ROWS} ${FASTA_SEQ} > ${TOP_SEQ}
-	@tail -n ${N_BG_ROWS} ${FASTA_SEQ} > ${BG_SEQ}
-	@echo "	TOP_SEQ	${TOP_SEQ}"
-	@echo "	BG_SEQ	${BG_SEQ}"
-
-top_vs_bg_all_datasets:
-	${MAKE} iterate_datasets TASK=top_vs_bg_seq
 
 ################################################################
 ## Iterate a task over all datasets of the leaderboard
@@ -190,52 +172,110 @@ one_task:
 	@echo "	BOARD=${BOARD}	DATATYPE=${DATA_TYPE}	TF=${TF}	DATASET=${DATASET}"; \
 	${MAKE} ${TASK} TF=${TF} DATASET=${DATASET} ; \
 
-
-#	${MAKE} ${TASK} TF=GABPA DATASET=THC_0866
-#	${MAKE} ${TASK} TF=PRDM5 DATASET=THC_0307.Rep-DIANA_0293
-#	${MAKE} ${TASK} TF=PRDM5 DATASET=THC_0307.Rep-MICHELLE_0314
-#	${MAKE} ${TASK} TF=SP140 DATASET=THC_0193
-#	${MAKE} ${TASK} TF=ZNF362 DATASET=THC_0364.Rep-DIANA_0293
-#	${MAKE} ${TASK} TF=ZNF362 DATASET=THC_0364.Rep-MICHELLE_0314
-#	${MAKE} ${TASK} TF=ZNF362 DATASET=THC_0411.Rep-DIANA_0293
-#	${MAKE} ${TASK} TF=ZNF407 DATASET=THC_0668
-
 ################################################################
 ## Build a table with the peak sets associated to each transcription
 ## factor.
-dataset_table: dataset_table_${SEQ_FORMAT}
+metadata: metadata_${SEQ_FORMAT}
 
 ################################################################
 ## CHS and GHTS data (genomic data): peak coordinates, .peak files
-dataset_table_fasta:
+metadata_fasta:
 	@echo
 	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
 	wc -l data/${BOARD}/train/${DATA_TYPE}/*/*.peaks  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.peaks||' \
-		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2}'  > ${DATASET_TABLE}
+		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2}'  > ${METADATA}
 	@echo
-	@echo "	DATASET_TABLE	${DATASET_TABLE}"
+	@echo "	METADATA	${METADATA}"
 	@echo
 
 ################################################################
 ## HTS and SMS data: fastq.gz files
-dataset_table_fastq:
+metadata_fastq:
 	@echo
 	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
 	du -sk data/${BOARD}/train/${DATA_TYPE}/*/*.fastq.gz  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.fastq.*||' \
-		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1}'  > ${DATASET_TABLE}
+		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1}'  > ${METADATA}
 	@echo
-	@echo "	DATASET_TABLE	${DATASET_TABLE}"
+	@echo "	METADATA	${METADATA}"
 	@echo
+
 ################################################################
-## PBM data: TSV files
-dataset_table_tsv:
-	@echo
-	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
-	du -sk data/${BOARD}/train/${DATA_TYPE}/*/*.tsv  \
-		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.tsv||' \
-		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1}'  > ${DATASET_TABLE}
-	@echo
-	@echo "	DATASET_TABLE	${DATASET_TABLE}"
-	@echo
+## Parameters for peak-motifs shared by several scripts
+PEAKMO_OPT=-nopurge
+MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
+JASPAR_MOTIFS=${MOTIFDB_DIR}/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf
+HOCOMOCO_MOTIFS=${MOTIFDB_DIR}/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf
+PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs${PEAKMO_OPT}_motifs_discovered
+PEAKMO_CLUSTERS_DIR=${PEAKMO_DIR}/clustered_motifs
+PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
+
+CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -rescale 1 -decimals 4 -o ${PEAKMO_MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf -o ${PEAKMO_MATRICES}_freq.cb ; cat ${PEAKMO_MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' > ${PEAKMO_MATRICES}_freq.txt
+
+
+################################################################
+## Convert matrices from Transfac to cluster-buster format
+# convert_matrices:
+# 	@echo "Converting matrices from transfac to cluster-buster format"
+# 	@echo "	PEAKMO_MATRICES	${PEAKMO_MATRICES}"
+# 	@${CONVERT_MATRIX_CMD}
+# 	@echo "	transfac counts	${PEAKMO_MATRICES}.tf"
+# 	@echo "	transfac freq	${PEAKMO_MATRICES}_freq.tf"
+# 	@echo "	cb format	${PEAKMO_MATRICES}_freq.txt"
+
+################################################################
+## matrix-clusering command
+CLUSTER_CMD=${RSAT_CMD} matrix-clustering -v ${V} \
+	-max_matrices 50 \
+	-matrix ${TF}_${DATASET} ${PEAKMO_MATRICES}.tf transfac \
+	-hclust_method average -calc sum \
+	-title '${TF}_${DATASET}' \
+	-metric_build_tree 'Ncor' \
+	-lth w 5 -lth cor 0.6 -lth Ncor 0.4 \
+	-quick \
+	-label_in_tree name \
+	-return json,heatmap \
+	-o ${PEAKMO_CLUSTERS} \
+	2> ${PEAKMO_CLUSTERS}_err.txt
+
+################################################################
+## Cluster matrices discovered by peak-motifs
+cluster_matrices:
+	@mkdir -p ${PEAKMO_CLUSTERS_DIR}
+#	@echo "	CLUSTER_CMD	${CLUSTER_CMD}"
+	${CLUSTER_CMD}
+	@echo "	PEAKMO_CLUSTERS_DIR	${PEAKMO_CLUSTERS_DIR}"
+	@echo "	PEAKMO_CLUSTERS		${PEAKMO_CLUSTERS}"
+
+################################################################
+## Run matrix-quality on discovered motifs in order to measure the
+## peak enrichment
+BG_OL=2
+QUALITY_DIR=${PEAKMO_DIR}/matrix-quality
+QUALITY_PREFIX=${QUALITY_DIR}/matrix-quality
+QUALITY_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
+	-html_title 'IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}'  \
+	-ms ${PEAKMO_MATRICES}.tf \
+	-matrix_format transfac \
+	-pseudo 1 \
+	-seq ${TF}_${DATASET} ${FASTA_SEQ} \
+	-seq_format fasta \
+	-plot ${TF}_${DATASET} nwd \
+	-seq 'test_seq' ${TEST_SEQ} \
+	-plot 'test_seq' nwd \
+	-perm ${TF}_${DATASET} 1 \
+	-perm 'test_seq' 1 \
+	-bgfile ${BG_FILE} \
+	-bg_format oligo-analysis \
+	-archive \
+	-o ${QUALITY_PREFIX}
+#	-bg_pseudo 0.01 \
+
+matrix_quality:
+	@mkdir -p ${QUALITY_DIR}
+	@echo "	QUALITY_DIR	${QUALITY_DIR}"
+	@echo "	QUALITY_CMD	${QUALITY_CMD}"
+	${QUALITY_CMD}
+	@echo "	QUALITY_PREFIX	${QUALITY_PREFIX}"
+
