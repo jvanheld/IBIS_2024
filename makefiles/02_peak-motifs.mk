@@ -35,11 +35,11 @@ PEAKMO_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs \
 	-noov \
 	-origin center \
 	-max_seq_len 500 \
-	-minol 6 -maxol 7 \
+	-minol ${PEAKMO_MINOL} -maxol ${PEAKMO_MAXOL} \
 	-scan_markov 1 \
 	-disco oligos,positions,dyads,local_words \
 	-markov auto \
-	-nmotifs 5 \
+	-nmotifs ${PEAKMO_NMOTIFS} \
 	-no_merge_lengths \
 	-prefix peak-motifs${PEAKMO_OPT} \
 	-img_format png \
