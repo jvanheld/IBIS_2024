@@ -11,8 +11,14 @@ MAKEFILE=makefiles/00_parameters.mk
 ## to run rsat from a specific path, or from a container (e.g. docker
 ## or apptainer)
 
-# RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out eeadcsiccompbio/rsat:20240709 rsat
+## Configuration for IFB server
 RSAT_CMD=rsat
+MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
+
+## Local configuration for Jacques van Helden
+#MOTIFDB_DIR=/packages/rsat/public_html/motif_databases
+#RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out eeadcsiccompbio/rsat:20240709 rsat
+#MOTIFDB_DIR=~/packages/rsat/motif_databases
 
 
 ################################################################
@@ -204,7 +210,6 @@ metadata_fastq:
 ################################################################
 ## Parameters for peak-motifs shared by several scripts
 PEAKMO_OPT=-nopurge
-MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
 JASPAR_MOTIFS=${MOTIFDB_DIR}/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf
 HOCOMOCO_MOTIFS=${MOTIFDB_DIR}/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf
 PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs${PEAKMO_OPT}_motifs_discovered
