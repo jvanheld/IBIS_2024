@@ -100,6 +100,12 @@ param_00:
 	@echo "	JASPAR_MOTIFS		${JASPAR_MOTIFS}"
 	@echo "	HOCOMOCO_MOTIFS		${HOCOMOCO_MOTIFS}"
 	@echo
+	@echo "peak-motif options"
+	@echo "	PEAKMO_OPT	${PEAKMO_OPT}"
+	@echo "	PEAKMO_NMOTIFS	${PEAKMO_NMOTIFS}"
+	@echo "	PEAKMO_MINOL	${PEAKMO_MINOL}"
+	@echo "	PEAKMO_MAXOL	${PEAKMO_MAXOL4}"
+	@echo
 	@echo "Iteration parameters"
 	@echo "	DATASETS	${DATASETS}"
 	@echo "	TFS		${TFS}"
@@ -204,10 +210,13 @@ metadata_fastq:
 ################################################################
 ## Parameters for peak-motifs shared by several scripts
 PEAKMO_OPT=-nopurge
+PEAKMO_NMOTIFS=3
+PEAKMO_MINOL=6
+PEAKMO_MAXOL=7
 MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
 JASPAR_MOTIFS=${MOTIFDB_DIR}/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf
 HOCOMOCO_MOTIFS=${MOTIFDB_DIR}/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf
-PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs${PEAKMO_OPT}_motifs_discovered
+PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs_motifs_discovered
 PEAKMO_CLUSTERS_DIR=${PEAKMO_DIR}/clustered_motifs
 PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
 
