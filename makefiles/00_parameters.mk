@@ -29,7 +29,8 @@ ERR_FILE=${ERR_DIR}/sbatch_error_${NOW}.txt
 SCHEDULER=srun time # this can be used to run commands either from the shell or in a script
 #SCHEDULER=echo \#!/bin/bash ; echo srun time 
 SBATCH=sbatch
-SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ./slurm_out/${BOARD}_${DATA_TYPE}_${TF}_${DATASET}_slurm-job_%j.out"
+SLURM_OUT=./slurm_out/${BOARD}_${DATA_TYPE}_${TF}_${DATASET}_slurm-job_%j.out
+SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}"
 
 ################################################################
 ## Load data-type specific configuration
@@ -68,6 +69,7 @@ param_00:
 	@echo
 	@echo "Task execution parameters"
 	@echo "	SCHEDULER	${SCHEDULER}"
+	@echo "	SLURM_OUT	${SLURM_OUT}"
 	@echo "	SBATCH		${SBATCH}"
 	@echo "	SBATCH_HEADER	${SBATCH_HEADER}"
 	@echo
