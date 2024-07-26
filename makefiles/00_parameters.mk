@@ -30,7 +30,7 @@ SCHEDULER=srun time # this can be used to run commands either from the shell or 
 #SCHEDULER=echo \#!/bin/bash ; echo srun time 
 SBATCH=sbatch
 SLURM_OUT=./slurm_out/${BOARD}_${DATA_TYPE}_${TF}_${DATASET}_slurm-job_%j.out
-SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}"
+SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}\n\#SBATCH --mem-per-cpu=16G\n"
 
 ################################################################
 ## Load data-type specific configuration
