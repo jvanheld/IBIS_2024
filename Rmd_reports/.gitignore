@@ -2,3 +2,5 @@
 *.pdf
 *_files
 figures
+*.log
+*.tex
