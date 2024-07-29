@@ -17,8 +17,8 @@ MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
 
 ## Local configuration for Jacques van Helden
 # MOTIFDB_DIR=~/packages/rsat/motif_databases
-# MOTIFDB_DIR=/packages/rsat/public_html/motif_databases
-# RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out eeadcsiccompbio/rsat:20240725 rsat
+MOTIFDB_DIR=/packages/rsat/public_html/motif_databases
+RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out eeadcsiccompbio/rsat:20240725 rsat
 
 
 ################################################################
@@ -230,6 +230,8 @@ PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
 CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -rescale 1 -decimals 4 -o ${PEAKMO_MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf -o ${PEAKMO_MATRICES}_freq.cb ; cat ${PEAKMO_MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' > ${PEAKMO_MATRICES}_freq.txt
 
 
+
+
 ################################################################
 ## Convert matrices from Transfac to cluster-buster format
 # convert_matrices:
@@ -294,4 +296,28 @@ matrix_quality:
 	@echo "	QUALITY_CMD	${QUALITY_CMD}"
 	${QUALITY_CMD}
 	@echo "	QUALITY_PREFIX	${QUALITY_PREFIX}"
+
+
+################################################################
+## Define rules based on extensions to convert transfac-formatted
+## (.tf) motif file sinto frequency matrices suitable for submission
+## to IBIS challenge.
+
+## Convert count matrix into frequency matrix in transfac format
+%_freq.tf : %.tf
+	${RSAT_CMD} convert-matrix -i $< \
+		-from transfac -to transfac \
+		-rescale 1 -decimals 4 -o $@
+
+## Convert matrix from transfac to cluster-buster format
+%.cb : %.tf
+	${RSAT_CMD} convert-matrix -i $< \
+		-from transfac -to cluster-buster \
+		-o $@
+
+## Add transcription factor name as first item in the motif header of a cluster-buster file + shorten the motif ID
+%.txt : %.cb
+	cat $< \
+		| perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' \
+		> $@
 
