@@ -10,8 +10,9 @@ V=2
 targets: targets_00
 	@echo
 	@echo "Clustering motifs across data types"
-	@echo "	cluster_one_tf	cluster motifs discovered across all the data types for a given transcription factor"
-	@echo "	cluster_all_tfs	cluster motifs for each TF"
+	@echo "	cluster_one_tf		cluster motifs discovered across all the data types for a given transcription factor"
+	@echo "	cluster_all_tfs		cluster motifs for each TF"
+	@echo "	all_tfs			run a task of each TF"
 
 param:: param_00
 	@echo
@@ -19,7 +20,9 @@ param:: param_00
 #	@echo "	TFCLUST_INFILES		${TFCLUST_INFILES}"
 #	@echo "	TFCLUST_CMD		${TFCLUST_CMD}"
 	@echo "	ALL_TFS			${ALL_TFS}"
+	@echo "	DATA_TYPE		${DATA_TYPE}"
 	@echo "	TF			${TF}"
+	@echo "	TF_TASK			${TF_TASK}"
 	@echo "	TFCLUST_DIR		${TFCLUST_DIR}"
 	@echo "	TFCLUST_PREFIX		${TFCLUST_PREFIX}"
 	@echo "	TFCLUST_SCRIPT		${TFCLUST_SCRIPT}"
@@ -27,6 +30,8 @@ param:: param_00
 	@echo "	TFCLUST_ROOT_MOTIFS	${TFCLUST_ROOT_MOTIFS}"
 	@echo
 
+DATA_TYPE=all-datatypes
+DATASET=all-datasets
 TF=LEF1
 TFCLUST_DIR=results/${BOARD}/train/cross-data-types/${TF}
 TFCLUST_INFILES=`find results/leaderboard/train/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs`
@@ -70,12 +75,18 @@ tfclust_to_ibis:
 	@echo "	${TFCLUST_ALL_MOTIFS}_freq.cb"
 	@echo "	${TFCLUST_ALL_MOTIFS}_freq.txt"
 
+
 ALL_TFS=`cat metadata/leaderboard/TF_DATASET_*.tsv | cut -f 1 | sort -u | xargs`
+TF_TASK=cluster_one_tf
 cluster_all_tfs:
-	@echo
 	@echo "Clustering motifs per TF across all data types"
+	@${MAKE} all_tfs TF_TASK=cluster_one_tf
+
+all_tfs:
+	@echo
+	@echo "Running task on all TFs: ${TF_TASK}"
 	@for tf in ${ALL_TFS} ; do \
-		${MAKE} cluster_one_tf TF=$${tf} ; \
+		${MAKE} ${TF_TASK} TF=$${tf} ; \
 	done
 
 
