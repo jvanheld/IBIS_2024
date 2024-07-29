@@ -15,19 +15,24 @@ targets: targets_00
 
 param:: param_00
 	@echo
-	@echo "	TFCLUST_DIR	${TFCLUST_DIR}"
-	@echo "	TFCLUST_PREFIX	${TFCLUST_PREFIX}"
-	@echo "	TFCLUST_SCRIPT	${TFCLUST_SCRIPT}"
-	@echo "	TFCLUST_INFILES	${TFCLUST_INFILES}"
-	@echo "	TFCLUST_CMD	${TFCLUST_CMD}"
-	@echo "	ALL_TFS		${ALL_TFS}"
-	@echo "	TF		${TF}"
+	@echo "Clustering all motifs for a transcription factor"
+#	@echo "	TFCLUST_INFILES		${TFCLUST_INFILES}"
+#	@echo "	TFCLUST_CMD		${TFCLUST_CMD}"
+	@echo "	ALL_TFS			${ALL_TFS}"
+	@echo "	TF			${TF}"
+	@echo "	TFCLUST_DIR		${TFCLUST_DIR}"
+	@echo "	TFCLUST_PREFIX		${TFCLUST_PREFIX}"
+	@echo "	TFCLUST_SCRIPT		${TFCLUST_SCRIPT}"
+	@echo "	TFCLUST_ALL_MOTIFS	${TFCLUST_ALL_MOTIFS}"
+	@echo "	TFCLUST_ROOT_MOTIFS	${TFCLUST_ROOT_MOTIFS}"
 	@echo
 
 TF=LEF1
 TFCLUST_DIR=results/${BOARD}/train/cross-data-types/${TF}
 TFCLUST_INFILES=`find results/leaderboard/train/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs`
 TFCLUST_PREFIX=${TFCLUST_DIR}/matrix-clustering
+TFCLUST_ROOT_MOTIFS=${TFCLUST_PREFIX}_cluster_root_motifs
+TFCLUST_ALL_MOTIFS=${TFCLUST_PREFIX}_aligned_logos/All_concatenated_motifs
 TFCLUST_SCRIPT=${TFCLUST_PREFIX}_cmd.sh
 #TFCLUST_CMD=find results/leaderboard/train/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs ${SCHEDULER} ${RSAT_CMD} matrix-clustering -v ${V} -hclust_method average -calc sum -title ${TF} -metric_build_tree Ncor -lth w 5 -lth cor 0.6 -lth Ncor 0.4 -quick -label_in_tree name -return json,heatmap  -o ${TFCLUST_PREFIX}
 
@@ -43,8 +48,27 @@ cluster_one_tf:
 	@echo >> ${TFCLUST_SCRIPT}
 	@echo ${TFCLUST_CMD} >> ${TFCLUST_SCRIPT}
 	@echo
+	@echo ${MAKE} ${TFCLUST_ROOT_MOTIFS}_freq.tf ${TFCLUST_ROOT_MOTIFS}_freq.cb ${TFCLUST_ROOT_MOTIFS}_freq.txt >>  ${TFCLUST_SCRIPT}
+	@echo ${MAKE} ${TFCLUST_ALL_MOTIFS}_freq.tf ${TFCLUST_ALL_MOTIFS}_freq.cb ${TFCLUST_ALL_MOTIFS}_freq.txt >>  ${TFCLUST_SCRIPT}
+	@echo
 	@${SBATCH} ${TFCLUST_SCRIPT}
 	@echo "	TFCLUST_DIR	${TFCLUST_DIR}"
+
+tfclust_to_ibis:
+	@echo
+	@echo "Converting cluster matrices into format suitable for IBIS challenge submission"
+	@${MAKE} ${TFCLUST_ROOT_MOTIFS}_freq.tf ${TFCLUST_ROOT_MOTIFS}_freq.cb ${TFCLUST_ROOT_MOTIFS}_freq.txt
+	@echo "	TFCLUST_ROOT_MOTIFS	${TFCLUST_ROOT_MOTIFS}"
+	@echo "	${TFCLUST_ROOT_MOTIFS}.tf"
+	@echo "	${TFCLUST_ROOT_MOTIFS}_freq.tf"
+	@echo "	${TFCLUST_ROOT_MOTIFS}_freq.cb"
+	@echo "	${TFCLUST_ROOT_MOTIFS}_freq.txt"
+	@${MAKE} ${TFCLUST_ALL_MOTIFS}_freq.tf ${TFCLUST_ALL_MOTIFS}_freq.cb ${TFCLUST_ALL_MOTIFS}_freq.txt
+	@echo "	TFCLUST_ALL_MOTIFS	${TFCLUST_ALL_MOTIFS}"
+	@echo "	${TFCLUST_ALL_MOTIFS}.tf"
+	@echo "	${TFCLUST_ALL_MOTIFS}_freq.tf"
+	@echo "	${TFCLUST_ALL_MOTIFS}_freq.cb"
+	@echo "	${TFCLUST_ALL_MOTIFS}_freq.txt"
 
 ALL_TFS=`cat metadata/leaderboard/TF_DATASET_*.tsv | cut -f 1 | sort -u | xargs`
 cluster_all_tfs:
@@ -53,3 +77,5 @@ cluster_all_tfs:
 	@for tf in ${ALL_TFS} ; do \
 		${MAKE} cluster_one_tf TF=$${tf} ; \
 	done
+
+
