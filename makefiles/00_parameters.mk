@@ -277,7 +277,7 @@ MATRIXQ_DIR=${PEAKMO_DIR}/matrix-quality
 MATRIXQ_PREFIX=${MATRIXQ_DIR}/matrix-quality
 MATRIXQ_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
 	-html_title 'IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}'  \
-	-ms ${MATRICES}.tf \
+	-m ${MATRICES}.tf \
 	-matrix_format transfac \
 	-pseudo 1 \
 	-seq ${TF}_${DATASET} ${FASTA_SEQ} \
