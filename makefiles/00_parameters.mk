@@ -226,26 +226,30 @@ PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs_motifs_disco
 PEAKMO_CLUSTERS_DIR=${PEAKMO_DIR}/clustered_motifs
 PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
 
-CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -from transfac -to transfac -i ${PEAKMO_MATRICES}.tf -rescale 1 -decimals 4 -o ${PEAKMO_MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -from transfac -to cluster-buster -i ${PEAKMO_MATRICES}_freq.tf -o ${PEAKMO_MATRICES}_freq.cb ; cat ${PEAKMO_MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' > ${PEAKMO_MATRICES}_freq.txt
-
-
+################################################################
+## Choose a matrix file for post-processing commands:
+## matrix-clustering, matrix-quality By default, we use peak-motifs
+## discovered motifs, but the commands can alo be used for other
+## matrices. 
+MATRICES=${PEAKMO_MATRICES}
 
 
 ################################################################
 ## Convert matrices from Transfac to cluster-buster format
-# convert_matrices:
-# 	@echo "Converting matrices from transfac to cluster-buster format"
-# 	@echo "	PEAKMO_MATRICES	${PEAKMO_MATRICES}"
-# 	@${CONVERT_MATRIX_CMD}
-# 	@echo "	transfac counts	${PEAKMO_MATRICES}.tf"
-# 	@echo "	transfac freq	${PEAKMO_MATRICES}_freq.tf"
-# 	@echo "	cb format	${PEAKMO_MATRICES}_freq.txt"
+CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -from transfac -to transfac -i ${MATRICES}.tf -rescale 1 -decimals 4 -o ${MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -from transfac -to cluster-buster -i ${MATRICES}_freq.tf -o ${MATRICES}_freq.cb ; cat ${MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' > ${MATRICES}_freq.txt
+convert_matrices:
+	@echo "Converting matrices from transfac to cluster-buster format"
+	@echo "	MATRICES	${MATRICES}"
+	@${CONVERT_MATRIX_CMD}
+	@echo "	transfac counts	${MATRICES}.tf"
+	@echo "	transfac freq	${MATRICES}_freq.tf"
+	@echo "	cb format	${MATRICES}_freq.txt"
 
 ################################################################
 ## matrix-clusering command
 CLUSTER_CMD=${RSAT_CMD} matrix-clustering -v ${V} \
 	-max_matrices 50 \
-	-matrix ${TF}_${DATASET} ${PEAKMO_MATRICES}.tf transfac \
+	-matrix ${TF}_${DATASET} ${MATRICES}.tf transfac \
 	-hclust_method average -calc sum \
 	-title '${TF}_${DATASET}' \
 	-metric_build_tree 'Ncor' \
@@ -273,7 +277,7 @@ MATRIXQ_DIR=${PEAKMO_DIR}/matrix-quality
 MATRIXQ_PREFIX=${MATRIXQ_DIR}/matrix-quality
 MATRIXQ_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
 	-html_title 'IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}'  \
-	-ms ${PEAKMO_MATRICES}.tf \
+	-ms ${MATRICES}.tf \
 	-matrix_format transfac \
 	-pseudo 1 \
 	-seq ${TF}_${DATASET} ${FASTA_SEQ} \
@@ -287,6 +291,8 @@ MATRIXQ_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
 	-bg_format oligo-analysis \
 	-archive \
 	-o ${MATRIXQ_PREFIX}
+
+## JvH: THERE SEEMS TO BE A BUG WITH THE -bg_pseudo OPTION. I SHOULD CHECK THIS
 #	-bg_pseudo 0.01 \
 
 matrix_quality:

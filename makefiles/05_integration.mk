@@ -60,6 +60,15 @@ TFCLUST_SCRIPT=${TFCLUST_PREFIX}_cmd.sh
 TFBENCH_DIR=${TFCLUST_DIR}/matrix-quality
 #TFCLUST_CMD=find results/leaderboard/train/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs ${SCHEDULER} ${RSAT_CMD} matrix-clustering -v ${V} -hclust_method average -calc sum -title ${TF} -metric_build_tree Ncor -lth w 5 -lth cor 0.6 -lth Ncor 0.4 -quick -label_in_tree name -return json,heatmap  -o ${TFCLUST_PREFIX}
 
+## Define the matrices to use as input for matrix-clustering and matrix-quality
+MATRICES=${TFCLUST_ROOT_MOTIFS}
+
+quality_one_tf:
+	@${}
+
+################################################################
+## Run matrix-clustering on all the matrices discovered in all the
+## datasets for a given transcription factor.
 TFCLUST_CMD=${SCHEDULER} ${RSAT_CMD} matrix-clustering -v ${V} ${TFCLUST_INFILES} -hclust_method average -calc sum -title ${TF} -metric_build_tree Ncor -lth w 5 -lth cor 0.6 -lth Ncor 0.4 -quick -label_in_tree name -return json,heatmap  -o ${TFCLUST_PREFIX}
 SLURM_OUT=./slurm_out/TFCLUST_${BOARD}_cross-data-types_${TF}_slurm-job_%j.out
 cluster_one_tf:

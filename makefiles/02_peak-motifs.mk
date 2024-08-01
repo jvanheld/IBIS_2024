@@ -24,6 +24,10 @@ param: param_00
 	@echo "	PEAKMO_SCRIPT		${PEAKMO_SCRIPT}"
 	@echo
 
+## Define the matrices to use as input for matrix-clustering and matrix-quality
+MATRICES=${PEAKMO_MATRICES}
+
+
 ################################################################
 ## Run peak-motifs to discover motifs in peak sequences
 PEAKMO_TASKS=purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,motifs_vs_db,scan,timelog,synthesis,small_summary

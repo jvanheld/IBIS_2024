@@ -32,10 +32,13 @@ param: param_00
 	@echo "	TEST_SEQ	${TEST_SEQ}"
 	@echo
 	@echo "peak-motifs differential analysis options"
-	@echo "	PEAKMO_DIR		${PEAKMO_DIR}"
-	@echo "	PEAKMO_CMD		${PEAKMO_CMD}"
+	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
+	@echo "	PEAKMO_CMD	${PEAKMO_CMD}"
 	@echo "	PEAKMO_SCRIPT	${PEAKMO_SCRIPT}"
 	@echo
+
+## Define the matrices to use as input for matrix-clustering and matrix-quality
+MATRICES=${PEAKMO_MATRICES}
 
 ################################################################
 ## PBM data: TSV files
@@ -118,6 +121,7 @@ PEAKMO_CMD=	${RSAT_CMD} peak-motifs  \
 	-img_format png  \
 	-outdir ${PEAKMO_DIR}
 PEAKMO_SCRIPT=${PEAKMO_DIR}/peak-motif${PEAKMO_OPT}_${DIFF_SUFFIX}_cmd.sh
+
 peakmo_diff: top_seq
 	@echo
 	@echo "Running peak-motifs in differential analysis mode"
