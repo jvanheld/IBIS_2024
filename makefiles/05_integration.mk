@@ -11,16 +11,20 @@ targets: targets_00
 	@echo
 	@echo "Clustering motifs across data types"
 	@echo "	cluster_one_tf		cluster motifs discovered across all the data types for a given transcription factor"
+	@echo "	all_metadata		concatenate metadata files of all the data types"
+	@echo "	all_tfs			run a task of each TF"
 	@echo "	cluster_all_tfs		cluster motifs for each TF"
 #	@echo " bench_one_tf            benchmark (matrix-quality) motifs discovered across all the data types for a given transcription factor"
 #	@echo " bench_all_tfs           benchmark (matrix-quality) motifs for each TF"	
-	@echo "	all_tfs			run a task of each TF"
+
+
 
 param:: param_00
 	@echo
 	@echo "Clustering all motifs for a transcription factor"
 #	@echo "	TFCLUST_INFILES		${TFCLUST_INFILES}"
 #	@echo "	TFCLUST_CMD		${TFCLUST_CMD}"
+	@echo "	ALL_METADATA		${ALL_METADATA}"
 	@echo "	ALL_TFS			${ALL_TFS}"
 	@echo "	DATA_TYPE		${DATA_TYPE}"
 	@echo "	TF			${TF}"
@@ -35,6 +39,17 @@ param:: param_00
 
 DATA_TYPE=all-types
 DATASET=all-sets
+
+################################################################
+## Generate a metadata file with all the datasets for all the TFs
+ALL_METADATA=metadata/leaderboard/TF_DATASET_all-types.tsv
+all_datasets:
+	ls -1  metadata/leaderboard/TF_DATASET_* \
+		| grep -v ${ALL_METADATA} \
+		| xargs cat > ${ALL_METADATA}
+	@echo "	ALL_METADATA	${ALL_METADATA}"
+
+
 TF=LEF1
 TFCLUST_DIR=results/${BOARD}/train/cross-data-types/${TF}
 TFCLUST_INFILES=`find results/leaderboard/train/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs`
@@ -84,9 +99,8 @@ cluster_one_tf:
 #	-bgfile ${BG_FILE} \
 #	-bg_format oligo-analysis \
 #	-archive \
-#	-o ${QUALITY_PREFIX}
+#	-o ${MATRIXQ_PREFIX}
 #	-bg_pseudo 0.01 \
-
 
 SLURM_OUT=./slurm_out/TFCLUST_${BOARD}_cross-data-types-bench_${TF}_slurm-job_%j.out
 #no need to split, matrix-quality parses al individual motifs in input file
@@ -105,7 +119,8 @@ bench_one_tf: cluster_one_tf
 	#@${SBATCH} ${TFBENCH_SCRIPT}
 	@echo "	TFBENCH_DIR		${TFBENCH_DIR}"
 
-
+################################################################
+## Convert cluster matrices into format suitable for IBIS challenge submission
 tfclust_to_ibis:
 	@echo
 	@echo "Converting cluster matrices into format suitable for IBIS challenge submission"
@@ -123,12 +138,18 @@ tfclust_to_ibis:
 	@echo "	${TFCLUST_ALL_MOTIFS}_freq.txt"
 
 
-ALL_TFS=`cat metadata/leaderboard/TF_DATASET_*.tsv | cut -f 1 | sort -u | xargs`
+
+################################################################
+## Run matrix-clustering for each TF, with all the matrices discovered
+## in all the datasets
+ALL_TFS=`cat ${ALL_METADATA} | cut -f 1 | sort -u | xargs`
 TF_TASK=cluster_one_tf
-cluster_all_tfs:
+cluster_all_tfs: all_metadata
 	@echo "Clustering motifs per TF across all data types"
 	@${MAKE} all_tfs TF_TASK=cluster_one_tf
 
+################################################################
+## Iterate a task over each TF
 all_tfs:
 	@echo
 	@echo "Running task on all TFs: ${TF_TASK}"
