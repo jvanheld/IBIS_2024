@@ -98,9 +98,9 @@ param_00:
 	@echo "	CONVERT_MATRIX_CMD		${CONVERT_MATRIX_CMD}"
 	@echo
 	@echo "matrix-quality"
-	@echo "	QUALITY_DIR		${QUALITY_DIR}"
-	@echo "	QUALITY_PREFIX		${QUALITY_PREFIX}"
-	@echo "	QUALITY_CMD		${QUALITY_CMD}"
+	@echo "	MATRIXQ_DIR		${MATRIXQ_DIR}"
+	@echo "	MATRIXQ_PREFIX		${MATRIXQ_PREFIX}"
+	@echo "	MATRIXQ_CMD		${MATRIXQ_CMD}"
 	@echo
 	@echo "Motif databases"
 	@echo "	MOTIFDB_DIR		${MOTIFDB_DIR}"
@@ -269,9 +269,9 @@ cluster_matrices:
 ## Run matrix-quality on discovered motifs in order to measure the
 ## peak enrichment
 BG_OL=2
-QUALITY_DIR=${PEAKMO_DIR}/matrix-quality
-QUALITY_PREFIX=${QUALITY_DIR}/matrix-quality
-QUALITY_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
+MATRIXQ_DIR=${PEAKMO_DIR}/matrix-quality
+MATRIXQ_PREFIX=${MATRIXQ_DIR}/matrix-quality
+MATRIXQ_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
 	-html_title 'IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}'  \
 	-ms ${PEAKMO_MATRICES}.tf \
 	-matrix_format transfac \
@@ -286,15 +286,15 @@ QUALITY_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
 	-bgfile ${BG_FILE} \
 	-bg_format oligo-analysis \
 	-archive \
-	-o ${QUALITY_PREFIX}
+	-o ${MATRIXQ_PREFIX}
 #	-bg_pseudo 0.01 \
 
 matrix_quality:
-	@mkdir -p ${QUALITY_DIR}
-	@echo "	QUALITY_DIR	${QUALITY_DIR}"
-	@echo "	QUALITY_CMD	${QUALITY_CMD}"
-	${QUALITY_CMD}
-	@echo "	QUALITY_PREFIX	${QUALITY_PREFIX}"
+	@mkdir -p ${MATRIXQ_DIR}
+	@echo "	MATRIXQ_DIR	${MATRIXQ_DIR}"
+	@echo "	MATRIXQ_CMD	${MATRIXQ_CMD}"
+	${MATRIXQ_CMD}
+	@echo "	MATRIXQ_PREFIX	${MATRIXQ_PREFIX}"
 
 
 ################################################################

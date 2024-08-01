@@ -74,8 +74,8 @@ endif
 	@mkdir -p ${PEAKMO_CLUSTERS_DIR}
 	@echo ${CLUSTER_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
-	@mkdir -p ${QUALITY_DIR}
-	@echo ${QUALITY_CMD} >> ${PEAKMO_SCRIPT}
+	@mkdir -p ${MATRIXQ_DIR}
+	@echo ${MATRIXQ_CMD} >> ${PEAKMO_SCRIPT}
 	@echo
 	@echo "	PEAKMO_SCRIPT	${PEAKMO_SCRIPT}"
 	@echo "Running peak-motifs"
