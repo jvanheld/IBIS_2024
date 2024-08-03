@@ -50,3 +50,9 @@ The selection of motifs to be submitted for the IBIS challenge relied on multipl
 - we discard poor complexity motifs
 - ...
 - 
+
+# How to reproduce our results?
+
+All results are generated using `make` scripts in the `makefiles`directory. 
+
+Detailed instructions to launch these `make` scripts are provided in the [HOWTO.md](HOWTO.md) file. 
