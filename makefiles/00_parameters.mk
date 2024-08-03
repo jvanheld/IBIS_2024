@@ -11,15 +11,7 @@ MAKEFILE=makefiles/00_parameters.mk
 ## to run rsat from a specific path, or from a container (e.g. docker
 ## or apptainer)
 
-## Configuration for IFB server
-RSAT_CMD=rsat
-MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
-
-## Local configuration for Jacques van Helden
-# MOTIFDB_DIR=~/packages/rsat/motif_databases
-#MOTIFDB_DIR=/packages/rsat/public_html/motif_databases
-#RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out eeadcsiccompbio/rsat:20240725 rsat
-
+include makefiles/00_config.mk
 
 ################################################################
 ## Job scheduler parameters
@@ -34,7 +26,8 @@ SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}\n\#SBATCH --mem-per-cpu=16
 
 ################################################################
 ## Load data-type specific configuration
-DATA_TYPE=PBM
+DATA_TYPES=CSH GHTS HTS SMS PBM
+DATA_TYPE=CHS
 include makefiles/config_${DATA_TYPE}.mk
 
 V=2
@@ -75,6 +68,7 @@ param_00:
 	@echo "Data set specification"
 #	@echo "	DISCIPLINE	${DISCIPLINE}"
 	@echo "	BOARD		${BOARD}"
+	@echo "	DATA_TYPES	${DATA_TYPES}"
 	@echo "	DATA_TYPE	${DATA_TYPE}"
 	@echo "	METADATA	${METADATA}"
 	@echo "	TEST_SEQ	${TEST_SEQ}"
@@ -98,6 +92,7 @@ param_00:
 	@echo "	CONVERT_MATRIX_CMD		${CONVERT_MATRIX_CMD}"
 	@echo
 	@echo "matrix-quality"
+	@echo "	BG_EQUIPROBA		${BG_EQUIPROBA}"
 	@echo "	MATRIXQ_DIR		${MATRIXQ_DIR}"
 	@echo "	MATRIXQ_PREFIX		${MATRIXQ_PREFIX}"
 	@echo "	MATRIXQ_CMD		${MATRIXQ_CMD}"
@@ -131,6 +126,9 @@ targets_00:
 	@echo "	fetch_sequences		retrieve peak sequences from UCSC (for CHS and GHTS data)"
 	@echo "	fastq2fasta		convert sequences from fastq to fasta format (for HTS and SMS data)"
 	@echo "	tsv2fasta		convert sequences from tsv files to fasta format (for PBM data)"
+	@echo "Iterators"
+	@echo "	iterate_datasets	iterate a task over all the datasets of a given data type"
+	@echo "	iterate_datatypes	iterate a task over all the data types"
 	@echo
 
 ################################################################
@@ -173,17 +171,34 @@ tsv2fasta:
 
 
 ################################################################
-## Iterate a task over all datasets of the leaderboard
+## Iterate a task over all datasets of the leaderboard for a given data type
 iterate_datasets:
 	@echo 
 	@echo "Iterating over datasets"
+	@echo "	BOARD		${BOARD}"
+	@echo "	DATA_TYPE	${DATA_TYPE}"
 	@echo "	DATASETS	${DATASETS}"
 	@for dataset in ${DATASETS} ; do ${MAKE} one_task DATASET=$${dataset}; done
 
 one_task:
 	@echo
-	@echo "	BOARD=${BOARD}	DATATYPE=${DATA_TYPE}	TF=${TF}	DATASET=${DATASET}"; \
-	${MAKE} ${TASK} TF=${TF} DATASET=${DATASET} ; \
+	@echo "	BOARD=${BOARD}	DATATYPE=${DATA_TYPE}	TF=${TF}	DATASET=${DATASET}"
+	${MAKE} ${TASK} TF=${TF} DATASET=${DATASET}
+
+################################################################
+## Iterate a task over all the data types
+iterate_datatypes:
+	@echo 
+	@echo "Iterating over data types"
+	@for datatype in ${DATA_TYPES} ; do \
+		${MAKE} one_task_datatype DATA_TYPE=$${datatype} \;
+	done
+
+DATA_TYPE_TASK=metadata
+one_task_datatype:
+	@echo "	DATA_TYPE	${DATA_TYPE}"
+	@${MAKE} ${DATA_TYPE_TASK}
+
 
 ################################################################
 ## Build a table with the peak sets associated to each transcription
@@ -197,7 +212,7 @@ metadata_fasta:
 	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
 	wc -l data/${BOARD}/train/${DATA_TYPE}/*/*.peaks  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.peaks||' \
-		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2}'  > ${METADATA}
+		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2"\t"${DATA_TYPE}"\t"${BOARD}"\t"${SEQ_FORMAT}'  > ${METADATA}
 	@echo
 	@echo "	METADATA	${METADATA}"
 	@echo
@@ -216,7 +231,8 @@ metadata_fastq:
 
 ################################################################
 ## Parameters for peak-motifs shared by several scripts
-PEAKMO_OPT=-nopurge_top0500_vs_bg35000
+PEAKMO_OPT=-nopurge
+PEAKMO_PREFIX=peakmo${PEAKMO_OPT}
 PEAKMO_NMOTIFS=3
 PEAKMO_MINOL=6
 PEAKMO_MAXOL=7
@@ -272,6 +288,16 @@ cluster_matrices:
 ################################################################
 ## Run matrix-quality on discovered motifs in order to measure the
 ## peak enrichment
+##
+## Specific options:
+##
+## -uth rank 1 : return only the top-scoring site per sequence
+##
+## -bgfile : we use an independently and identically distributed model
+##           (all nucleotides have a proba of 0.25) for consistency
+##           with the IBIS benchmarking protocol, even though this
+##           model does not reflect the actual composition of human
+##           regulatory sequences. .
 BG_OL=2
 MATRIXQ_DIR=${PEAKMO_DIR}/matrix-quality
 MATRIXQ_PREFIX=${MATRIXQ_DIR}/matrix-quality
@@ -287,7 +313,8 @@ MATRIXQ_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
 	-plot 'test_seq' nwd \
 	-perm ${TF}_${DATASET} 1 \
 	-perm 'test_seq' 1 \
-	-bgfile ${BG_FILE} \
+	-bgfile ${BG_EQUIPROBA} \
+	-uth rank 1 \
 	-bg_format oligo-analysis \
 	-archive \
 	-o ${MATRIXQ_PREFIX}
