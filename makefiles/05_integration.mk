@@ -43,7 +43,7 @@ DATASET=all-sets
 ################################################################
 ## Generate a metadata file with all the datasets for all the TFs
 ALL_METADATA=metadata/leaderboard/TF_DATASET_all-types.tsv
-all_datasets:
+all_metadata:
 	ls -1  metadata/leaderboard/TF_DATASET_* \
 		| grep -v ${ALL_METADATA} \
 		| xargs cat > ${ALL_METADATA}
