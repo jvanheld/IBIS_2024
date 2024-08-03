@@ -227,6 +227,20 @@ metadata_fastq:
 	@echo "	METADATA	${METADATA}"
 	@echo
 
+
+################################################################
+## PBM data: TSV files
+metadata_pbm:
+	@echo
+	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
+	du -sk data/${BOARD}/train/${DATA_TYPE}/*/*.tsv  \
+		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.tsv||' \
+		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1}'  > ${METADATA}
+	@echo
+	@echo "	METADATA	${METADATA}"
+	@echo
+
+
 ################################################################
 ## Parameters for peak-motifs shared by several scripts
 PEAKMO_OPT=-nopurge

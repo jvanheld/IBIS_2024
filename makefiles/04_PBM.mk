@@ -40,18 +40,6 @@ param: param_00
 ## Define the matrices to use as input for matrix-clustering and matrix-quality
 MATRICES=${PEAKMO_MATRICES}
 
-################################################################
-## PBM data: TSV files
-metadata_pbm:
-	@echo
-	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
-	du -sk data/${BOARD}/train/${DATA_TYPE}/*/*.tsv  \
-		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.tsv||' \
-		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1}'  > ${METADATA}
-	@echo
-	@echo "	METADATA	${METADATA}"
-	@echo
-
 metadata_pbm_all_datasets:
 	@${MAKE} iterate_datasets DATA_TYPE=PBM TASK=metadata_pbm
 
