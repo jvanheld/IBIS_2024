@@ -121,9 +121,13 @@ targets_00:
 	@echo "	targets			list targets"
 	@echo "	param			list parameters"
 	@echo "	metadata		build metadata table for one data type"
+	@echo "	  metadata_fasta	build metadata table by finding fasta files (CHS and GHTS data)"
+	@echo "	  metadata_fastq	build metadata table by finding fastq files (HTS and SMS data)"
+	@echo "	  metadata_pbm		build metadata table for PBM data, from the TSV file"
 	@echo "	fetch_sequences		retrieve peak sequences from UCSC (for CHS and GHTS data)"
 	@echo "	fastq2fasta		convert sequences from fastq to fasta format (for HTS and SMS data)"
 	@echo "	tsv2fasta		convert sequences from tsv files to fasta format (for PBM data)"
+	@echo
 	@echo "Iterators"
 	@echo "	iterate_datasets	iterate a task over all the datasets of a given data type"
 	@echo "	iterate_datatypes	iterate a task over all the data types"
