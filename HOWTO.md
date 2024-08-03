@@ -141,3 +141,25 @@ The same can be done for the final data by replacing "leadereboard" by "final" i
   CAMTA1    3     0     2      1     0     0
   MYF6      2     0     1      1     0     0
 
+
+## Motif discoery with `peak-motifs`
+
+The `peak-motifs` workflow is used as main tool for motif discovery. 
+
+For CHS, GHTS, HTS and SMS data types, it is used in the single dataset mode, which detects exceptional motifs, with two crieria of exceptionality : 
+
+- k-mer **over-representation** relative to the background model (the significance of the over-représntation is computed with a binomial test)
+- k-mer **positional bias**¨ along the peak sequences relative to peak center (a chi-squared homogeneity test)
+
+The k-mers declared significant are then used as seeds to build position-specific scoring matrices (in absolute counts), which are further converted to position frequency matrices (PFM) following the IBIS challenge specifications. 
+
+For **PBM** (protein binding microarray) data type, `peak-motifs` is used in a particular way by detecting differentially represented k-mers between two subsets of the PBM oligonucleotides : 
+
+- **positive spots**, assumed to be bound by the TF of interest in the experiment
+- **background / negativespots**, assumed not to be bound by the TF of interest
+
+Positive and negative spots are selected as respectively the top and bottom entries in the lis tof spots ranked by signal intensity. Since our primary analyses shown that the distribution of signal intensities does not follow a normal distribution, and each dataset shows a specific shape of signal distribution we avoid the recommended threshold of $4 \times \text{sd}$, and rather made practical tests by discovering over-represented k-mers in subsets of top-ranking spots with different aribtrary thresdholds. This analysis showed that the discovered matrices are remarkably  robust to  the number of top-scoring peaks retained as positive, and we finally retained, for each PBM dataset, the 500 spots with the highest signal intensity as the **positive spots**. As **background / negative spots**, we used the 35,000 peaks with the lowest signal intensity, which corresponds to the bulk of the signal intensity distribution. 
+
+
+
+
