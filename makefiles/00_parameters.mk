@@ -114,8 +114,6 @@ param_00:
 	@echo "	TASK		${TASK}"
 	@echo
 
-PEAKMO_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}
-
 
 targets_00:
 	@echo
@@ -232,13 +230,14 @@ metadata_fastq:
 ################################################################
 ## Parameters for peak-motifs shared by several scripts
 PEAKMO_OPT=-nopurge
-PEAKMO_PREFIX=peakmo${PEAKMO_OPT}
+PEAKMO_PREFIX=peak-motifs${PEAKMO_OPT}
 PEAKMO_NMOTIFS=3
 PEAKMO_MINOL=6
 PEAKMO_MAXOL=7
 JASPAR_MOTIFS=${MOTIFDB_DIR}/JASPAR/Jaspar_2020/nonredundant/JASPAR2020_CORE_vertebrates_non-redundant_pfms.tf
 HOCOMOCO_MOTIFS=${MOTIFDB_DIR}/HOCOMOCO/HOCOMOCO_2017-10-17_Human.tf
-PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/peak-motifs_motifs_discovered
+PEAKMO_DIR=${RESULT_DIR}/${PEAKMO_PREFIX}
+PEAKMO_MATRICES=${PEAKMO_DIR}/results/discovered_motifs/${PEAKMO_PREFIX}_motifs_discovered
 PEAKMO_CLUSTERS_DIR=${PEAKMO_DIR}/clustered_motifs
 PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
 
@@ -299,11 +298,12 @@ cluster_matrices:
 ##           model does not reflect the actual composition of human
 ##           regulatory sequences. .
 BG_OL=2
+BG_EQUIPROBA=bg_models/equiprobable_1str.tsv
 MATRIXQ_DIR=${PEAKMO_DIR}/matrix-quality
 MATRIXQ_PREFIX=${MATRIXQ_DIR}/matrix-quality
 MATRIXQ_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
 	-html_title 'IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}'  \
-	-m ${MATRICES}.tf \
+	-ms ${MATRICES}.tf \
 	-matrix_format transfac \
 	-pseudo 1 \
 	-seq ${TF}_${DATASET} ${FASTA_SEQ} \
