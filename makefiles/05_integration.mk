@@ -42,9 +42,9 @@ DATASET=all-sets
 
 ################################################################
 ## Generate a metadata file with all the datasets for all the TFs
-ALL_METADATA=metadata/leaderboard/TF_DATASET_all-types.tsv
+ALL_METADATA=metadata/${BOARD}/TF_DATASET_all-types.tsv
 all_metadata:
-	ls -1  metadata/leaderboard/TF_DATASET_* \
+	ls -1  metadata/${BOARD}/TF_DATASET_* \
 		| grep -v ${ALL_METADATA} \
 		| xargs cat > ${ALL_METADATA}
 	@echo "	ALL_METADATA	${ALL_METADATA}"
@@ -52,13 +52,13 @@ all_metadata:
 
 TF=LEF1
 TFCLUST_DIR=results/${BOARD}/train/cross-data-types/${TF}
-TFCLUST_INFILES=`find results/leaderboard/train/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs`
+TFCLUST_INFILES=`find results/${BOARD}/train/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs`
 TFCLUST_PREFIX=${TFCLUST_DIR}/matrix-clustering
 TFCLUST_ROOT_MOTIFS=${TFCLUST_PREFIX}_cluster_root_motifs
 TFCLUST_ALL_MOTIFS=${TFCLUST_PREFIX}_aligned_logos/All_concatenated_motifs
 TFCLUST_SCRIPT=${TFCLUST_PREFIX}_cmd.sh
 TFQUAL_DIR=${TFCLUST_DIR}/matrix-quality
-#TFCLUST_CMD=find results/leaderboard/train/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs ${SCHEDULER} ${RSAT_CMD} matrix-clustering -v ${V} -hclust_method average -calc sum -title ${TF} -metric_build_tree Ncor -lth w 5 -lth cor 0.6 -lth Ncor 0.4 -quick -label_in_tree name -return json,heatmap  -o ${TFCLUST_PREFIX}
+#TFCLUST_CMD=find results/${BOARD}/train/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs ${SCHEDULER} ${RSAT_CMD} matrix-clustering -v ${V} -hclust_method average -calc sum -title ${TF} -metric_build_tree Ncor -lth w 5 -lth cor 0.6 -lth Ncor 0.4 -quick -label_in_tree name -return json,heatmap  -o ${TFCLUST_PREFIX}
 
 ## Define the matrices to use as input for matrix-clustering and matrix-quality
 MATRICES=${TFCLUST_ROOT_MOTIFS}
@@ -71,7 +71,7 @@ MATRICES=${TFCLUST_ROOT_MOTIFS}
 ## csplit ${TFCLUST_ROOT_MOTIFS}.tf /^AC/ -z -f root -b %03d.tf {*}
 SLURM_OUT=./slurm_out/TFQUALITY_${BOARD}_cross-data-types-bench_${TF}_slurm-job_%j.out
 
-#make -f makefiles/00_parameters.mk matrix_quality DATA_TYPE=CHS TF=GABPA DATASET=THC_0866 MATRICES=results/leaderboard/train/cross-data-types/GABPA/matrix-clustering_cluster_root_motifs FASTA_SEQ=data/leaderboard/train/CHS/GABPA/THC_0866.fasta TEST_SEQ=data/leaderboard/test/CHS_participants.fasta MATRIXQ_DIR=results/leaderboard/train/cross-data-types/GABPA/matrix-clustering_cluster_root_motifs
+#make -f makefiles/00_parameters.mk matrix_quality DATA_TYPE=CHS TF=GABPA DATASET=THC_0866 MATRICES=results/${BOARD}/train/cross-data-types/GABPA/matrix-clustering_cluster_root_motifs FASTA_SEQ=data/${BOARD}/train/CHS/GABPA/THC_0866.fasta TEST_SEQ=data/${BOARD}/test/CHS_participants.fasta MATRIXQ_DIR=results/${BOARD}/train/cross-data-types/GABPA/matrix-clustering_cluster_root_motifs
 
 quality_one_tf:
 	@echo
