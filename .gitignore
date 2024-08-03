@@ -10,3 +10,5 @@ slurm-*.out
 .DS_Store
 .Rhistory
 slurm_out
+HOWTO.html
+README.html
