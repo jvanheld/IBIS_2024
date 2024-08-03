@@ -26,7 +26,7 @@ SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}\n\#SBATCH --mem-per-cpu=16
 
 ################################################################
 ## Load data-type specific configuration
-DATA_TYPES=CSH GHTS HTS SMS PBM
+DATA_TYPES=CHS GHTS HTS SMS PBM
 DATA_TYPE=CHS
 include makefiles/config_${DATA_TYPE}.mk
 
@@ -235,11 +235,10 @@ metadata_pbm:
 	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
 	du -sk data/${BOARD}/train/${DATA_TYPE}/*/*.tsv  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.tsv||' \
-		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1}'  > ${METADATA}
+		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${DATA_TYPE}\t${BOARD}\t${SEQ_FORMAT}"}'  > ${METADATA}
 	@echo
 	@echo "	METADATA	${METADATA}"
 	@echo
-
 
 ################################################################
 ## Parameters for peak-motifs shared by several scripts
