@@ -1,0 +1,74 @@
+; oligo-analysis  quick -v 1 -i data/leaderboard/test/SMS_participants.fasta -l 3 -noov -2str -grouprc -format fasta -seqtype dna -type dna -return freq,occ -o bg_models/leaderboard/SMS/SMS_3nt-noov-2str.tsv
+; Citation: van Helden et al. (1998). J Mol Biol 281(5), 827-42. 
+; Program version              	1.169
+; Slow counting mode           
+; Oligomer length              	3
+; Input file                   	data/leaderboard/test/SMS_participants.fasta
+; Input format                 	fasta
+; Output file                  	bg_models/leaderboard/SMS/SMS_3nt-noov-2str.tsv
+; Discard overlapping matches
+; Counted on both strands
+; 	grouped by pairs of reverse complements
+; Background model             	Bernoulli
+; Background estimation method 	
+; Sequence type                	DNA
+; Nb of sequences              	857981
+; Sum of sequence lengths      	34319240
+; discarded residues           	152	 (other letters than ACGT)
+; discarded occurrences        	172	 (contain discarded residues)
+; nb possible positions        	32603106
+; total oligo occurrences      	32603106
+; total overlapping occurrences	2786692
+; total non overlapping occ    	29816414
+; alphabet size                	4
+; nb possible oligomers        	32
+; oligomers tested for significance	0
+;
+; column headers
+;	1	seq            	oligomer sequence
+;	2	id             	oligomer identifier
+;	3	obs_freq       	observed relative frequency
+;	4	occ            	observed occurrences
+;	5	ovl_occ        	number of overlapping occurrences (discarded from the count)
+;	6	forbocc        	forbidden positions (to avoid self-overlap)
+#seq	id	obs_freq	occ	ovl_occ	forbocc
+aaa	aaa|ttt	0.0272613290280	888804	300747	1700026
+aac	aac|gtt	0.0340700974932	1110791	0	2137544
+aag	aag|ctt	0.0304292480600	992088	0	1909692
+aat	aat|att	0.0298299186587	972548	141092	1867747
+aca	aca|tgt	0.0336716998681	1097802	81297	2107926
+acc	acc|ggt	0.0333706549309	1087987	0	2080850
+acg	acg|cgt	0.0257530371493	839629	122596	1606463
+act	act|agt	0.0309161648586	1007963	0	1938073
+aga	aga|tct	0.0272241546557	887592	47978	1704654
+agc	agc|gct	0.0243090029521	792549	107559	1512717
+agg	agg|cct	0.0301807134572	983985	0	1885087
+ata	ata|tat	0.0272440914065	888242	289778	1700694
+atc	atc|gat	0.0262740917997	856617	102868	1644340
+atg	atg|cat	0.0294792465479	961115	142151	1845241
+caa	caa|ttg	0.0331729130347	1081540	0	2080610
+cac	cac|gtg	0.0316023264777	1030334	77492	1969447
+cag	cag|ctg	0.0276928830032	902874	0	1733647
+cca	cca|tgg	0.0327666940690	1068296	0	2046328
+ccc	ccc|ggg	0.0255936044866	834431	299354	1571205
+ccg	ccg|cgg	0.0247534698074	807040	107118	1537596
+cga	cga|tcg	0.0239492826236	780821	103967	1495579
+cgc	cgc|gcg	0.0215885566240	703854	198940	1334691
+cta	cta|tag	0.0280073929153	913128	110136	1751718
+ctc	ctc|gag	0.0265078732069	864239	49122	1654452
+gaa	gaa|ttc	0.0293449035193	956735	0	1842767
+gac	gac|gtc	0.0285063637802	929396	0	1787005
+gca	gca|tgc	0.0254162287483	828648	119505	1582113
+gcc	gcc|ggc	0.0249806260790	814446	108949	1547201
+gga	gga|tcc	0.0286799055280	935054	0	1793005
+gta	gta|tac	0.0294538808664	960288	121347	1842311
+taa	taa|tta	0.0315215673010	1027701	154696	1975066
+tca	tca|tga	0.0309748709218	1009877	0	1944297
+; Host name	clust-slurm-client2
+; Job started	2024-08-02.052649
+; Job done	2024-08-02.052845
+; Seconds	116.09
+;	user	116.09
+;	system	0.18
+;	cuser	0
+;	csystem	0
