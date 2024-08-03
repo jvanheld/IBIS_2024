@@ -7,8 +7,9 @@ MAKEFILE=makefiles/03_oligo-analysis.mk
 
 targets: targets_00
 	@echo "Targets"
-	@echo "	bg_freq		compute background frequencies"
-	@echo "	oligos		detect over-represented oligos"
+	@echo "	bg_freq			compute background frequencies for all oligo sizes"
+	@echo "	bg_freq_one_size	compute background frequencies for one oligo size"
+	@echo "	oligos			detect over-represented oligos in dataset relative to background model"
 
 param: param_00
 	@echo "dataset parameters"
