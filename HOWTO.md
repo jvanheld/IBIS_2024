@@ -1,8 +1,50 @@
 # How to reproduce the analyses of the RSAT team for the IBIS challenge 2024
 
-## Generating data files
+## make basics
 
-Metadata files are generated automatically by searching input files
+All results are generated using `make` scripts in the
+`makefiles`directory.
+
+Each makefile comes with two targets documenting its use : 
+
+- `make -f makefiles/[myfile.mk] targets` lists the targets and indicates what they do
+- `make -f makefiles/[myfile.mk] param` lists the parameters used for the analyses
+
+Note that all the makefiles first load `makefiles/00_parameters.mk`, which contains general parameters and targets, which are used by several makefiles. 
+
+For example, the following command lists the targets for motif discovery with `peak-motifs`. 
+
+```
+make -f makefiles/02_peak-motifs.mk targets
+```
+
+and the default parameters can be obtained as follows
+
+```
+make -f makefiles/02_peak-motifs.mk param
+```
+
+The make variables can be redefined on the flight by specifying another value on the command line. 
+
+For example, the default data type is CHS (ChIP-seq)
+
+```
+make -f makefiles/02_peak-motifs.mk param | grep DATA_TYPE
+```
+
+It can be overwritten as follows
+
+```
+make -f makefiles/02_peak-motifs.mk param DATA_TYPE=GHTS
+```
+
+All the other variables will be updated automatically for the GHTS (genomic high-throughput selex) data. 
+
+
+
+## Generating metadata files
+
+Metadata files are tab-delimited text files providing information about each dataset found in the data directory. They are generated automatically by searching input files
 (peaks, fasta or fastq sequences, PBM tables depending on the data
 type).
 
