@@ -8,23 +8,27 @@ type).
 
 This can be done with the following commands.
 
-````{bash}
+```
+export BOARD=leaderboard
+
 ## Generate one metadata file per data type (CSH GHTS HTS SMS PBM)
-make -f makefiles/00_parameters.mk iterate_datatypes DATA_TYPE_TASK=metadata BOARD=leaderboard
+make -f makefiles/00_parameters.mk iterate_datatypes DATA_TYPE_TASK=metadata BOARD=${BOARD}
 
 ## Check the date of the metadata files
-ls -tlr metadata/leaderboard/
+ls -tlr metadata/${BOARD}/
 
 ## Generate a metadata file with all the data types for the integration of all matrices
-make -f makefiles/05_integration.mk all_metadata  BOARD=leaderboard
+make -f makefiles/05_integration.mk all_metadata  BOARD=${BOARD}
 
 ## Count the number of TFs per metadata file
-cut -f 1 metadata/leaderboard/TF_DATASET_all-types.tsv | sort | uniq -c | sort -nr
+cut -f 1 metadata/${BOARD}/TF_DATASET_all-types.tsv | sort | uniq -c | sort -nr
 ```
+
+The same can be done for the final data by replacing "leadereboard" by "final" in the above commands. 
 
 Here is the result for the leaderboard:
 
-```{bash}
+```
      10 NACC2
       7 TIGD3
       7 RORB
