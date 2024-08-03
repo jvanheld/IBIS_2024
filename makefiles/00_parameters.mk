@@ -189,7 +189,7 @@ iterate_datatypes:
 	@echo 
 	@echo "Iterating over data types"
 	@for datatype in ${DATA_TYPES} ; do \
-		${MAKE} one_task_datatype DATA_TYPE=$${datatype} \;
+		${MAKE} one_task_datatype DATA_TYPE=$${datatype} ;  \
 	done
 
 DATA_TYPE_TASK=metadata
@@ -210,7 +210,7 @@ metadata_fasta:
 	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
 	wc -l data/${BOARD}/train/${DATA_TYPE}/*/*.peaks  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.peaks||' \
-		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2"\t"${DATA_TYPE}"\t"${BOARD}"\t"${SEQ_FORMAT}'  > ${METADATA}
+		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2"\t${DATA_TYPE}\t${BOARD}\t${SEQ_FORMAT}"}'  > ${METADATA}
 	@echo
 	@echo "	METADATA	${METADATA}"
 	@echo
@@ -222,7 +222,7 @@ metadata_fastq:
 	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
 	du -sk data/${BOARD}/train/${DATA_TYPE}/*/*.fastq.gz  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.fastq.*||' \
-		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1}'  > ${METADATA}
+		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${DATA_TYPE}\t${BOARD}\t${SEQ_FORMAT}"}'  > ${METADATA}
 	@echo
 	@echo "	METADATA	${METADATA}"
 	@echo
