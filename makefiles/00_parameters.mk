@@ -18,11 +18,6 @@ include makefiles/00_config.mk
 NOW=`date +%Y-%m-%d_%H%M`
 ERR_DIR=sbatch_errors
 ERR_FILE=${ERR_DIR}/sbatch_error_${NOW}.txt
-SCHEDULER=srun time # this can be used to run commands either from the shell or in a script
-#SCHEDULER=echo \#!/bin/bash ; echo srun time 
-SBATCH=sbatch
-SLURM_OUT=./slurm_out/${BOARD}_${DATA_TYPE}_${TF}_${DATASET}_slurm-job_%j.out
-SBATCH_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}\n\#SBATCH --mem-per-cpu=16G\n"
 
 ################################################################
 ## Load data-type specific configuration
@@ -62,8 +57,8 @@ param_00:
 	@echo "Task execution parameters"
 	@echo "	SCHEDULER	${SCHEDULER}"
 	@echo "	SLURM_OUT	${SLURM_OUT}"
-	@echo "	SBATCH		${SBATCH}"
-	@echo "	SBATCH_HEADER	${SBATCH_HEADER}"
+	@echo "	RUNNER		${RUNNER}"
+	@echo "	RUNNER_HEADER	${RUNNER_HEADER}"
 	@echo
 	@echo "Data set specification"
 #	@echo "	DISCIPLINE	${DISCIPLINE}"
@@ -124,6 +119,7 @@ targets_00:
 	@echo "	  metadata_fasta	build metadata table by finding fasta files (CHS and GHTS data)"
 	@echo "	  metadata_fastq	build metadata table by finding fastq files (HTS and SMS data)"
 	@echo "	  metadata_pbm		build metadata table for PBM data, from the TSV file"
+	@echo "	all_metadata		concatenate metadata files of all the data types"
 	@echo "	fetch_sequences		retrieve peak sequences from UCSC (for CHS and GHTS data)"
 	@echo "	fastq2fasta		convert sequences from fastq to fasta format (for HTS and SMS data)"
 	@echo "	tsv2fasta		convert sequences from tsv files to fasta format (for PBM data)"
@@ -245,6 +241,16 @@ metadata_pbm:
 	@echo
 
 ################################################################
+## Generate a metadata file with all the datasets for all the TFs
+ALL_METADATA=metadata/${BOARD}/TF_DATASET_all-types.tsv
+all_metadata:
+	ls -1  metadata/${BOARD}/TF_DATASET_* \
+		| grep -v ${ALL_METADATA} \
+		| xargs cat > ${ALL_METADATA}
+	@echo "	ALL_METADATA	${ALL_METADATA}"
+
+
+################################################################
 ## Parameters for peak-motifs shared by several scripts
 PEAKMO_OPT=-nopurge
 PEAKMO_PREFIX=peak-motifs${PEAKMO_OPT}
@@ -317,24 +323,27 @@ cluster_matrices:
 BG_OL=2
 BG_EQUIPROBA=bg_models/equiprobable_1str.tsv
 MATRIXQ_DIR=${PEAKMO_DIR}/matrix-quality
-MATRIXQ_PREFIX=${MATRIXQ_DIR}/matrix-quality
+MATRIXQ_PREFIX=${MATRIXQ_DIR}/matrix-quality_
+MATRIXQ_SEQ_OPT=-seq ${TF}_${DATASET} ${FASTA_SEQ} -seq 'test_seq' ${TEST_SEQ}
+MATRIXQ_SEQ_PLOT_OPT=-plot ${TF}_${DATASET} nwd -plot 'test_seq' nwd
+MATRIXQ_PERM=1
+MATRIXQ_SEQ_PERM_OPT=-perm ${TF}_${DATASET} ${MATRIXQ_PERM} -perm 'test_seq' ${MATRIXQ_PERM}
+MATRIXQ_TITLE=IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}
 MATRIXQ_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
-	-html_title 'IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}'  \
+	-html_title '${MATRIXQ_TITLE}'  \
 	-ms ${MATRICES}.tf \
 	-matrix_format transfac \
-	-pseudo 1 \
-	-seq ${TF}_${DATASET} ${FASTA_SEQ} \
-	-seq_format fasta \
-	-plot ${TF}_${DATASET} nwd \
-	-seq 'test_seq' ${TEST_SEQ} \
-	-plot 'test_seq' nwd \
-	-perm ${TF}_${DATASET} 1 \
-	-perm 'test_seq' 1 \
 	-bgfile ${BG_EQUIPROBA} \
-	-uth rank 1 \
 	-bg_format oligo-analysis \
-	-archive \
+	-pseudo 1 \
+	-seq_format fasta \
+	${MATRIXQ_SEQ_OPT} \
+	${MATRIXQ_SEQ_PLOT_OPT} \
+	${MATRIXQ_SEQ_PERM_OPT} \
 	-o ${MATRIXQ_PREFIX}
+
+#	-archive \
+#	-uth rank 1 \
 
 ## JvH: THERE SEEMS TO BE A BUG WITH THE -bg_pseudo OPTION. I SHOULD CHECK THIS
 #	-bg_pseudo 0.01 \
