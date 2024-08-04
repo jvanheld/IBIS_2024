@@ -98,7 +98,7 @@ quality_one_tf:
 	@echo ${RUNNER_HEADER} > ${MATRIXQ_SCRIPT}
 	@echo >> ${MATRIXQ_SCRIPT}
 	@echo ${MATRIXQ_CMD} >> ${MATRIXQ_SCRIPT}
-#	@${RUNNER} ${MATRIXQ_SCRIPT}
+	@${RUNNER} ${MATRIXQ_SCRIPT}
 	@echo "	MATRIXQ_DIR	${MATRIXQ_DIR}"
 
 ################################################################
