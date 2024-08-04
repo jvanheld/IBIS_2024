@@ -122,7 +122,7 @@ oligos:
 	@mkdir -p ${OLIGO_DIR}
 	@echo
 	@echo "Writing oligo-analysis script	${OLIGO_SCRIPT}"
-	@echo ${SBATCH_HEADER} > ${OLIGO_SCRIPT}
+	@echo ${RUNNER_HEADER} > ${OLIGO_SCRIPT}
 	@for ol in `seq ${MINOL} ${MAXOL}`; do \
 		${MAKE} oligos_one_len OL=$${ol} ; \
 	done
@@ -133,7 +133,7 @@ oligos:
 	@echo
 	@echo "	OLIGO_SCRIPT	${OLIGO_SCRIPT}"
 	@echo "Running oligo-analysis to detect over-represented motifs"
-	@${SBATCH} ${OLIGO_SCRIPT}
+	@${RUNNER} ${OLIGO_SCRIPT}
 	@echo
 	@echo "	OLIGO_DIR	${OLIGO_DIR}"
 	@echo "	OLIGOS		${OLIGOS}"

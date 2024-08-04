@@ -116,7 +116,7 @@ peakmo_diff: top_seq
 	@echo
 	@echo "Writing peak-motif script for differential analysis	${PEAKMO_SCRIPT}"
 	@mkdir -p ${PEAKMO_DIR}
-	@echo ${SBATCH_HEADER} > ${PEAKMO_SCRIPT}
+	@echo ${RUNNER_HEADER} > ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
 	@echo ${PEAKMO_CMD} >> ${PEAKMO_SCRIPT}
 	@echo
@@ -130,7 +130,7 @@ peakmo_diff: top_seq
 	@echo
 	@echo "	PEAKMO_SCRIPT	${PEAKMO_SCRIPT}"
 	@echo "Running peak-motifs"
-	@${SBATCH} ${PEAKMO_SCRIPT}
+	@${RUNNER} ${PEAKMO_SCRIPT}
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 
 peakmodiff_all_datasets:

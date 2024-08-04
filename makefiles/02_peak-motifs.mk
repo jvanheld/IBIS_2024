@@ -58,7 +58,7 @@ peakmo:
 	@echo
 	@echo "Writing peak-motif script	${PEAKMO_SCRIPT}"
 	@mkdir -p ${PEAKMO_DIR}
-	@echo ${SBATCH_HEADER} > ${PEAKMO_SCRIPT}
+	@echo ${RUNNER_HEADER} > ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
 ifeq (${SEQ_FORMAT}, fasta)
 	@echo "Including fetch-sequences command in the script to get sequences from peak coordinates"
@@ -85,7 +85,7 @@ endif
 	@echo
 	@echo "	PEAKMO_SCRIPT	${PEAKMO_SCRIPT}"
 	@echo "Running peak-motifs"
-	@${SBATCH} ${PEAKMO_SCRIPT}
+	@${RUNNER} ${PEAKMO_SCRIPT}
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 
 

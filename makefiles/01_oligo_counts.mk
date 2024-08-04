@@ -36,10 +36,10 @@ SCRIPT=${OLIGO_PREFIX}_cmd.sh
 oligo_table:
 	@echo "Running oligo-analysis	${OL}	${BOARD} ${TF} ${DATASET}"
 	@mkdir -p ${OLIGO_DIR}
-	@echo ${SBATCH_HEADER} > ${SCRIPT}
+	@echo ${RUNNER_HEADER} > ${SCRIPT}
 	@echo ${CMD} >> ${SCRIPT}
 	@echo "	SCRIPT	${SCRIPT}"
-	@${SBATCH} ${SCRIPT}
+	@${RUNNER} ${SCRIPT}
 	@echo "OLIGO_TABLE	${OLIGO_TABLE}"
 
 ################################################################
