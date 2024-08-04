@@ -82,13 +82,12 @@ SLURM_OUT=./slurm_out/TFQUALITY_${BOARD}_cross-data-types-bench_${TF}_slurm-job_
 
 #make -f makefiles/00_parameters.mk matrix_quality DATA_TYPE=CHS TF=GABPA DATASET=THC_0866 MATRICES=results/${BOARD}/train/cross-data-types/GABPA/matrix-clustering_cluster_root_motifs FASTA_SEQ=data/${BOARD}/train/CHS/GABPA/THC_0866.fasta TEST_SEQ=data/${BOARD}/test/CHS_participants.fasta MATRIXQ_DIR=results/${BOARD}/train/cross-data-types/GABPA/matrix-clustering_cluster_root_motifs
 
-
-MATRICES=${TFCLUST_ROOT_MOTIFS}
+MATRICES=${TFCLUST_ALL_MOTIFS}
 MATRIXQ_DIR=${MATRICES}_matrix-quality
-MATRIXQ_SCRIPT=${MATRIXQ_PREFIX}cmd.sh
-MATRIXQ_SEQ_OPT=`awk -F'\t' '$$1=="${TF}" {print "-seq "$$2" data/"$$5"/train/"$$4"/"$$1"/"$$2".fasta"}' metadata/leaderboard/TF_DATASET_all-types.tsv  | xargs`
-MATRIXQ_SEQ_PLOT_OPT=`awk -F'\t' '$$1=="${TF}" {print "-plot "$$2" nwd"}' metadata/leaderboard/TF_DATASET_all-types.tsv  | xargs`
-MATRIXQ_SEQ_PERM_OPT=`awk -F'\t' '$$1=="${TF}" {print "-perm "$$2" ${MATRIXQ_PERM}"}' metadata/leaderboard/TF_DATASET_all-types.tsv  | xargs`
+MATRIXQ_SCRIPT=${MATRIXQ_PREFIX}_cmd.sh
+MATRIXQ_SEQ_OPT=`awk -F'\t' '$$1=="${TF}" {print "-seq "$$4"_"$$2" data/"$$5"/train/"$$4"/"$$1"/"$$2".fasta"}' metadata/leaderboard/TF_DATASET_all-types.tsv  | xargs`
+MATRIXQ_SEQ_PLOT_OPT=`awk -F'\t' '$$1=="${TF}" {print "-plot "$$4"_"$$2" nwd"}' metadata/leaderboard/TF_DATASET_all-types.tsv  | xargs`
+MATRIXQ_SEQ_PERM_OPT=`awk -F'\t' '$$1=="${TF}" {print "-perm "$$4"_"$$2" ${MATRIXQ_PERM}"}' metadata/leaderboard/TF_DATASET_all-types.tsv  | xargs`
 quality_one_tf:
 	@echo
 	@echo "Running matrix-quality on matrix-clustering result for all the motifs of TF ${TF}"
