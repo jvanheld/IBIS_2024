@@ -1,6 +1,8 @@
 ################################################################
 ## IBIS challenge 2024
-## Integration of the motifs discovered across the different data types
+##
+## Integration of the motifs discovered across the different data
+## types
 
 include makefiles/00_parameters.mk 
 MAKEFILE=makefiles/05_integration.mk
