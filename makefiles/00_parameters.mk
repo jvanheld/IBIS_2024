@@ -323,7 +323,7 @@ cluster_matrices:
 BG_OL=2
 BG_EQUIPROBA=bg_models/equiprobable_1str.tsv
 MATRIXQ_DIR=${PEAKMO_DIR}/matrix-quality
-MATRIXQ_PREFIX=${MATRIXQ_DIR}/matrix-quality_
+MATRIXQ_PREFIX=${MATRIXQ_DIR}/matrix-quality
 MATRIXQ_SEQ_OPT=-seq ${TF}_${DATASET} ${FASTA_SEQ} -seq 'test_seq' ${TEST_SEQ}
 MATRIXQ_SEQ_PLOT_OPT=-plot ${TF}_${DATASET} nwd -plot 'test_seq' nwd
 MATRIXQ_PERM=1
