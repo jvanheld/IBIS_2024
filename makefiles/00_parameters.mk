@@ -403,7 +403,7 @@ matrix_quality:
 		-from transfac -to tab \
 		-bgfile ${BG_EQUIPROBA} \
 		-decimals 3 \
-		-return counts,frequencies,weights,info,margins \
+		-return parameters,counts,frequencies,weights,info,margins \
 		-o $@
 
 ## Convert count matrix into frequency matrix in transfac format
