@@ -40,7 +40,8 @@ MATRIXQ_SEQ_PERM_OPT=`awk -F'\t' '$$1=="${TF}" {print "-perm "$$4"_"$$2" ${MATRI
 ## motifs but these motifs are too degenerated -> we apply it to all
 ## the nodes of the matrix clustering result tree.
 # MATRICES=${TFCLUST_ROOT_MOTIFS}
-MATRICES=${TFCLUST_ALL_MOTIFS}
+#MATRICES=${TFCLUST_ALL_MOTIFS}
+MATRICES=${TFCLUST_ALL_MOTIFS}_trimmed
 
 ################################################################
 ## Print targets
@@ -143,7 +144,7 @@ tfclust_to_ibis:
 ## datasets for a given transcription factor.
 ## Note: no need to split input motifs in separate files, matrix-quality parses all
 ## csplit ${TFCLUST_ROOT_MOTIFS}.tf /^AC/ -z -f root -b %03d.tf {*}
-quality_one_tf:
+quality_one_tf: ${MATRICES}.tf ${MATRICES}_info.tab
 	@echo
 	@echo "Running matrix-quality on matrix-clustering result for all the motifs of TF ${TF}"
 	@echo "	MATRICES		${MATRICES}"
