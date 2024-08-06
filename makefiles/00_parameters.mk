@@ -11,7 +11,7 @@ MAKEFILE=makefiles/00_parameters.mk
 ## to run rsat from a specific path, or from a container (e.g. docker
 ## or apptainer)
 
-include makefiles/00_config.mk
+include makefiles/running_config.mk
 
 ################################################################
 ## Job scheduler parameters
