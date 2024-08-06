@@ -99,17 +99,21 @@ TFCLUST_CMD=${SCHEDULER} ${RSAT_CMD} matrix-clustering -v ${V} ${TFCLUST_INFILES
 cluster_one_tf:
 	@echo
 	@echo "Clustering motifs across all data types for TF ${TF}"
-	@echo
-	@echo "Writing matrix-clustering script"
+	@echo "	Writing matrix-clustering script	${TF}"
 	@echo "	TFCLUST_SCRIPT	${TFCLUST_SCRIPT}"
 	@mkdir -p ${TFCLUST_DIR}
 	@echo ${RUNNER_HEADER} > ${TFCLUST_SCRIPT}
 	@echo >> ${TFCLUST_SCRIPT}
 	@echo ${TFCLUST_CMD} >> ${TFCLUST_SCRIPT}
-	@echo
+	@echo >> ${TFCLUST_SCRIPT}
+	@echo ${MAKE} ${TFCLUST_ROOT_MOTIFS}_info.tab >>  ${TFCLUST_SCRIPT}
+	@echo ${MAKE} ${TFCLUST_ROOT_MOTIFS}_trimmed.tf ${TFCLUST_ROOT_MOTIFS}_trimmed_info.tab >>  ${TFCLUST_SCRIPT}
 	@echo ${MAKE} ${TFCLUST_ROOT_MOTIFS}_freq.tf ${TFCLUST_ROOT_MOTIFS}_freq.cb ${TFCLUST_ROOT_MOTIFS}_freq.txt >>  ${TFCLUST_SCRIPT}
+	@echo ${MAKE} ${TFCLUST_ROOT_MOTIFS}_trimmed_freq.tf ${TFCLUST_ROOT_MOTIFS}_trimmed_freq.cb ${TFCLUST_ROOT_MOTIFS}_trimmed_freq.txt >>  ${TFCLUST_SCRIPT}
+	@echo ${MAKE} ${TFCLUST_ALL_MOTIFS}_info.tab >>  ${TFCLUST_SCRIPT}
+	@echo ${MAKE} ${TFCLUST_ALL_MOTIFS}_trimmed.tf ${TFCLUST_ALL_MOTIFS}_trimmed_info.tab >>  ${TFCLUST_SCRIPT}
 	@echo ${MAKE} ${TFCLUST_ALL_MOTIFS}_freq.tf ${TFCLUST_ALL_MOTIFS}_freq.cb ${TFCLUST_ALL_MOTIFS}_freq.txt >>  ${TFCLUST_SCRIPT}
-	@echo
+	@echo ${MAKE} ${TFCLUST_ALL_MOTIFS}_trimmed_freq.tf ${TFCLUST_ALL_MOTIFS}_trimmed_freq.cb ${TFCLUST_ALL_MOTIFS}_trimmed_freq.txt >>  ${TFCLUST_SCRIPT}
 	@${RUNNER} ${TFCLUST_SCRIPT}
 	@echo "	TFCLUST_DIR	${TFCLUST_DIR}"
 
