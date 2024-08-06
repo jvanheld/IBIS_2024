@@ -391,6 +391,8 @@ matrix_quality:
 %_trimmed.tf : %.tf
 	${RSAT_CMD} convert-matrix -i $< \
 		-from transfac -to transfac \
+		-bgfile ${BG_EQUIPROBA} \
+		-decimals 3 \
 		-trim_info ${TRIM_INFO} \
 		-return counts \
 		-o $@
@@ -399,6 +401,7 @@ matrix_quality:
 %_info.tab : %.tf
 	${RSAT_CMD} convert-matrix -i $< \
 		-from transfac -to tab \
+		-bgfile ${BG_EQUIPROBA} \
 		-decimals 3 \
 		-return counts,frequencies,weights,info,margins \
 		-o $@
