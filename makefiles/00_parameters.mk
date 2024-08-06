@@ -55,28 +55,28 @@ TFS=`cut -f 1 ${METADATA} | sort -u | xargs`
 param_00:
 	@echo
 	@echo "Task execution parameters"
-	@echo "	SCHEDULER	${SCHEDULER}"
-	@echo "	SLURM_OUT	${SLURM_OUT}"
-	@echo "	RUNNER		${RUNNER}"
-	@echo "	RUNNER_HEADER	${RUNNER_HEADER}"
+	@echo "	SCHEDULER		${SCHEDULER}"
+	@echo "	SLURM_OUT		${SLURM_OUT}"
+	@echo "	RUNNER			${RUNNER}"
+	@echo "	RUNNER_HEADER		${RUNNER_HEADER}"
 	@echo
 	@echo "Data set specification"
-#	@echo "	DISCIPLINE	${DISCIPLINE}"
-	@echo "	BOARD		${BOARD}"
-	@echo "	DATA_TYPES	${DATA_TYPES}"
-	@echo "	DATA_TYPE	${DATA_TYPE}"
-	@echo "	METADATA	${METADATA}"
-	@echo "	TEST_SEQ	${TEST_SEQ}"
-	@echo "	TF		${TF}"
-	@echo "	RESULT_DIR	${RESULT_DIR}"
+#	@echo "	DISCIPLINE		${DISCIPLINE}"
+	@echo "	BOARD			${BOARD}"
+	@echo "	DATA_TYPES		${DATA_TYPES}"
+	@echo "	DATA_TYPE		${DATA_TYPE}"
+	@echo "	METADATA		${METADATA}"
+	@echo "	TEST_SEQ		${TEST_SEQ}"
+	@echo "	TF			${TF}"
+	@echo "	RESULT_DIR		${RESULT_DIR}"
 	@echo
 	@echo "Fetch-sequences"
-	@echo "	DATASET_DIR	${DATASET_DIR}"
-	@echo "	DATASET		${DATASET}"
-	@echo "	PEAK_COORD	${PEAK_COORD}"
-	@echo "	FASTA_SEQ	${FASTA_SEQ}"
-	@echo "	FETCH_CMD	${FETCH_CMD}"
-	@echo "	FASTQ2FASTA_CMD	${FASTQ2FASTA_CMD}"
+	@echo "	DATASET_DIR		${DATASET_DIR}"
+	@echo "	DATASET			${DATASET}"
+	@echo "	PEAK_COORD		${PEAK_COORD}"
+	@echo "	FASTA_SEQ		${FASTA_SEQ}"
+	@echo "	FETCH_CMD		${FETCH_CMD}"
+	@echo "	FASTQ2FASTA_CMD		${FASTQ2FASTA_CMD}"
 	@echo
 	@echo "matrix-clustering options"
 	@echo "	PEAKMO_CLUSTERS_DIR	${PEAKMO_CLUSTERS_DIR}"
@@ -84,7 +84,7 @@ param_00:
 	@echo "	CLUSTER_CMD		${CLUSTER_CMD}"
 	@echo
 	@echo "convert-matrix"
-	@echo "	CONVERT_MATRIX_CMD		${CONVERT_MATRIX_CMD}"
+	@echo "	CONVERT_MATRIX_CMD	${CONVERT_MATRIX_CMD}"
 	@echo
 	@echo "matrix-quality"
 	@echo "	BG_EQUIPROBA		${BG_EQUIPROBA}"
@@ -98,15 +98,20 @@ param_00:
 	@echo "	HOCOMOCO_MOTIFS		${HOCOMOCO_MOTIFS}"
 	@echo
 	@echo "peak-motif options"
-	@echo "	PEAKMO_OPT	${PEAKMO_OPT}"
-	@echo "	PEAKMO_NMOTIFS	${PEAKMO_NMOTIFS}"
-	@echo "	PEAKMO_MINOL	${PEAKMO_MINOL}"
-	@echo "	PEAKMO_MAXOL	${PEAKMO_MAXOL4}"
+	@echo "	PEAKMO_OPT		${PEAKMO_OPT}"
+	@echo "	PEAKMO_NMOTIFS		${PEAKMO_NMOTIFS}"
+	@echo "	PEAKMO_MINOL		${PEAKMO_MINOL}"
+	@echo "	PEAKMO_MAXOL		${PEAKMO_MAXOL4}"
+	@echo
+	@echo "Matrix trimming"
+	@echo "	TRIM_INFO		${TRIM_INFO}"
+	@echo "	MATRICES		${MATRICES}"
+	@echo "	TRIMMED_MATRICES	${TRIMMED_MATRICES}"
 	@echo
 	@echo "Iteration parameters"
-	@echo "	DATASETS	${DATASETS}"
-	@echo "	TFS		${TFS}"
-	@echo "	TASK		${TASK}"
+	@echo "	DATASETS		${DATASETS}"
+	@echo "	TFS			${TFS}"
+	@echo "	TASK			${TASK}"
 	@echo
 
 
@@ -123,6 +128,10 @@ targets_00:
 	@echo "	fetch_sequences		retrieve peak sequences from UCSC (for CHS and GHTS data)"
 	@echo "	fastq2fasta		convert sequences from fastq to fasta format (for HTS and SMS data)"
 	@echo "	tsv2fasta		convert sequences from tsv files to fasta format (for PBM data)"
+	@echo
+	@echo "Matrix processing"
+	@echo "	cluster_matrices	Cluster matrices discovered by peak-motifs"
+	@echo "	trim_matrices		Trim matrices to suppress non-informative columns on both sides"
 	@echo
 	@echo "Iterators"
 	@echo "	iterate_datasets	iterate a task over all the datasets of a given data type"
@@ -298,6 +307,24 @@ CLUSTER_CMD=${RSAT_CMD} matrix-clustering -v ${V} \
 	-o ${PEAKMO_CLUSTERS} \
 	2> ${PEAKMO_CLUSTERS}_err.txt
 
+
+################################################################
+## Trim the non-informative columns at the left and right sides of
+## position-specific scoring matrices.
+TRIM_INFO=0.1
+TRIMMED_MATRICES=${MATRICES}_trimmed-info_${TRIM_INFO}
+TRIM_CMD=${RSAT_CMD} convert-matrix -v ${V} -i ${MATRICES}.tf \
+	-from transfac -to transfac \
+	-trim_info ${TRIM_INFO} \
+	-return counts \
+	-o ${TRIMMED_MATRICES}.tf
+trim_matrices:
+	@echo "Trimming position-specific scoring matrices"
+	@echo "	INFO_TRHESHOLD		${TRIM_INFO}"
+	@echo "	MATRICES		${MATRICES}"
+	@echo "	TRIMMED_MATRICES	${TRIMMED_MATRICES}"
+	${RUNNER} ${TRIM_CMD}
+
 ################################################################
 ## Cluster matrices discovered by peak-motifs
 cluster_matrices:
@@ -355,11 +382,26 @@ matrix_quality:
 	${MATRIXQ_CMD}
 	@echo "	MATRIXQ_PREFIX	${MATRIXQ_PREFIX}"
 
-
 ################################################################
 ## Define rules based on extensions to convert transfac-formatted
 ## (.tf) motif file sinto frequency matrices suitable for submission
 ## to IBIS challenge.
+
+## Trim the non-informative left and right columns of a PSSM
+%_trimmed.tf : %.tf
+	${RSAT_CMD} convert-matrix -i $< \
+		-from transfac -to transfac \
+		-trim_info ${TRIM_INFO} \
+		-return counts \
+		-o $@
+
+## Convert a transfac-formatted into tab-formatted matrix and add information 
+%_info.tab : %.tf
+	${RSAT_CMD} convert-matrix -i $< \
+		-from transfac -to tab \
+		-decimals 3 \
+		-return counts,frequencies,weights,info,margins \
+		-o $@
 
 ## Convert count matrix into frequency matrix in transfac format
 %_freq.tf : %.tf
