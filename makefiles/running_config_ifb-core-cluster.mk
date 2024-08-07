@@ -12,14 +12,8 @@ RUNNER_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}\n\#SBATCH --mem-per-cpu=16
 
 
 ## Local configuration for Jacques van Helden's laptop
-# MOTIFDB_DIR=~/packages/rsat/motif_databases
-# MOTIFDB_DIR=/packages/rsat/public_html/motif_databases
-#DOCKER_RELEASE=eeadcsiccompbio/rsat:20240806
-#RSAT_CMD=rsat
+MOTIFDB_DIR=/packages/rsat/public_html/motif_databases
+DOCKER_RELEASE=eeadcsiccompbio/rsat:20240806
 #RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out ${DOCKER_RELEASE} rsat
-#SCHEDULER=time
-#SLURM_OUT=
-#RUNNER=bash
-#RUNNER_HEADER="\#!/bin/bash"
-
+RSAT_CMD=/shared/projects/ibis_challenge/rsat_20240806.sif rsat
 
