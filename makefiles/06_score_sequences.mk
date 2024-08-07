@@ -4,7 +4,6 @@
 ## Score each sequence with matrix-scan for a 2-group classification
 ## problem
 
-
 #include makefiles/00_parameters.mk 
 include makefiles/00_parameters.mk
 MAKEFILE=makefiles/06_score_sequences.mk
@@ -46,9 +45,9 @@ param:: param_00
 ## matrix-quality. We initially restricted the analysis to the root
 ## motifs but these motifs are too degenerated -> we apply it to all
 ## the nodes of the matrix clustering result tree.
-DATA_TYPE=CSH
-TF=GABPA
-DATASET=THC_0866
+DATA_TYPE=CHS
+#TF=GABPA
+#DATASET=THC_0866
 MATRICES=${TFCLUST_ALL_MOTIFS}_trimmed
 
 ################################################################
@@ -82,9 +81,10 @@ rand_fragments_all_datatypes:
 	@${MAKE} iterate_datatypes DATA_TYPE_TASK=rand_fragments_all_datasets
 
 ################################################################
-## Scan one sequence set with a given matrix file
-##
-SCAN_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/scan
+## Scan one sequence set with a given matrix file, and only return the
+## top-scoring site per sequence for each position-specific scoring
+## matrix.
+SCAN_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${DATASET}/scan
 SCAN_SCRIPT=${SCAN_DIR}/scanning_cmd.sh
 SCAN_RESULT=${SCAN_DIR}/${TF}_${DATASET}_scan_top-per-seq.tsv
 SCAN_CMD=${SCHEDULER} ${RSAT_CMD} matrix-scan -v ${V} \
@@ -99,7 +99,7 @@ SCAN_CMD=${SCHEDULER} ${RSAT_CMD} matrix-scan -v ${V} \
 	-2str \
 	-return sites \
 	-return pval \
-	-lth rank_pm 1 \
+	-uth rank_pm 1 \
 	-n score \
 	-o ${SCAN_RESULT}
 
