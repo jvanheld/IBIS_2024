@@ -17,15 +17,6 @@ DATASET=all-sets
 ALL_TFS=`cat ${ALL_METADATA} | cut -f 1 | sort -u | xargs`
 TF=LEF1
 
-## Matrix clustering parameters
-TFCLUST_DIR=results/${BOARD}/train/cross-data-types/${TF}
-TFCLUST_INFILES=`find results/${BOARD}/train/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs`
-TFCLUST_PREFIX=${TFCLUST_DIR}/matrix-clustering
-TFCLUST_ROOT_MOTIFS=${TFCLUST_PREFIX}_cluster_root_motifs
-TFCLUST_ALL_MOTIFS=${TFCLUST_PREFIX}_aligned_logos/All_concatenated_motifs
-TFCLUST_SCRIPT=${TFCLUST_PREFIX}_cmd.sh
-TFCLUST_SLURM_OUT=./slurm_out/TFCLUST_${BOARD}_cross-data-types_${TF}_slurm-job_%j.out
-
 ## Matrix quality parameters
 MATRIXQ_SLURM_OUT=./slurm_out/TFQUALITY_${BOARD}_cross-data-types-bench_${TF}_slurm-job_%j.out
 MATRIXQ_DIR=${MATRICES}_matrix-quality

@@ -285,6 +285,7 @@ PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
 MATRICES=${PEAKMO_MATRICES}
 
 
+
 ################################################################
 ## Convert matrices from Transfac to cluster-buster format
 CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -from transfac -to transfac -i ${MATRICES}.tf -rescale 1 -decimals 4 -o ${MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -from transfac -to cluster-buster -i ${MATRICES}_freq.tf -o ${MATRICES}_freq.cb ; cat ${MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' > ${MATRICES}_freq.txt
@@ -385,6 +386,16 @@ matrix_quality:
 	@echo "	MATRIXQ_CMD	${MATRIXQ_CMD}"
 	${MATRIXQ_CMD}
 	@echo "	MATRIXQ_PREFIX	${MATRIXQ_PREFIX}"
+
+################################################################
+## Parameters for the clustering of all motifs discovered for a given transcription factor
+TFCLUST_DIR=results/${BOARD}/train/cross-data-types/${TF}
+TFCLUST_INFILES=`find results/${BOARD}/train/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs`
+TFCLUST_PREFIX=${TFCLUST_DIR}/matrix-clustering
+TFCLUST_ROOT_MOTIFS=${TFCLUST_PREFIX}_cluster_root_motifs
+TFCLUST_ALL_MOTIFS=${TFCLUST_PREFIX}_aligned_logos/All_concatenated_motifs
+TFCLUST_SCRIPT=${TFCLUST_PREFIX}_cmd.sh
+TFCLUST_SLURM_OUT=./slurm_out/TFCLUST_${BOARD}_cross-data-types_${TF}_slurm-job_%j.out
 
 ################################################################
 ## Define rules based on extensions to convert transfac-formatted
