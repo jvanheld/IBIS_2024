@@ -16,6 +16,8 @@ targets: targets_00
 	@echo "	rand_fragments_all_datasets	run rand_fragments for all the datasets of the current data type"
 	@echo "	rand_fragments_all_datatypes	run rand_fragments for all the datasets of all the data types"
 	@echo "	scan_one_dataset		scan one dataset with a set of matrices"
+	@echo "	scan_all_datasets		scan all dataset of a given data type"
+	@echo "	scan_all_datatypes		scan all datasets of all data types"
 	@echo "		"
 
 param:: param_00
@@ -82,8 +84,6 @@ rand_fragments_all_datatypes:
 ################################################################
 ## Scan one sequence set with a given matrix file
 ##
-DATA_TYPE=CHS
-DATASET=
 SCAN_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/scan
 SCAN_SCRIPT=${SCAN_DIR}/scanning_cmd.sh
 SCAN_RESULT=${SCAN_DIR}/${TF}_${DATASET}_scan_top-per-seq.tsv
@@ -122,3 +122,10 @@ scan_one_dataset:
 	@${RUNNER} ${SCAN_SCRIPT}
 	@echo "	SCAN_RESULT		${SCAN_RESULT}"
 	@echo
+
+scan_all_datasets:
+	@${MAKE} iterate_datasets TASK=scan_one_dataset
+
+scan_all_datatypes:
+	@${MAKE} iterate_datatypes DATA_TYPE_TASK=scan_all_datasets
+
