@@ -86,7 +86,7 @@ top_bg_seq_all_datasets: top_seq_all_datasets bg_seq_all_datasets
 ## background sequences.
 DIFF_SUFFIX=${TOP_SUFFIX}_vs_${BG_SUFFIX}
 PEAKMO_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}_${DIFF_SUFFIX}
-PEAKMO_CMD=${RSAT_CMD} peak-motifs  \
+PEAKMO_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs  \
 	-v ${V} \
 	-title ${BOARD}_${DATA_TYPE}_${TF}_${DATASET}_train_vs_bg  \
 	-i ${TOP_SEQ} \
