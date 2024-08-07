@@ -54,6 +54,15 @@ TFS=`cut -f 1 ${METADATA} | sort -u | xargs`
 
 param_00:
 	@echo
+	@echo
+	@echo "Regulatory Sequence Analysis Tools"
+	@echo "	RSAT_CMD		${RSAT_CMD}"
+	@echo "	Motif databases"
+	@echo "	  MOTIFDB_DIR		${MOTIFDB_DIR}"
+	@echo "	  JASPAR_MOTIFS		${JASPAR_MOTIFS}"
+	@echo "	  HOCOMOCO_MOTIFS	${HOCOMOCO_MOTIFS}"
+	@echo
+	@echo
 	@echo "Task execution parameters"
 	@echo "	SCHEDULER		${SCHEDULER}"
 	@echo "	SLURM_OUT		${SLURM_OUT}"
@@ -91,11 +100,6 @@ param_00:
 	@echo "	MATRIXQ_DIR		${MATRIXQ_DIR}"
 	@echo "	MATRIXQ_PREFIX		${MATRIXQ_PREFIX}"
 	@echo "	MATRIXQ_CMD		${MATRIXQ_CMD}"
-	@echo
-	@echo "Motif databases"
-	@echo "	MOTIFDB_DIR		${MOTIFDB_DIR}"
-	@echo "	JASPAR_MOTIFS		${JASPAR_MOTIFS}"
-	@echo "	HOCOMOCO_MOTIFS		${HOCOMOCO_MOTIFS}"
 	@echo
 	@echo "peak-motif options"
 	@echo "	PEAKMO_OPT		${PEAKMO_OPT}"
