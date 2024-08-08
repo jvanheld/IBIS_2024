@@ -454,7 +454,7 @@ SCAN_TYPE=train
 SCAN_PREFIX=${SCAN_DIR}/${DATA_TYPE}_${TF}_${DATASET}_peakmo-clust-matrices_${SCAN_TYPE}
 SCAN_SCRIPT=${SCAN_PREFIX}_cmd.sh
 SCAN_RESULT=${SCAN_PREFIX}.tsv
-SCAN_CMD=${SCHEDULER} ${RSAT_CMD} matrix-scan -v ${V} \
+SCAN_CMD=${SCHEDULER} ${RSAT_CMD} matrix-scan -quick -v ${V} \
 	-m ${SCAN_MATRICES}.tf \
 	-matrix_format transfac \
 	-i ${SCAN_SEQ} \
