@@ -1,1 +1,0 @@
-running_config_ifb-core-cluster.mk
