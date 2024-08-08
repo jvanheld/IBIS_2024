@@ -20,7 +20,7 @@ The software suite Regulatory Sequence Analysis Tools (RSAT) used for
 these anlayses is available as a Docker container
 
 ```
-docker pull eeadcsiccompbio/rsat:20240709
+docker pull eeadcsiccompbio/rsat:20240808
 ```
 
 
