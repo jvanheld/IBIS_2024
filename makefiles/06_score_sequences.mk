@@ -10,23 +10,19 @@ MAKEFILE=makefiles/06_score_sequences.mk
 
 targets: targets_00
 	@echo
-	@echo "Sequence scoring"
-	@echo "	rand_fragments			select random genome fragment as negative set for a given dataset"e
-	@echo "	rand_fragments_all_datasets	run rand_fragments for all the datasets of the current data type"
-	@echo "	rand_fragments_all_datatypes	run rand_fragments for all the datasets of all the data types"
+	@echo "Sequence scoring with cross-data-type matrices"
 	@echo "	scan_one_dataset		scan one dataset with a set of matrices"
 	@echo "	scan_all_datasets		scan all dataset of a given data type"
 	@echo "	scan_all_datatypes		scan all datasets of all data types"
+	@echo " scan_one_dataset_rand		scan one random sequence set with a set of matrices"
+	@echo "	scan_all_datasets_rand		scan all random sequence sets of a given data type"
+	@echo "	scan_all_datatypes_rand		scan all random sequence sets datasets of all data types"
 	@echo "		"
 
-param:: param_00
+param: param_00
 	@echo
 	@echo "Sequence scoring parameters"
 	@echo "==========================="
-	@echo
-	@echo "Random sequences"
-	@echo "	RAND_SEQ	${RAND_SEQ}"
-	@echo "	RAND_SCRIPT	${RAND_SCRIPT}"
 	@echo
 	@echo "Matrices to evaluate"
 	@echo "	MATRICES	${MATRICES}"
@@ -39,7 +35,6 @@ param:: param_00
 	@echo "	SCAN_CMD	${SCAN_CMD}"
 	@echo "	SCAN_RESULT	${SCAN_RESULT}"
 
-
 ################################################################
 ## Define the matrices to use as input for matrix-clustering and
 ## matrix-quality. We initially restricted the analysis to the root
@@ -50,40 +45,12 @@ DATA_TYPE=CHS
 #DATASET=THC_0866
 MATRICES=${TFCLUST_ALL_MOTIFS}_trimmed
 
-################################################################
-## Select random genomic sequences of the same lengths as the current
-## data set
-RAND_SEQ=${DATASET_PATH}_random-genome-fragments.fa
-RAND_CMD=${SCHEDULER} ${RSAT_CMD} random-genome-fragments  \
-		-template_format fasta \
-		-i ${FASTA_SEQ} \
-		-org Homo_sapiens_GCF_000001405.40_GRCh38.p14  \
-		-return seq \
-		-o ${RAND_SEQ}
-RAND_SCRIPT=${DATASET_PATH}_random-genome-fragments_cmd.sh
-rand_fragments:
-	@echo
-	@echo "Selecting random genome fragments for ${BOARD} train ${DATASET}"
-	@echo "	RAND_SCRIPT	${RAND_SCRIPT}"
-	@echo "	RAND_SEQ	${RAND_SEQ}"
-	@echo ${RUNNER_HEADER} > ${RAND_SCRIPT}
-	@echo >> ${RAND_SCRIPT}
-	@echo ${RAND_CMD} >> ${RAND_SCRIPT}
-	@${RUNNER} ${RAND_SCRIPT}
-
-rand_fragments_all_datasets:
-	@echo "Running rand_fragments for all datasets ${BOARD}	${DATA_TYPE}"
-	@${MAKE} iterate_datasets TASK=rand_fragments
-
-
-rand_fragments_all_datatypes:
-	@echo "Running rand_fragments for all data sets of all data types"
-	@${MAKE} iterate_datatypes DATA_TYPE_TASK=rand_fragments_all_datasets
-
+0
 ################################################################
 ## Scan one sequence set with a given matrix file, and only return the
 ## top-scoring site per sequence for each position-specific scoring
 ## matrix.
+#SCAN_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${DATASET}/scan
 SCAN_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${DATASET}/scan
 SCAN_SCRIPT=${SCAN_DIR}/scanning_cmd.sh
 SCAN_RESULT=${SCAN_DIR}/${TF}_${DATASET}_scan_top-per-seq.tsv
@@ -129,3 +96,26 @@ scan_all_datasets:
 scan_all_datatypes:
 	@${MAKE} iterate_datatypes DATA_TYPE_TASK=scan_all_datasets
 
+
+################################################################
+## Scan random genome fragments
+scan_one_dataset_rand:
+	@echo "Scanning random genome fragments"
+	@${MAKE} scan_one_dataset FASTA_SEQ=${RAND_SEQ} SCAN_RESULT=${SCAN_DIR}/${TF}_${DATASET}_random-genome-fragments_scan_top-per-seq.tsv
+
+scan_all_datasets_rand:
+	@${MAKE} iterate_datasets TASK=scan_one_dataset_rand
+
+scan_all_datatypes_rand:
+	@${MAKE} iterate_datatypes DATA_TYPE_TASK=scan_all_datasets_rand
+
+
+################################################################
+## Scan test sequences with the matrices 
+scan_test_seq_one_type_one_tf:
+	@echo "Scanning test sequences"
+	@${MAKE} scan_one_dataset FASTA_SEQ=${TEST_SEQ} SCAN_RESULT=${SCAN_DIR}/${TF}_${DATASET}_random-genome-fragments_scan_top-per-seq.tsv
+
+scan_test_one_type_all_tfs:
+
+scan_test_all_types_all_tfs:
