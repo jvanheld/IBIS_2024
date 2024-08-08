@@ -112,6 +112,19 @@ param_00:
 	@echo "	MATRICES		${MATRICES}"
 	@echo "	TRIMMED_MATRICES	${TRIMMED_MATRICES}"
 	@echo
+	@echo "Random sequences"
+	@echo "	RAND_SEQ	${RAND_SEQ}"
+	@echo "	RAND_SCRIPT	${RAND_SCRIPT}"
+	@echo
+	@echo "Sequence scanning"
+	@echo "	SCAN_MATRICES	${SCAN_MATRICES}"
+	@echo "	SCAN_SEQ	${SCAN_SEQ}"
+	@echo "	SCAN_DIR	${SCAN_DIR}"
+	@echo "	SCAN_TYPE	${SCAN_TYPE}"
+	@echo "	SCAN_PREFIX	${SCAN_PREFIX}"
+	@echo "	SCAN_RESULT	${SCAN_RESULT}"
+	@echo "	SCAN_SCRIPT	${SCAN_SCRIPT}"
+	@echo
 	@echo "Iteration parameters"
 	@echo "	DATASETS		${DATASETS}"
 	@echo "	TFS			${TFS}"
@@ -136,6 +149,19 @@ targets_00:
 	@echo "Matrix processing"
 	@echo "	cluster_matrices	Cluster matrices discovered by peak-motifs"
 	@echo "	trim_matrices		Trim matrices to suppress non-informative columns on both sides"
+	@echo
+	@echo "Random genome fragments"
+	@echo "	rand_fragments			select random genome fragment as negative set for a given dataset"e
+	@echo "	rand_fragments_all_datasets	run rand_fragments for all the datasets of the current data type"
+	@echo "	rand_fragments_all_datatypes	run rand_fragments for all the datasets of all the data types"
+	@echo
+	@echo "Sequence scanning with discovered motifs"
+	@echo "	scan_sequences		scan sequences with matrices discovered with peak-motifs"
+	@echo "	  scan_sequences_train	scan training sequences"
+	@echo "	  scan_sequences_rand	scan random genome fragments sequences"
+	@echo "	  scan_sequences_test	scan test sequences"
+	@echo "	scan_sequences_all_datasets	scan all the datasets for a given data type"
+	@echo "	scan_sequences_all_datatypes	scan all the datasets for all the data types"
 	@echo
 	@echo "Iterators"
 	@echo "	iterate_datasets	iterate a task over all the datasets of a given data type"
@@ -380,12 +406,103 @@ MATRIXQ_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
 ## JvH: THERE SEEMS TO BE A BUG WITH THE -bg_pseudo OPTION. I SHOULD CHECK THIS
 #	-bg_pseudo 0.01 \
 
+
 matrix_quality:
 	@mkdir -p ${MATRIXQ_DIR}
 	@echo "	MATRIXQ_DIR	${MATRIXQ_DIR}"
 	@echo "	MATRIXQ_CMD	${MATRIXQ_CMD}"
 	${MATRIXQ_CMD}
 	@echo "	MATRIXQ_PREFIX	${MATRIXQ_PREFIX}"
+
+################################################################
+## Select random genomic sequences of the same lengths as the current
+## data set
+RAND_SEQ=${DATASET_PATH}_random-genome-fragments.fa
+RAND_CMD=${SCHEDULER} ${RSAT_CMD} random-genome-fragments  \
+		-template_format fasta \
+		-i ${FASTA_SEQ} \
+		-org Homo_sapiens_GCF_000001405.40_GRCh38.p14  \
+		-return seq \
+		-o ${RAND_SEQ}
+RAND_SCRIPT=${DATASET_PATH}_random-genome-fragments_cmd.sh
+rand_fragments:
+	@echo
+	@echo "Selecting random genome fragments for ${BOARD} train ${DATASET}"
+	@echo "	RAND_SCRIPT	${RAND_SCRIPT}"
+	@echo "	RAND_SEQ	${RAND_SEQ}"
+	@echo ${RUNNER_HEADER} > ${RAND_SCRIPT}
+	@echo >> ${RAND_SCRIPT}
+	@echo ${RAND_CMD} >> ${RAND_SCRIPT}
+	@${RUNNER} ${RAND_SCRIPT}
+
+rand_fragments_all_datasets:
+	@echo "Running rand_fragments for all datasets ${BOARD}	${DATA_TYPE}"
+	@${MAKE} iterate_datasets TASK=rand_fragments
+
+
+rand_fragments_all_datatypes:
+	@echo "Running rand_fragments for all data sets of all data types"
+	@${MAKE} iterate_datatypes DATA_TYPE_TASK=rand_fragments_all_datasets
+
+
+################################################################
+## Scan sequences with matrices
+SCAN_MATRICES=${PEAKMO_CLUSTERS}_aligned_logos/All_concatenated_motifs
+SCAN_SEQ=${FASTA_SEQ}
+SCAN_DIR=${PEAKMO_DIR}/sequence-scan
+SCAN_TYPE=train
+SCAN_PREFIX=${SCAN_DIR}/${DATA_TYPE}_${TF}_${DATASET}_peakmo-clust-matrices_${SCAN_TYPE}
+SCAN_SCRIPT=${SCAN_PREFIX}_cmd.sh
+SCAN_RESULT=${SCAN_PREFIX}.tsv
+SCAN_CMD=${SCHEDULER} ${RSAT_CMD} matrix-scan -v ${V} \
+	-m ${SCAN_MATRICES}.tf \
+	-matrix_format transfac \
+	-i ${SCAN_SEQ} \
+	-seq_format fasta \
+	-bgfile ${BG_EQUIPROBA} \
+	-bg_pseudo 0.01 \
+	-pseudo 1 \
+	-decimals 1 \
+	-2str \
+	-return sites \
+	-return pval \
+	-uth rank_pm 1 \
+	-n score \
+	-o ${SCAN_RESULT}
+scan_sequences_one_type:
+	@echo "Scanning sequences"
+	@echo "	SCAN_MATRICES	${SCAN_MATRICES}"
+	@echo "	SCAN_SEQ	${SCAN_SEQ}"
+	@echo "	SCAN_DIR	${SCAN_DIR}"
+	@echo "	SCAN_TYPE	${SCAN_TYPE}"
+	@echo "	SCAN_PREFIX	${SCAN_PREFIX}"
+	@echo "	SCAN_RESULT	${SCAN_RESULT}"
+	@echo "	SCAN_CMD	${SCAN_CMD}"
+	@echo "	SCAN_SCRIPT	${SCAN_SCRIPT}"
+	@mkdir -p ${SCAN_DIR}
+	@echo ${RUNNER_HEADER} > ${SCAN_SCRIPT}
+	@echo >> ${SCAN_SCRIPT}
+	@echo ${SCAN_CMD} >> ${SCAN_SCRIPT}
+	@${RUNNER} ${SCAN_SCRIPT}
+	@echo "	SCAN_RESULT	${SCAN_RESULT}"
+	@echo
+
+scan_sequences_train:
+	@${MAKE} scan_sequences_one_type SCAN_SEQ=${FASTA_SEQ} SCAN_TYPE=train
+
+scan_sequences_rand:
+	@${MAKE} scan_sequences_one_type SCAN_SEQ=${RAND_SEQ} SCAN_TYPE=rand
+
+scan_sequences_test:
+	@${MAKE} scan_sequences_one_type SCAN_SEQ=${TEST_SEQ} SCAN_TYPE=test
+
+scan_sequences: scan_sequences_train scan_sequences_rand scan_sequences_test
+
+scan_sequences_all_datasets:
+	@${MAKE} iterate_datasets TASK=scan_sequences
+
+scan_sequences_all_datatypes:
+	@${MAKE} iterate_datatypes DATA_TYPE_TASK=scan_sequences_all_datasets
 
 ################################################################
 ## Parameters for the clustering of all motifs discovered for a given transcription factor
