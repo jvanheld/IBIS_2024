@@ -45,7 +45,6 @@ DATA_TYPE=CHS
 #DATASET=THC_0866
 MATRICES=${TFCLUST_ALL_MOTIFS}_trimmed
 
-0
 ################################################################
 ## Scan one sequence set with a given matrix file, and only return the
 ## top-scoring site per sequence for each position-specific scoring
