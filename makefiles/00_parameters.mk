@@ -123,6 +123,7 @@ param_00:
 	@echo "	SCAN_TYPE	${SCAN_TYPE}"
 	@echo "	SCAN_PREFIX	${SCAN_PREFIX}"
 	@echo "	SCAN_RESULT	${SCAN_RESULT}"
+	@echo "	SCAN_CMD	${SCAN_CMD}"
 	@echo "	SCAN_SCRIPT	${SCAN_SCRIPT}"
 	@echo
 	@echo "Iteration parameters"
@@ -465,10 +466,13 @@ SCAN_CMD=${SCHEDULER} ${RSAT_CMD} matrix-scan -quick -v ${V} \
 	-decimals 1 \
 	-2str \
 	-return sites \
-	-return pval \
 	-uth rank_pm 1 \
 	-n score \
 	-o ${SCAN_RESULT}
+
+## p-value computation takes time,, and is not reqion
+#	-return pval \
+
 scan_sequences_one_type:
 	@echo "Scanning sequences"
 	@echo "	SCAN_MATRICES	${SCAN_MATRICES}"
