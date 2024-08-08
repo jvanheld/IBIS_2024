@@ -22,12 +22,13 @@ param: param_00
 	@echo "	PEAKMO_MATRICES		${PEAKMO_MATRICES}"
 	@echo "	PEAKMO_TASKS		${PEAKMO_TASKS}"
 	@echo "	PEAKMO_CMD		${PEAKMO_CMD}"
+	@echo " PEAKMO_SCAN_DIR		${PEAKMO_SCAN_DIR}"
+	@echo " PEAKMO_SCAN_PREFIX	${PEAKMO_SCAN_PREFIX}"
 	@echo "	PEAKMO_SCRIPT		${PEAKMO_SCRIPT}"
 	@echo
 
 ## Define the matrices to use as input for matrix-clustering and matrix-quality
 MATRICES=${PEAKMO_MATRICES}
-
 
 ################################################################
 ## Run peak-motifs to discover motifs in peak sequences
