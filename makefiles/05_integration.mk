@@ -35,6 +35,11 @@ MATRIXQ_SEQ_PERM_OPT=`awk -F'\t' '$$1=="${TF}" {print "-perm "$$4"_"$$2" ${MATRI
 MATRICES=${TFCLUST_ALL_MOTIFS}_trimmed
 
 ################################################################
+## Sequence scanning parameters
+SCAN_MATRICES=${TFCLUST_ALL_MOTIFS}_trimmed
+SCAN_DIR=${SCAN_MATRICES}/sequence-scan
+
+################################################################
 ## Print targets
 targets: targets_00
 	@echo
@@ -43,7 +48,9 @@ targets: targets_00
 	@echo "	cluster_one_tf		cluster motifs discovered across all the data types for a given transcription factor"
 	@echo "	cluster_all_tfs		run cluster_on_tf on each TF"
 	@echo "	quality_one_tf		run matrix-quality on the matrix-clustering result for a given transcription factor"
-	@echo "	quality_all_tfs         run quality_one_tf on each TF"	
+	@echo "	quality_all_tfs         run quality_one_tf on each TF"
+	@echo
+
 
 ################################################################
 ## Print parameters
@@ -158,4 +165,5 @@ quality_all_tfs: all_metadata
 	@echo
 	@echo "Running matrix-quality on the matrix-clustering results for each TF"
 	@${MAKE} all_tfs TF_TASK=quality_one_tf SLURM_OUT=${MATRIXQ_SLURM_OUT}
+
 
