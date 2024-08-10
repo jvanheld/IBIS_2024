@@ -330,7 +330,8 @@ MATRICES=${PEAKMO_MATRICES}
 
 ################################################################
 ## Convert matrices from Transfac to cluster-buster format
-CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -from transfac -to transfac -i ${MATRICES}.tf -rescale 1 -decimals 4 -o ${MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -from transfac -to cluster-buster -i ${MATRICES}_freq.tf -o ${MATRICES}_freq.cb ; cat ${MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' > ${MATRICES}_freq.txt
+HEADER_CLEAN_CMD=perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//; s/cluster_/c/; s/node_/n/; s/motifs/m/'
+CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -from transfac -to transfac -i ${MATRICES}.tf -rescale 1 -decimals 4 -o ${MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -from transfac -to cluster-buster -i ${MATRICES}_freq.tf -o ${MATRICES}_freq.cb ; cat ${MATRICES}_freq.cb | ${HEADER_CLEAN_CMD} > ${MATRICES}_freq.txt
 convert_matrices:
 	@echo "Converting matrices from transfac to cluster-buster format"
 	@echo "	MATRICES	${MATRICES}"
@@ -397,6 +398,7 @@ cluster_matrices:
 BG_OL=2
 BG_EQUIPROBA=bg_models/equiprobable_1str.tsv
 MATRIXQ_DIR=${PEAKMO_DIR}/matrix-quality
+MATRIXQ_DIR=${MATRICES}_matrix-quality
 MATRIXQ_PREFIX=${MATRIXQ_DIR}/matrix-quality
 MATRIXQ_SEQ_OPT=-seq ${TF}_${DATASET} ${FASTA_SEQ} -seq 'test_seq' ${TEST_SEQ}
 MATRIXQ_SEQ_PLOT_OPT=-plot ${TF}_${DATASET} nwd -plot 'test_seq' nwd
