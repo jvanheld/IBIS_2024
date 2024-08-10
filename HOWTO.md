@@ -172,9 +172,25 @@ The target `peakmo` of `makefiles/02_peak-motifs.mk` runs the single-dataset ana
 - `matrix-quality` to estimate, for each trimmed motif, the enrichment in the train dataset relative to the theoretical expectation, and relative to the randomized (column-permuted) matrices. 
 
 
+Here is the command to analyse a single dataset. 
+Beware, this analysis can take several minutes or more depending on the size of the dataset. 
+
+```
+make -f makefiles/02_peak-motifs.mk EXPERIMENT=CHS TF=GABPA DATASET=THC_0866 peakmo
+````
+
+You can get the information about result files with the `param` target
+
+```
+make -f makefiles/02_peak-motifs.mk EXPERIMENT=CHS TF=GABPA DATASET=THC_0866 param
+
+```
+
+The following commands iterate the analyses over all the datasets of the 4 types of experiments for which we run single-dataset analysis. Beware, this represents a lof of analyses, which can take several hours or days. We parallelise it on a cluster to run it efficiently.  
+
 ```
 for exp in CHS GHTS HTS SMS; do \
-  make -f makefiles/02_peak-motifs.mk iterate_datasets TASK=peakmo -n ; \
+  make -f makefiles/02_peak-motifs.mk iterate_datasets TASK=peakmo; \
 done
 ```
 
