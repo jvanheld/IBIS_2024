@@ -172,17 +172,24 @@ targets_00:
 ################################################################
 ## Run fetch-sequences to retrieve fasta sequences from the peak
 ## coordinates (bed) from the UCSC genome browser
-FETCH_CMD=${RSAT_CMD} = fetch-sequences -v 1 \
+FETCH_CMD=${RSAT_CMD} fetch-sequences -v 1 \
 	-genome hg38 \
 	-header_format galaxy \
 	-i ${PEAK_COORD} -o ${FASTA_SEQ}
-fetch_sequences:
+fetch_sequences_one_dataset:
 	@echo
 	@echo "Retrieving peak sequences from UCSC"
 	@echo "	PEAK_COORD	${PEAK_COORD}"
-	@${FETCH_CMD}
+	${FETCH_CMD}
 	@echo
 	@echo "	FASTA_SEQ	${FASTA_SEQ}"
+
+################################################################
+## Fetch peak sequences from UCSC for the genomic data
+fetch_sequences:
+	@for exp in CHS GHTS; do \
+		${MAKE} iterate_datasets EXPERIMENT=$${exp} TASK=fetch_sequences_one_dataset; \
+	done
 
 ################################################################
 ## For HTS and SMS data, convert fastq sequences to fasta format
@@ -276,10 +283,10 @@ metadata_fastq:
 	@echo
 
 
-################################################################
-## PBM data: TSV files
-metadata_pbm:
-	@${MAKE} -f makefiles/04_PBM.mk metadata_pbm
+# ################################################################
+# ## PBM data: TSV files
+# metadata_pbm:
+# 	@${MAKE} -f makefiles/04_PBM.mk metadata_pbm
 
 ################################################################
 ## Generate a metadata file with all the datasets for all the TFs
@@ -287,7 +294,10 @@ ALL_METADATA=metadata/${BOARD}/TF_DATASET_all-types.tsv
 all_metadata:
 	@echo
 	@echo "Building metadata file for each experiments"
-	@${MAKE} iterate_experiments EXPERIMENT_TASK=metadata
+	@for exp in CHS GHTS HTS SMS; do \
+		${MAKE} metadata EXPERIMENT=$${exp} ; \
+	done
+	@make -f makefiles/04_PBM.mk metadata_pbm
 	@echo
 	@echo "Merging metadata for all experiments"
 	ls -1  metadata/${BOARD}/TF_DATASET_* \
@@ -322,14 +332,16 @@ MATRICES=${PEAKMO_MATRICES}
 ################################################################
 ## Convert matrices from Transfac to cluster-buster format
 HEADER_CLEAN_CMD=perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//; s/cluster_/c/; s/node_/n/; s/motifs/m/'
-CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -from transfac -to transfac -i ${MATRICES}.tf -rescale 1 -decimals 4 -o ${MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -from transfac -to cluster-buster -i ${MATRICES}_freq.tf -o ${MATRICES}_freq.cb ; cat ${MATRICES}_freq.cb | ${HEADER_CLEAN_CMD} > ${MATRICES}_freq.txt
-convert_matrices:
+CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -v ${V} -i ${MATRICES}.tf -from transfac -to transfac -trim_info ${TRIM_INFO} -return counts -o ${TRIMMED_MATRICES}.tf; ${RSAT_CMD} convert-matrix -v ${V} -from transfac -to transfac -i ${TRIMMED_MATRICES}.tf -rescale 1 -decimals 4 -o ${TRIMMED_MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -v ${V} -from transfac -to cluster-buster -i ${TRIMMED_MATRICES}_freq.tf -o ${TRIMMED_MATRICES}_freq.cb ; cat ${TRIMMED_MATRICES}_freq.cb | ${HEADER_CLEAN_CMD} > ${TRIMMED_MATRICES}_freq.txt
+convert_matrices: 
 	@echo "Converting matrices from transfac to cluster-buster format"
-	@echo "	MATRICES	${MATRICES}"
+	@echo "	MATRICES		${MATRICES}"
+	@echo "	TRIMMED_MATRICES	${TRIMMED_MATRICES}"
 	@${CONVERT_MATRIX_CMD}
-	@echo "	transfac counts	${MATRICES}.tf"
-	@echo "	transfac freq	${MATRICES}_freq.tf"
-	@echo "	cb format	${MATRICES}_freq.txt"
+	@echo "	transfac counts		${MATRICES}.tf"
+	@echo "	transfac trimmed	${TRIMMED_MATRICES}.tf"
+	@echo "	transfac freq		${TRIMMED_MATRICES}_freq.tf"
+	@echo "	cb format		${TRIMMED_MATRICES}_freq.txt"
 
 ################################################################
 ## matrix-clusering command
