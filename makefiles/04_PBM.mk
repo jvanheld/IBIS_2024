@@ -9,6 +9,8 @@ include makefiles/config_PBM.mk
 targets: targets_00
 	@echo "PBM tasks"
 	@echo "	metadata_pbm			build metadata table for PBM data, from the TSV file"
+	@echo "	tsv2fasta_one_dataset		convert sequences from tsv files to fasta format (for PBM data)"
+	@echo "	tsv2fasta			run tsv2fasta_one_dataset for each PBM dataset"
 	@echo "	top_seq				extract top-raking ${TOP_SPOTS} sequences as test"
 	@echo "	bg_seq				extract bottom ${BG_SPOTS} sequences as background"
 	@echo "	top_seq_all_datasets		iterate top_seq over all datasets"
@@ -60,6 +62,23 @@ metadata_pbm:
 	@echo "	METADATA	${METADATA}"
 	@echo
 
+################################################################
+## Extract  fasta sequence file from the PBM data, sorted according to scores
+PBM_SEQ_ID=${TF}_${DATASET}
+TSV2FASTA_CMD=sort -nr -k 8 ${TSV_SEQ} \
+	| awk -F'\t' '$$4 =="FALSE" {rank++; sig=sprintf("%.3f",$$8); bg=sprintf("%.3f", $$9); print ">${DATASET}_"spot-$$1"-"$$2"-"$$3"_signal_"sig"_bg_"bg"_rank_"rank"\n"$$6""}'\
+	> ${FASTA_SEQ}
+DATA_SIZE=`du -sk ${FASTA_SEQ}`
+tsv2fasta_one_dataset:
+	@echo "Extracting fasta sequences from TSV file"
+	@echo "	TSV_SEQ			${TSV_SEQ}"
+	${TSV2FASTA_CMD}
+	@echo "	FASTA_SEQ		${FASTA_SEQ}"
+	@echo "	DATA_SIZE (kb)	${DATA_SIZE}" 
+
+TF=`awk '$$2=="${DATASET}" {print $$1}' ${METADATA}`
+tsv2fasta:
+	@${MAKE} EXPERIMENT=PBM iterate_datasets TASK=tsv2fasta_one_dataset
 
 ################################################################
 ## For PBM datasets, select an aribtrary number of top-ranking oligos
@@ -78,7 +97,7 @@ top_seq:
 	@echo "Selecting top-raking spot sequences as signal"
 	@echo "	N_TOP_SPOTS	${N_TOP_SPOTS}"
 	@echo "	N_TOP_ROWS	${N_TOP_ROWS}"
-	@head -n ${N_TOP_ROWS} ${FASTA_SEQ} > ${TOP_SEQ}
+	head -n ${N_TOP_ROWS} ${FASTA_SEQ} > ${TOP_SEQ}
 	@echo "	TOP_SEQ	${TOP_SEQ}"
 
 bg_seq:
@@ -148,7 +167,7 @@ peakmo_diff: top_seq
 	@echo
 	@echo "	PEAKMO_DIFF_SCRIPT	${PEAKMO_DIFF_SCRIPT}"
 	@echo "Running peak-motifs"
-#	@${RUNNER} ${PEAKMO_DIFF_SCRIPT}
+	@${RUNNER} ${PEAKMO_DIFF_SCRIPT}
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 
 peakmo_diff_all_datasets:

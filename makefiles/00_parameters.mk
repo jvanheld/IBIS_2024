@@ -153,7 +153,6 @@ targets_00:
 	@echo "	all_metadata		concatenate metadata files of all the experiments"
 	@echo "	fetch_sequences		retrieve peak sequences from UCSC (for CHS and GHTS data)"
 	@echo "	fastq2fasta		convert sequences from fastq to fasta format (for HTS and SMS data)"
-	@echo "	tsv2fasta		convert sequences from tsv files to fasta format (for PBM data)"
 	@echo
 	@echo "Matrix processing"
 	@echo "	cluster_matrices	Cluster matrices discovered by peak-motifs"
@@ -210,20 +209,6 @@ fastq2fasta:
 	@echo
 	@echo "	FASTA_SEQ	${FASTA_SEQ}"
 
-################################################################
-## Extract  fasta sequence file from the PBM data, sorted according to scores
-PBM_SEQ_ID=${TF}_${DATASET}
-TSV2FASTA_CMD=sort -nr -k 8 ${TSV_SEQ} \
-	| awk -F'\t' '$$4 =="FALSE" {rank++; sig=sprintf("%.3f",$$8); bg=sprintf("%.3f", $$9); print ">${DATASET}_"spot-$$1"-"$$2"-"$$3"_signal_"sig"_bg_"bg"_rank_"rank"\n"$$6""}'\
-	> ${FASTA_SEQ}
-tsv2fasta_one_dataset:
-	@echo "Extracting fasta sequences from TSV file"
-	@echo "	TSV_SEQ		${TSV_SEQ}"
-	${TSV2FASTA_CMD}
-	@echo "	FASTA_SEQ	${FASTA_SEQ}"
-
-tsv2fasta:
-	@${MAKE} iterate_datasets TASK=tsv2fasta_one_dataset
 
 ################################################################
 ## Iterate a task over all datasets of the leaderboard for a given experiment
@@ -239,7 +224,7 @@ iterate_datasets:
 one_task:
 	@echo
 	@echo "	BOARD=${BOARD}	EXPERIMENT=${EXPERIMENT}	TF=${TF}	DATASET=${DATASET}"
-	${MAKE} ${TASK} TF=${TF} DATASET=${DATASET}
+	${MAKE}  TF=${TF} EXPERIMENT=${EXPERIMENT} DATASET=${DATASET} ${TASK}
 
 ################################################################
 ## Iterate a task over all the experiments
