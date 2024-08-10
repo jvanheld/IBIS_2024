@@ -9,8 +9,7 @@ MAKEFILE=makefiles/02_peak-motifs.mk
 targets: targets_00
 	@echo "Peak-motifs targets (${MAKEFILE})"
 	@echo "	peakmo			discover motifs in peak sequences"
-	@echo "	peakmo_diff		run peak-motifs tp detect over-represented motifs in top versus background sequences"
-	@echo "	cluster_matrices	run matrix-clustering on the motifs discovered with peak-motifs"
+	@echo "	peakmo_all_datasets	run peak-motifs in all the datasets of this type of experiment"
 	@echo
 
 param: param_00
@@ -86,9 +85,8 @@ endif
 	@echo
 	@echo "	PEAKMO_SCRIPT	${PEAKMO_SCRIPT}"
 	@echo "Running peak-motifs"
-#	@${RUNNER} ${PEAKMO_SCRIPT}
+	@${RUNNER} ${PEAKMO_SCRIPT}
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
-
 
 # all: param sequences peakmo
 ################################################################
