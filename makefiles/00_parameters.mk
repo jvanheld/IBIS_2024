@@ -326,7 +326,7 @@ TRIMMED_MATRICES=${CLUSTER_MATRICES}_trimmed-info_${TRIM_INFO}
 ################################################################
 ## Convert matrices from Transfac to cluster-buster format
 HEADER_CLEAN_CMD=perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//; s/cluster_/c/; s/node_/n/; s/motifs/m/'
-CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -v ${V} -i ${CLUSTER_MATRICES}.tf -from transfac -to transfac -trim_info ${TRIM_INFO} -return counts -o ${TRIMMED_MATRICES}.tf; ${RSAT_CMD} convert-matrix -v ${V} -from transfac -to transfac -i ${TRIMMED_MATRICES}.tf -rescale 1 -decimals 4 -o ${TRIMMED_MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -v ${V} -from transfac -to cluster-buster -i ${TRIMMED_MATRICES}_freq.tf -o ${TRIMMED_MATRICES}_freq.cb ; cat ${TRIMMED_MATRICES}_freq.cb | ${HEADER_CLEAN_CMD} > ${TRIMMED_MATRICES}_freq.txt
+CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -v ${V} -i ${CLUSTER_MATRICES}.tf -from transfac -to transfac -trim_info ${TRIM_INFO} -return counts -o ${TRIMMED_MATRICES}.tf; ${RSAT_CMD}; ${RSAT_CMD} convert-matrix -v ${V} -i ${TRIMMED_MATRICES}.tf  -from transfac -to cluster-buster -return frequencies -decimals 5 -o ${TRIMMED_MATRICES}_freq.cb ; cat ${TRIMMED_MATRICES}_freq.cb | ${HEADER_CLEAN_CMD} > ${TRIMMED_MATRICES}_freq.txt
 convert_matrices: 
 	@echo "Converting matrices from transfac to cluster-buster format"
 	@echo "	MATRICES		${MATRICES}"
