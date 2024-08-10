@@ -49,8 +49,8 @@ BG_FILE=${BG_DIR}/${EXPERIMENT}_${BG_OL}nt-noov-2str.tsv
 
 ## Iteration parameters
 TASK=oligo_tables
-DATASETS=`cut -f 2 ${METADATA} | sort -u | xargs`
-TFS=`cut -f 1 ${METADATA} | sort -u | xargs`
+DATASETS=`grep -v '^\#' ${METADATA} | cut -f 2 | sort -u | xargs`
+TFS=`grep -v '^\#' ${METADATA} | cut -f 1 | sort -u | xargs`
 
 param_00:
 	@echo
@@ -201,12 +201,14 @@ PBM_SEQ_ID=${TF}_${DATASET}
 TSV2FASTA_CMD=sort -nr -k 8 ${TSV_SEQ} \
 	| awk -F'\t' '$$4 =="FALSE" {rank++; sig=sprintf("%.3f",$$8); bg=sprintf("%.3f", $$9); print ">${DATASET}_"spot-$$1"-"$$2"-"$$3"_signal_"sig"_bg_"bg"_rank_"rank"\n"$$6""}'\
 	> ${FASTA_SEQ}
-tsv2fasta:
+tsv2fasta_one_dataset:
 	@echo "Extracting fasta sequences from TSV file"
 	@echo "	TSV_SEQ		${TSV_SEQ}"
 	${TSV2FASTA_CMD}
 	@echo "	FASTA_SEQ	${FASTA_SEQ}"
 
+tsv2fasta:
+	@${MAKE} iterate_datasets TASK=tsv2fasta_one_dataset
 
 ################################################################
 ## Iterate a task over all datasets of the leaderboard for a given experiment
@@ -216,6 +218,7 @@ iterate_datasets:
 	@echo "	BOARD		${BOARD}"
 	@echo "	EXPERIMENT	${EXPERIMENT}"
 	@echo "	DATASETS	${DATASETS}"
+	@echo "	TASK		${TASK}"
 	@for dataset in ${DATASETS} ; do ${MAKE} one_task DATASET=$${dataset}; done
 
 one_task:
@@ -241,16 +244,19 @@ one_task_datatype:
 ################################################################
 ## Build a table with the peak sets associated to each transcription
 ## factor.
-metadata: metadata_${SEQ_FORMAT}
+metadata: metadata_${SOURCE_FORMAT}
 
 ################################################################
 ## CHS and GHTS data (genomic data): peak coordinates, .peak files
+METADATA_HEADER="\#TF	DATASET	SIZE	EXPERIMENT	BOARD	SOURCE_FORMAT	FASTA_SEQ"
 metadata_fasta:
 	@echo
-	@echo "Building dataset table for ${EXPERIMENT} ${BOARD} ${SEQ_FORMAT} sequences"
+	@echo "Building metadata table for ${BOARD} ${EXPERIMENT} data (source data format: ${SOURCE_FORMAT})"
+	@echo
+	@echo ${METADATA_HEADER} > ${METADATA}
 	wc -l data/${BOARD}/train/${EXPERIMENT}/*/*.peaks  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.peaks||' \
-		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2"\t${EXPERIMENT}\t${BOARD}\t${SEQ_FORMAT}"}'  > ${METADATA}
+		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2"\t${EXPERIMENT}\t${BOARD}\t${SOURCE_FORMAT}\t"$$3"/"$$4"/"$$5"/"$$6"/"$$7"/"$$8".fasta"}'  >> ${METADATA}
 	@echo
 	@echo "	METADATA	${METADATA}"
 	@echo
@@ -259,10 +265,12 @@ metadata_fasta:
 ## HTS and SMS data: fastq.gz files
 metadata_fastq:
 	@echo
-	@echo "Building dataset table for ${EXPERIMENT} ${BOARD} ${SEQ_FORMAT} sequences"
+	@echo "Building metadata table for ${BOARD} ${EXPERIMENT} data (source data format: ${SOURCE_FORMAT})"
+	@echo
+	@echo ${METADATA_HEADER} > ${METADATA}
 	du -sk data/${BOARD}/train/${EXPERIMENT}/*/*.fastq.gz  \
-		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.fastq.*||' \
-		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${EXPERIMENT}\t${BOARD}\t${SEQ_FORMAT}"}'  > ${METADATA}
+		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.fastq.gz||' \
+		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${EXPERIMENT}\t${BOARD}\t${SOURCE_FORMAT}\t"$$2"/"$$3"/"$$4"/"$$5"/"$$6"/"$$7".fasta"}' >> ${METADATA}
 	@echo
 	@echo "	METADATA	${METADATA}"
 	@echo
@@ -272,10 +280,12 @@ metadata_fastq:
 ## PBM data: TSV files
 metadata_pbm:
 	@echo
-	@echo "Building dataset table for ${EXPERIMENT} ${BOARD} ${SEQ_FORMAT} sequences"
+	@echo "Building metadata table for ${BOARD} ${EXPERIMENT} data (source data format: ${SOURCE_FORMAT})"
+	@echo
+	@echo ${METADATA_HEADER} > ${METADATA}
 	du -sk data/${BOARD}/train/${EXPERIMENT}/*/*.tsv  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.tsv||' \
-		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${EXPERIMENT}\t${BOARD}\t${SEQ_FORMAT}"}'  > ${METADATA}
+		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${EXPERIMENT}\t${BOARD}\t${SOURCE_FORMAT}\t"$$2"/"$$3"/"$$4"/"$$5"/"$$6"/"$$7".fasta"}'  >> ${METADATA}
 	@echo
 	@echo "	METADATA	${METADATA}"
 	@echo

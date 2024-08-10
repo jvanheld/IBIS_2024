@@ -3,6 +3,7 @@
 ## challenge 2024
 
 include makefiles/00_parameters.mk
+include makefiles/config_PBM.mk
 MAKEFILE=makefiles/04_PBM.mk
 
 targets: targets_00

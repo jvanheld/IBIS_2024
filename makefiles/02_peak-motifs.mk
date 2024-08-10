@@ -61,15 +61,15 @@ peakmo:
 	@mkdir -p ${PEAKMO_DIR}
 	@echo ${RUNNER_HEADER} > ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
-ifeq (${SEQ_FORMAT}, fasta)
+ifeq (${SOURCE_FORMAT}, fasta)
 	@echo "Including fetch-sequences command in the script to get sequences from peak coordinates"
 	@echo ${FETCH_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
-else ifeq (${SEQ_FORMAT}, tsv)
+else ifeq (${SOURCE_FORMAT}, tsv)
 	@echo "Including command in the script to extract fasta sequences from tsv files (PBM data)"
 	@echo ${TSV2FASTA_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
-else ifeq (${SEQ_FORMAT}, fastq)
+else ifeq (${SOURCE_FORMAT}, fastq)
 	@echo "Including command in the script to convert fastq.gz to fasta sequences"
 	@echo ${FASTQ2FASTA_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
