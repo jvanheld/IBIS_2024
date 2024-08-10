@@ -1,8 +1,9 @@
-GABPA	THC_0866	2290	CHS	leaderboard	fasta
-PRDM5	THC_0307.Rep-DIANA_0293	20281	CHS	leaderboard	fasta
-PRDM5	THC_0307.Rep-MICHELLE_0314	31396	CHS	leaderboard	fasta
-SP140	THC_0193	809	CHS	leaderboard	fasta
-ZNF362	THC_0364.Rep-DIANA_0293	23470	CHS	leaderboard	fasta
-ZNF362	THC_0364.Rep-MICHELLE_0314	50284	CHS	leaderboard	fasta
-ZNF362	THC_0411.Rep-DIANA_0293	42854	CHS	leaderboard	fasta
-ZNF407	THC_0668	1129	CHS	leaderboard	fasta
+#TF	DATASET	SIZE	EXPERIMENT	BOARD	SOURCE_FORMAT	FASTA_SEQ
+GABPA	THC_0866	2290	CHS	leaderboard	fasta	data/leaderboard/train/CHS/GABPA/THC_0866.fasta
+PRDM5	THC_0307.Rep-DIANA_0293	20281	CHS	leaderboard	fasta	data/leaderboard/train/CHS/PRDM5/THC_0307.Rep-DIANA_0293.fasta
+PRDM5	THC_0307.Rep-MICHELLE_0314	31396	CHS	leaderboard	fasta	data/leaderboard/train/CHS/PRDM5/THC_0307.Rep-MICHELLE_0314.fasta
+SP140	THC_0193	809	CHS	leaderboard	fasta	data/leaderboard/train/CHS/SP140/THC_0193.fasta
+ZNF362	THC_0364.Rep-DIANA_0293	23470	CHS	leaderboard	fasta	data/leaderboard/train/CHS/ZNF362/THC_0364.Rep-DIANA_0293.fasta
+ZNF362	THC_0364.Rep-MICHELLE_0314	50284	CHS	leaderboard	fasta	data/leaderboard/train/CHS/ZNF362/THC_0364.Rep-MICHELLE_0314.fasta
+ZNF362	THC_0411.Rep-DIANA_0293	42854	CHS	leaderboard	fasta	data/leaderboard/train/CHS/ZNF362/THC_0411.Rep-DIANA_0293.fasta
+ZNF407	THC_0668	1129	CHS	leaderboard	fasta	data/leaderboard/train/CHS/ZNF407/THC_0668.fasta

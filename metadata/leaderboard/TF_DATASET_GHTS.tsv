@@ -1,14 +1,15 @@
-GABPA	YWE_B_AffSeq_C12_GABPA.C2	4387	GHTS	leaderboard	fasta
-PRDM5	YWK_B_AffSeq_B1_PRDM5.C2	1902	GHTS	leaderboard	fasta
-PRDM5	YWK_D_AffSeq_B1_PRDM5.C3	1169	GHTS	leaderboard	fasta
-PRDM5	YWQ_B_AffSeq_F7_PRDM5-FL.C1	220	GHTS	leaderboard	fasta
-PRDM5	YWQ_B_AffSeq_F7_PRDM5-FL.C2	931	GHTS	leaderboard	fasta
-PRDM5	YWQ_B_AffSeq_F7_PRDM5-FL.C3	588	GHTS	leaderboard	fasta
-SP140	YWQ_B_AffSeq_G2_SP140-DBD.C2	2245	GHTS	leaderboard	fasta
-SP140	YWQ_B_AffSeq_G2_SP140-DBD.C3	2294	GHTS	leaderboard	fasta
-ZNF362	YWH_B_AffSeq_F10_ZNF362.C3	88	GHTS	leaderboard	fasta
-ZNF362	YWK_B_AffSeq_E5_ZNF362.C2	147	GHTS	leaderboard	fasta
-ZNF362	YWK_D_AffSeq_E5_ZNF362.C2	157	GHTS	leaderboard	fasta
-ZNF407	YWL_B_AffSeq_A11_ZNF407.C2	489	GHTS	leaderboard	fasta
-ZNF407	YWL_B_AffSeq_A11_ZNF407.C3	420	GHTS	leaderboard	fasta
-ZNF407	YWL_B_AffSeq_A11_ZNF407.C4	321	GHTS	leaderboard	fasta
+#TF	DATASET	SIZE	EXPERIMENT	BOARD	SOURCE_FORMAT	FASTA_SEQ
+GABPA	YWE_B_AffSeq_C12_GABPA.C2	4387	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/GABPA/YWE_B_AffSeq_C12_GABPA.C2.fasta
+PRDM5	YWK_B_AffSeq_B1_PRDM5.C2	1902	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/PRDM5/YWK_B_AffSeq_B1_PRDM5.C2.fasta
+PRDM5	YWK_D_AffSeq_B1_PRDM5.C3	1169	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/PRDM5/YWK_D_AffSeq_B1_PRDM5.C3.fasta
+PRDM5	YWQ_B_AffSeq_F7_PRDM5-FL.C1	220	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/PRDM5/YWQ_B_AffSeq_F7_PRDM5-FL.C1.fasta
+PRDM5	YWQ_B_AffSeq_F7_PRDM5-FL.C2	931	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/PRDM5/YWQ_B_AffSeq_F7_PRDM5-FL.C2.fasta
+PRDM5	YWQ_B_AffSeq_F7_PRDM5-FL.C3	588	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/PRDM5/YWQ_B_AffSeq_F7_PRDM5-FL.C3.fasta
+SP140	YWQ_B_AffSeq_G2_SP140-DBD.C2	2245	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/SP140/YWQ_B_AffSeq_G2_SP140-DBD.C2.fasta
+SP140	YWQ_B_AffSeq_G2_SP140-DBD.C3	2294	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/SP140/YWQ_B_AffSeq_G2_SP140-DBD.C3.fasta
+ZNF362	YWH_B_AffSeq_F10_ZNF362.C3	88	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/ZNF362/YWH_B_AffSeq_F10_ZNF362.C3.fasta
+ZNF362	YWK_B_AffSeq_E5_ZNF362.C2	147	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/ZNF362/YWK_B_AffSeq_E5_ZNF362.C2.fasta
+ZNF362	YWK_D_AffSeq_E5_ZNF362.C2	157	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/ZNF362/YWK_D_AffSeq_E5_ZNF362.C2.fasta
+ZNF407	YWL_B_AffSeq_A11_ZNF407.C2	489	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/ZNF407/YWL_B_AffSeq_A11_ZNF407.C2.fasta
+ZNF407	YWL_B_AffSeq_A11_ZNF407.C3	420	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/ZNF407/YWL_B_AffSeq_A11_ZNF407.C3.fasta
+ZNF407	YWL_B_AffSeq_A11_ZNF407.C4	321	GHTS	leaderboard	fasta	data/leaderboard/train/GHTS/ZNF407/YWL_B_AffSeq_A11_ZNF407.C4.fasta
