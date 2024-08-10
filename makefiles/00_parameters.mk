@@ -400,17 +400,19 @@ cluster_matrices:
 ##           regulatory sequences. .
 BG_OL=2
 BG_EQUIPROBA=bg_models/equiprobable_1str.tsv
-MATRIXQ_DIR=${PEAKMO_DIR}/matrix-quality
-MATRIXQ_DIR=${MATRICES}_matrix-quality
+#MATRIXQ_DIR=${PEAKMO_DIR}/matrix-quality
+MATRIXQ_DIR=${TRIMMED_MATRICES}_matrix-quality
 MATRIXQ_PREFIX=${MATRIXQ_DIR}/matrix-quality
+#MATRIXQ_MATRIX_OPT=-ms ${MATRICES}.tf
+MATRIXQ_MATRIX_OPT=-m ${TRIMMED_MATRICES}.tf
 MATRIXQ_SEQ_OPT=-seq ${TF}_${DATASET} ${FASTA_SEQ} -seq 'test_seq' ${TEST_SEQ}
 MATRIXQ_SEQ_PLOT_OPT=-plot ${TF}_${DATASET} nwd -plot 'test_seq' nwd
 MATRIXQ_PERM=1
 MATRIXQ_SEQ_PERM_OPT=-perm ${TF}_${DATASET} ${MATRIXQ_PERM} -perm 'test_seq' ${MATRIXQ_PERM}
 MATRIXQ_TITLE=IBIS24_${BOARD}_${EXPERIMENT}_${TF}_${DATASET}
 MATRIXQ_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
+	${MATRIXQ_MATRIX_OPT} \
 	-html_title '${MATRIXQ_TITLE}'  \
-	-ms ${MATRICES}.tf \
 	-matrix_format transfac \
 	-bgfile ${BG_EQUIPROBA} \
 	-bg_format oligo-analysis \
