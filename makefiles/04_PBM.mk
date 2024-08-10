@@ -14,32 +14,36 @@ targets: targets_00
 	@echo "	top_seq_all_datasets		iterate top_seq over all datasets"
 	@echo "	bg_seq_all_datasets		iterate bg_seq over all datasets"
 	@echo "	top_bg_seq_all_datasets		iterate bg_seq and bg_seq over all datasets"
-	@echo "	peakmo_diff_all_datasets	run peak-motifs differential analysis in all the datasets"
+	@echo ""
+	@echo "Differential motif discovery (top versus background spots) with peak-motifs"
+	@echo "	peakmo_diff			run peak-motifs differential analysis in a given dataset"
+	@echo "	peakmo_diff_all_datasets	run peak-motifs differential analysis in all PBM datasets"
 	@echo
 
 TEST_SEQ=${BG_SEQ}
 param: param_00
 	@echo "PBM top / background sequences"
-	@echo "	N_TOP_SPOTS	${N_TOP_SPOTS}"
-	@echo "	N_TOP_ROWS	${N_TOP_ROWS}"
-	@echo "	TOP_SUFFIX	${TOP_SUFFIX}"
-	@echo "	TOP_SEQ		${TOP_SEQ}"
-	@echo "	N_BG_SPOTS	${N_BG_SPOTS}"
-	@echo "	N_BG_ROWS	${N_BG_ROWS}"
-	@echo "	BG_SUFFIX	${BG_SUFFIX}"
-	@echo "	BG_SEQ		${BG_SEQ}"
+	@echo "	N_TOP_SPOTS		${N_TOP_SPOTS}"
+	@echo "	N_TOP_ROWS		${N_TOP_ROWS}"
+	@echo "	TOP_SUFFIX		${TOP_SUFFIX}"
+	@echo "	TOP_SEQ			${TOP_SEQ}"
+	@echo "	N_BG_SPOTS		${N_BG_SPOTS}"
+	@echo "	N_BG_ROWS		${N_BG_ROWS}"
+	@echo "	BG_SUFFIX		${BG_SUFFIX}"
+	@echo "	BG_SEQ			${BG_SEQ}"
 	@echo
 	@echo "Redefining test sequences as background sequences"
-	@echo "	TEST_SEQ	${TEST_SEQ}"
+	@echo "	TEST_SEQ		${TEST_SEQ}"
 	@echo
 	@echo "peak-motifs differential analysis options"
-	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
-	@echo "	PEAKMO_CMD	${PEAKMO_CMD}"
-	@echo "	PEAKMO_SCRIPT	${PEAKMO_SCRIPT}"
+	@echo "	PEAKMO_DIR		${PEAKMO_DIR}"
+	@echo "	PEAKMO_DIFF_CMD		${PEAKMO_DIFF_CMD}"
+	@echo "	PEAKMO_DIFF_SCRIPT	${PEAKMO_DIFF_SCRIPT}"
 	@echo
 
 ## Define the matrices to use as input for matrix-clustering and matrix-quality
-MATRICES=${PEAKMO_MATRICES}
+#MATRICES=${PEAKMO_MATRICES}
+MATRICES=${PEAKMO_CLUSTERS}_aligned_logos/All_concatenated_motifs
 
 #metadata_pbm_all_datasets:
 #	@${MAKE} iterate_datasets EXPERIMENT=PBM TASK=metadata_pbm
@@ -100,7 +104,7 @@ top_bg_seq_all_datasets: top_seq_all_datasets bg_seq_all_datasets
 ## background sequences.
 DIFF_SUFFIX=${TOP_SUFFIX}_vs_${BG_SUFFIX}
 PEAKMO_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}_${DIFF_SUFFIX}
-PEAKMO_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs  \
+PEAKMO_DIFF_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs  \
 	-v ${V} \
 	-title ${BOARD}_${EXPERIMENT}_${TF}_${DATASET}_train_vs_bg  \
 	-i ${TOP_SEQ} \
@@ -122,29 +126,29 @@ PEAKMO_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs  \
 	-img_format png  \
 	${PEAKMO_OPT} \
 	-outdir ${PEAKMO_DIR}
-PEAKMO_SCRIPT=${PEAKMO_DIR}/peak-motif${PEAKMO_OPT}_${DIFF_SUFFIX}_cmd.sh
+PEAKMO_DIFF_SCRIPT=${PEAKMO_DIR}/peak-motif${PEAKMO_OPT}_${DIFF_SUFFIX}_cmd.sh
 
 peakmo_diff: top_seq
 	@echo
 	@echo "Running peak-motifs in differential analysis mode"
 	@echo
-	@echo "Writing peak-motif script for differential analysis	${PEAKMO_SCRIPT}"
+	@echo "Writing peak-motif script for differential analysis	${PEAKMO_DIFF_SCRIPT}"
 	@mkdir -p ${PEAKMO_DIR}
-	@echo ${RUNNER_HEADER} > ${PEAKMO_SCRIPT}
-	@echo >> ${PEAKMO_SCRIPT}
-	@echo ${PEAKMO_CMD} >> ${PEAKMO_SCRIPT}
-	@echo
-	@echo "${CONVERT_MATRIX_CMD}" >> ${PEAKMO_SCRIPT}
-	@echo >> ${PEAKMO_SCRIPT}
+	@echo ${RUNNER_HEADER} > ${PEAKMO_DIFF_SCRIPT}
+	@echo >> ${PEAKMO_DIFF_SCRIPT}
+	@echo ${PEAKMO_DIFF_CMD} >> ${PEAKMO_DIFF_SCRIPT}
+	@echo >> ${PEAKMO_DIFF_SCRIPT}
 	@mkdir -p ${PEAKMO_CLUSTERS_DIR}
-	@echo ${CLUSTER_CMD} >> ${PEAKMO_SCRIPT}
-	@echo >> ${PEAKMO_SCRIPT}
+	@echo ${CLUSTER_CMD} >> ${PEAKMO_DIFF_SCRIPT}
+	@echo  >> ${PEAKMO_DIFF_SCRIPT}
+	@echo "${CONVERT_MATRIX_CMD}" >> ${PEAKMO_DIFF_SCRIPT}
+	@echo >> ${PEAKMO_DIFF_SCRIPT}
 	@mkdir -p ${MATRIXQ_DIR}
-	@echo ${MATRIXQ_CMD} >> ${PEAKMO_SCRIPT}
+	@echo ${MATRIXQ_CMD} >> ${PEAKMO_DIFF_SCRIPT}
 	@echo
-	@echo "	PEAKMO_SCRIPT	${PEAKMO_SCRIPT}"
+	@echo "	PEAKMO_DIFF_SCRIPT	${PEAKMO_DIFF_SCRIPT}"
 	@echo "Running peak-motifs"
-	@${RUNNER} ${PEAKMO_SCRIPT}
+#	@${RUNNER} ${PEAKMO_DIFF_SCRIPT}
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 
 peakmo_diff_all_datasets:

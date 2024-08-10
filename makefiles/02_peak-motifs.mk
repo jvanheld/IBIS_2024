@@ -27,9 +27,8 @@ param: param_00
 	@echo "	PEAKMO_SCRIPT		${PEAKMO_SCRIPT}"
 	@echo
 
-## Define the matrices to use as input for matrix-clustering and matrix-quality
-MATRICES=${PEAKMO_MATRICES}
-MATRICES=${PEAKMO_CLUSTERS}_aligned_logos/All_concatenated_motifs
+## Define the matrices to use as input for matrix-clustering
+#MATRICES=${PEAKMO_MATRICES}
 
 ################################################################
 ## Run peak-motifs to discover motifs in peak sequences
@@ -87,7 +86,7 @@ endif
 	@echo
 	@echo "	PEAKMO_SCRIPT	${PEAKMO_SCRIPT}"
 	@echo "Running peak-motifs"
-	@${RUNNER} ${PEAKMO_SCRIPT}
+#	@${RUNNER} ${PEAKMO_SCRIPT}
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 
 

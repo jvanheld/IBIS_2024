@@ -107,10 +107,18 @@ param_00:
 	@echo "	PEAKMO_MINOL		${PEAKMO_MINOL}"
 	@echo "	PEAKMO_MAXOL		${PEAKMO_MAXOL4}"
 	@echo
-	@echo "Matrix trimming"
-	@echo "	TRIM_INFO		${TRIM_INFO}"
+	@echo "Matrix post-processing"
 	@echo "	MATRICES		${MATRICES}"
+	@echo "	PEAKMO_MATRICES		${PEAKMO_MATRICES}"
+	@echo "	CLUSTER_MATRICES	${CLUSTER_MATRICES}"
+	@echo "	TRIM_INFO		${TRIM_INFO}"
 	@echo "	TRIMMED_MATRICES	${TRIMMED_MATRICES}"
+	@echo "	transfac counts		${MATRICES}.tf"
+	@echo "	cluster matrices	${CLUSTER_MATRICES}.tf"
+	@echo "	transfac trimmed	${TRIMMED_MATRICES}.tf"
+	@echo "	transfac freq		${TRIMMED_MATRICES}_freq.tf"
+	@echo "	cb freq			${TRIMMED_MATRICES}_freq.cb"
+	@echo "	IBIS format		${TRIMMED_MATRICES}_freq.txt"
 	@echo
 	@echo "Random sequences"
 	@echo "	RAND_SEQ	${RAND_SEQ}"
@@ -326,28 +334,33 @@ PEAKMO_CLUSTERS=${PEAKMO_CLUSTERS_DIR}/matrix-clusters
 ## discovered motifs, but the commands can alo be used for other
 ## matrices. 
 MATRICES=${PEAKMO_MATRICES}
-
+CLUSTER_MATRICES=${PEAKMO_CLUSTERS}_aligned_logos/All_concatenated_motifs
+TRIMMED_MATRICES=${CLUSTER_MATRICES}_trimmed-info_${TRIM_INFO}
 
 
 ################################################################
 ## Convert matrices from Transfac to cluster-buster format
 HEADER_CLEAN_CMD=perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//; s/cluster_/c/; s/node_/n/; s/motifs/m/'
-CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -v ${V} -i ${MATRICES}.tf -from transfac -to transfac -trim_info ${TRIM_INFO} -return counts -o ${TRIMMED_MATRICES}.tf; ${RSAT_CMD} convert-matrix -v ${V} -from transfac -to transfac -i ${TRIMMED_MATRICES}.tf -rescale 1 -decimals 4 -o ${TRIMMED_MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -v ${V} -from transfac -to cluster-buster -i ${TRIMMED_MATRICES}_freq.tf -o ${TRIMMED_MATRICES}_freq.cb ; cat ${TRIMMED_MATRICES}_freq.cb | ${HEADER_CLEAN_CMD} > ${TRIMMED_MATRICES}_freq.txt
+CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -v ${V} -i ${CLUSTER_MATRICES}.tf -from transfac -to transfac -trim_info ${TRIM_INFO} -return counts -o ${TRIMMED_MATRICES}.tf; ${RSAT_CMD} convert-matrix -v ${V} -from transfac -to transfac -i ${TRIMMED_MATRICES}.tf -rescale 1 -decimals 4 -o ${TRIMMED_MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -v ${V} -from transfac -to cluster-buster -i ${TRIMMED_MATRICES}_freq.tf -o ${TRIMMED_MATRICES}_freq.cb ; cat ${TRIMMED_MATRICES}_freq.cb | ${HEADER_CLEAN_CMD} > ${TRIMMED_MATRICES}_freq.txt
 convert_matrices: 
 	@echo "Converting matrices from transfac to cluster-buster format"
 	@echo "	MATRICES		${MATRICES}"
+	@echo "	PEAKMO_MATRICES		${PEAKMO_MATRICES}"
+	@echo "	CLUSTER_MATRICES	${CLUSTER_MATRICES}"
 	@echo "	TRIMMED_MATRICES	${TRIMMED_MATRICES}"
 	@${CONVERT_MATRIX_CMD}
 	@echo "	transfac counts		${MATRICES}.tf"
+	@echo "	cluster matrices	${CLUSTER_MATRICES}.tf"
 	@echo "	transfac trimmed	${TRIMMED_MATRICES}.tf"
 	@echo "	transfac freq		${TRIMMED_MATRICES}_freq.tf"
-	@echo "	cb format		${TRIMMED_MATRICES}_freq.txt"
+	@echo "	cb freq			${TRIMMED_MATRICES}_freq.cb"
+	@echo "	IBIS format		${TRIMMED_MATRICES}_freq.txt"
 
 ################################################################
 ## matrix-clusering command
 CLUSTER_CMD=${RSAT_CMD} matrix-clustering -v ${V} \
 	-max_matrices 50 \
-	-matrix ${TF}_${DATASET} ${MATRICES}.tf transfac \
+	-matrix ${TF}_${DATASET} ${PEAKMO_MATRICES}.tf transfac \
 	-hclust_method average -calc sum \
 	-title '${TF}_${DATASET}' \
 	-metric_build_tree 'Ncor' \
@@ -363,7 +376,6 @@ CLUSTER_CMD=${RSAT_CMD} matrix-clustering -v ${V} \
 ## Trim the non-informative columns at the left and right sides of
 ## position-specific scoring matrices.
 TRIM_INFO=0.1
-TRIMMED_MATRICES=${MATRICES}_trimmed-info_${TRIM_INFO}
 TRIM_CMD=${RSAT_CMD} convert-matrix -v ${V} -i ${MATRICES}.tf \
 	-from transfac -to transfac \
 	-trim_info ${TRIM_INFO} \
