@@ -1,5 +1,5 @@
 ## Test configuration for SMS data
-DATA_TYPE=PBM
+EXPERIMENT=PBM
 TF=NACC2
 DATASET=SD_PBM13725
 SEQ_FORMAT=pbm

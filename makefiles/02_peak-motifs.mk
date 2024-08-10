@@ -35,7 +35,7 @@ MATRICES=${PEAKMO_MATRICES}
 PEAKMO_TASKS=purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,motifs_vs_db,scan,timelog,synthesis,small_summary
 PEAKMO_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs \
 	-v ${V} \
-	-title 'IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}' \
+	-title 'IBIS24_${BOARD}_${EXPERIMENT}_${TF}_${DATASET}' \
 	-i ${FASTA_SEQ} \
 	-2str \
 	-noov \
@@ -92,7 +92,7 @@ endif
 
 # all: param sequences peakmo
 ################################################################
-## Iterate over all datasets of a given data type
+## Iterate over all datasets of a given experiment
 TASK=peakmo
 peakmo_all_datasets:
 	@${MAKE} iterate_datasets TASK=peakmo

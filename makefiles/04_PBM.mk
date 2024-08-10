@@ -41,7 +41,7 @@ param: param_00
 MATRICES=${PEAKMO_MATRICES}
 
 metadata_pbm_all_datasets:
-	@${MAKE} iterate_datasets DATA_TYPE=PBM TASK=metadata_pbm
+	@${MAKE} iterate_datasets EXPERIMENT=PBM TASK=metadata_pbm
 
 ################################################################
 ## For PBM datasets, select an aribtrary number of top-ranking oligos
@@ -88,7 +88,7 @@ DIFF_SUFFIX=${TOP_SUFFIX}_vs_${BG_SUFFIX}
 PEAKMO_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}_${DIFF_SUFFIX}
 PEAKMO_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs  \
 	-v ${V} \
-	-title ${BOARD}_${DATA_TYPE}_${TF}_${DATASET}_train_vs_bg  \
+	-title ${BOARD}_${EXPERIMENT}_${TF}_${DATASET}_train_vs_bg  \
 	-i ${TOP_SEQ} \
 	-ctrl ${BG_SEQ} \
 	-max_seq_len 500 \

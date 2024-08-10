@@ -11,7 +11,7 @@ MAKEFILE=makefiles/05_integration.mk
 ################################################################
 ## Specific parameters for this script
 V=2
-DATA_TYPE=all-types
+EXPERIMENT=all-types
 DATASET=all-sets
 
 ALL_TFS=`cat ${ALL_METADATA} | cut -f 1 | sort -u | xargs`
@@ -43,9 +43,9 @@ SCAN_DIR=${SCAN_MATRICES}/sequence-scan
 ## Print targets
 targets: targets_00
 	@echo
-	@echo "Clustering motifs across data types"
+	@echo "Clustering motifs across experiments"
 	@echo "	all_tfs			run a task of each TF"
-	@echo "	cluster_one_tf		cluster motifs discovered across all the data types for a given transcription factor"
+	@echo "	cluster_one_tf		cluster motifs discovered across all the experiments for a given transcription factor"
 	@echo "	cluster_all_tfs		run cluster_on_tf on each TF"
 	@echo "	quality_one_tf		run matrix-quality on the matrix-clustering result for a given transcription factor"
 	@echo "	quality_all_tfs         run quality_one_tf on each TF"
@@ -59,7 +59,7 @@ param:: param_00
 	@echo "Clustering all motifs for a transcription factor"
 	@echo "	ALL_METADATA		${ALL_METADATA}"
 	@echo "	ALL_TFS			${ALL_TFS}"
-	@echo "	DATA_TYPE		${DATA_TYPE}"
+	@echo "	EXPERIMENT		${EXPERIMENT}"
 	@echo "	TF			${TF}"
 	@echo "	TF_TASK			${TF_TASK}"
 	@echo "	TFCLUST_DIR		${TFCLUST_DIR}"
@@ -96,7 +96,7 @@ all_tfs:
 TFCLUST_CMD=${SCHEDULER} ${RSAT_CMD} matrix-clustering -v ${V} ${TFCLUST_INFILES} -hclust_method average -calc sum -title ${TF} -metric_build_tree Ncor -lth w 5 -lth cor 0.6 -lth Ncor 0.4 -quick -label_in_tree name -return json,heatmap  -o ${TFCLUST_PREFIX}
 cluster_one_tf:
 	@echo
-	@echo "Clustering motifs across all data types for TF ${TF}"
+	@echo "Clustering motifs across all experiments for TF ${TF}"
 	@echo "	Writing matrix-clustering script	${TF}"
 	@echo "	TFCLUST_SCRIPT	${TFCLUST_SCRIPT}"
 	@mkdir -p ${TFCLUST_DIR}
@@ -119,7 +119,7 @@ cluster_one_tf:
 ## Run matrix-clustering for each TF, with all the matrices discovered
 ## in all the datasets
 cluster_all_tfs: all_metadata
-	@echo "Clustering motifs per TF across all data types"
+	@echo "Clustering motifs per TF across all experiments"
 	@${MAKE} all_tfs TF_TASK=cluster_one_tf SLURM_OUT=${TFCLUST_SLURM_OUT}
 
 ################################################################
@@ -167,3 +167,6 @@ quality_all_tfs: all_metadata
 	@${MAKE} all_tfs TF_TASK=quality_one_tf SLURM_OUT=${MATRIXQ_SLURM_OUT}
 
 
+################################################################
+## Scan one dataset with the cross-experiment TF cluster motifs
+scan_one_dataset_TFcluster:
