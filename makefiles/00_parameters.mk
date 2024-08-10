@@ -105,7 +105,7 @@ param_00:
 	@echo "	PEAKMO_OPT		${PEAKMO_OPT}"
 	@echo "	PEAKMO_NMOTIFS		${PEAKMO_NMOTIFS}"
 	@echo "	PEAKMO_MINOL		${PEAKMO_MINOL}"
-	@echo "	PEAKMO_MAXOL		${PEAKMO_MAXOL4}"
+	@echo "	PEAKMO_MAXOL		${PEAKMO_MAXOL}"
 	@echo
 	@echo "Matrix post-processing"
 	@echo "	MATRICES		${MATRICES}"
