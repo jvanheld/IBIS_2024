@@ -1,9 +1,9 @@
 #TF	DATASET	SIZE	EXPERIMENT	BOARD	SOURCE_FORMAT	FASTA_SEQ
-LEF1	QNZS_PBM14333	4676	PBM	leaderboard	pbm	data/leaderboard/train/PBM/LEF1/QNZS_PBM14333_top0500.fasta
-LEF1	SD_PBM14333	4832	PBM	leaderboard	pbm	data/leaderboard/train/PBM/LEF1/SD_PBM14333_top0500.fasta
-NACC2	QNZS_PBM13725	4676	PBM	leaderboard	pbm	data/leaderboard/train/PBM/NACC2/QNZS_PBM13725_top0500.fasta
-NACC2	SD_PBM13725	4832	PBM	leaderboard	pbm	data/leaderboard/train/PBM/NACC2/SD_PBM13725_top0500.fasta
-RORB	QNZS_PBM14337	4672	PBM	leaderboard	pbm	data/leaderboard/train/PBM/RORB/QNZS_PBM14337_top0500.fasta
-RORB	SD_PBM14337	4832	PBM	leaderboard	pbm	data/leaderboard/train/PBM/RORB/SD_PBM14337_top0500.fasta
-TIGD3	QNZS_PBM13699	4680	PBM	leaderboard	pbm	data/leaderboard/train/PBM/TIGD3/QNZS_PBM13699_top0500.fasta
-TIGD3	SD_PBM13699	4832	PBM	leaderboard	pbm	data/leaderboard/train/PBM/TIGD3/SD_PBM13699_top0500.fasta
+LEF1	QNZS_PBM14333	4680	PBM	leaderboard	pbm	data/leaderboard/train/PBM/LEF1/QNZS_PBM14333_top0500.fasta
+LEF1	SD_PBM14333	4836	PBM	leaderboard	pbm	data/leaderboard/train/PBM/LEF1/SD_PBM14333_top0500.fasta
+NACC2	QNZS_PBM13725	4680	PBM	leaderboard	pbm	data/leaderboard/train/PBM/NACC2/QNZS_PBM13725_top0500.fasta
+NACC2	SD_PBM13725	4836	PBM	leaderboard	pbm	data/leaderboard/train/PBM/NACC2/SD_PBM13725_top0500.fasta
+RORB	QNZS_PBM14337	4676	PBM	leaderboard	pbm	data/leaderboard/train/PBM/RORB/QNZS_PBM14337_top0500.fasta
+RORB	SD_PBM14337	4836	PBM	leaderboard	pbm	data/leaderboard/train/PBM/RORB/SD_PBM14337_top0500.fasta
+TIGD3	QNZS_PBM13699	4684	PBM	leaderboard	pbm	data/leaderboard/train/PBM/TIGD3/QNZS_PBM13699_top0500.fasta
+TIGD3	SD_PBM13699	4836	PBM	leaderboard	pbm	data/leaderboard/train/PBM/TIGD3/SD_PBM13699_top0500.fasta
