@@ -26,16 +26,16 @@ make -f makefiles/02_peak-motifs.mk param
 
 The make variables can be redefined on the flight by specifying another value on the command line. 
 
-For example, the default data type is CHS (ChIP-seq)
+For example, the default experiment is CHS (ChIP-seq)
 
 ```
-make -f makefiles/02_peak-motifs.mk param | grep DATA_TYPE
+make -f makefiles/02_peak-motifs.mk param | grep EXPERIMENT
 ```
 
 It can be overwritten as follows
 
 ```
-make -f makefiles/02_peak-motifs.mk param DATA_TYPE=GHTS
+make -f makefiles/02_peak-motifs.mk param EXPERIMENT=GHTS
 ```
 
 All the other variables will be updated automatically for the GHTS (genomic high-throughput selex) data. 
@@ -53,17 +53,24 @@ This can be done with the following commands.
 ```
 export BOARD=leaderboard
 
-## Generate one metadata file per data type (CHS GHTS HTS SMS PBM)
-make -f makefiles/00_parameters.mk iterate_datatypes DATA_TYPE_TASK=metadata BOARD=${BOARD}
+## Generate a metadata file for ChIP-seq experiments (CHS)
+make -f makefiles/00_parameters.mk EXPERIMENT=CHS metadata
+
+## Check the content of the metadata file
+more metadata/leaderboard/TF_DATASET_CHS.tsv
+
+## Generate one metadata file per experiment (CHS GHTS HTS SMS PBM)
+make -f makefiles/00_parameters.mk iterate_experiments EXPERIMENT_TASK=metadata BOARD=${BOARD}
 
 ## Check the date of the metadata files
 ls -tlr metadata/${BOARD}/
 
-## Generate a metadata file with all the data types for the integration of all matrices
+## Generate a metadata file with all the experiments for the integration of all matrices
 make -f makefiles/05_integration.mk all_metadata  BOARD=${BOARD}
 
 ## Count the number of datasets per TF across the metadata file
 cut -f 1 metadata/${BOARD}/TF_DATASET_all-types.tsv | sort | uniq -c | sort -nr
+
 ```
 
 
@@ -146,19 +153,65 @@ The same can be done for the final data by replacing "leadereboard" by "final" i
 
 The `peak-motifs` workflow is used as main tool for motif discovery. 
 
-For CHS, GHTS, HTS and SMS data types, it is used in the single dataset mode, which detects exceptional motifs, with two crieria of exceptionality : 
+### Single-dataset analysis
+
+For **CHS, GHTS, HTS and SMS experiments**, it is used in the single dataset mode, which detects exceptional motifs, with two crieria of exceptionality : 
 
 - k-mer **over-representation** relative to the background model (the significance of the over-représntation is computed with a binomial test)
 - k-mer **positional bias**¨ along the peak sequences relative to peak center (a chi-squared homogeneity test)
 
 The k-mers declared significant are then used as seeds to build position-specific scoring matrices (in absolute counts), which are further converted to position frequency matrices (PFM) following the IBIS challenge specifications. 
 
-For **PBM** (protein binding microarray) data type, `peak-motifs` is used in a particular way by detecting differentially represented k-mers between two subsets of the PBM oligonucleotides : 
+#### Commands to run peak-motifs in single-dataset mode
+
+The target `peakmo` of `makefiles/02_peak-motifs.mk` runs the single-dataset analysis on a given dataset: 
+
+- `peak-motifs` to discover over-represented and positionally biased motifs;
+- `matrix-clustering` to cluster the motifs discovered by the different algorithms (`oligo-analysis`, `position-analysis` and `dyad-analysis`);
+- `convert-matrix` with the option `-trim_info` to suppress the non-informative columns on the left and right sides of the position-specific scoring matrices resulting from the clustering;
+- `matrix-quality` to estimate, for each trimmed motif, the enrichment in the train dataset relative to the theoretical expectation, and relative to the randomized (column-permuted) matrices. 
+
+
+Here is the command to analyse a single dataset. 
+Beware, this analysis can take several minutes or more depending on the size of the dataset. 
+
+```
+make -f makefiles/02_peak-motifs.mk EXPERIMENT=CHS TF=GABPA DATASET=THC_0866 peakmo
+````
+
+You can get the information about result files with the `param` target
+
+```
+make -f makefiles/02_peak-motifs.mk EXPERIMENT=CHS TF=GABPA DATASET=THC_0866 param
+
+```
+
+The following commands iterate the analyses over all the datasets of the 4 types of experiments for which we run single-dataset analysis. Beware, this represents a lof of analyses, which can take several hours or days. We parallelise it on a cluster to run it efficiently.  
+
+```
+for exp in CHS GHTS HTS SMS; do \
+  make -f makefiles/02_peak-motifs.mk iterate_datasets TASK=peakmo; \
+done
+```
+
+### Differential analysis
+
+For **PBM** (protein binding microarray) experiment, `peak-motifs` is used in a particular way by detecting differentially represented k-mers between two subsets of the PBM oligonucleotides : 
 
 - **positive spots**, assumed to be bound by the TF of interest in the experiment
 - **background / negativespots**, assumed not to be bound by the TF of interest
 
-Positive and negative spots are selected as respectively the top and bottom entries in the lis tof spots ranked by signal intensity. Since our primary analyses shown that the distribution of signal intensities does not follow a normal distribution, and each dataset shows a specific shape of signal distribution we avoid the recommended threshold of $4 \times \text{sd}$, and rather made practical tests by discovering over-represented k-mers in subsets of top-ranking spots with different aribtrary thresdholds. This analysis showed that the discovered matrices are remarkably  robust to  the number of top-scoring peaks retained as positive, and we finally retained, for each PBM dataset, the 500 spots with the highest signal intensity as the **positive spots**. As **background / negative spots**, we used the 35,000 peaks with the lowest signal intensity, which corresponds to the bulk of the signal intensity distribution. 
+Positive and negative spots are selected as respectively the top and bottom entries in the lis tof spots ranked by signal intensity. 
+
+#### Threshold on the number of top peaks
+
+Since our primary analyses shown that the distribution of signal intensities does not follow a normal distribution, and each dataset shows a specific shape of signal distribution we avoid the recommended threshold of $4 \times \text{sd}$, and rather made practical tests by discovering over-represented k-mers in subsets of top-ranking spots with different aribtrary thresdholds. This analysis showed that the discovered matrices are remarkably  robust to  the number of top-scoring peaks retained as positive. 
+
+We finally retained, for each PBM dataset, 
+
+- as **positive spots**, the 500 spots with the highest signal intensity; 
+- as **background / negative spots**, the 35,000 peaks with the lowest signal intensity, which corresponds to the bulk of the signal intensity distribution. 
+
 
 
 

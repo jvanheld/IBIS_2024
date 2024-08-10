@@ -14,7 +14,7 @@ targets: targets_00
 param: param_00
 	@echo "dataset parameters"
 	@echo "	BOARD		${BOARD}"
-	@echo "	DATA_TUPE	${DATA_TYPE}"
+	@echo "	DATA_TUPE	${EXPERIMENT}"
 	@echo oligo-anlaysis parameters
 	@echo "	MINOL		${MINOL}"
 	@echo "	MAXOL		${MAXOL}"
@@ -43,7 +43,7 @@ QUICK=quick
 ## Compute background frequencies for oligonucleotide
 
 bg_freq:
-	@echo "Computing background frequencies from 1nt to ${MAXOL}nt for ${BOARD} ${DATA_TYPE}"
+	@echo "Computing background frequencies from 1nt to ${MAXOL}nt for ${BOARD} ${EXPERIMENT}"
 	@for ol in `seq 1 ${MAXOL}`; do \
 		${MAKE} bg_freq_one_size BG_OL=$${ol}; \
 	done

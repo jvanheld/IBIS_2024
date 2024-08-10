@@ -12,11 +12,11 @@ targets: targets_00
 	@echo
 	@echo "Sequence scoring with cross-data-type matrices"
 	@echo "	scan_one_dataset		scan one dataset with a set of matrices"
-	@echo "	scan_all_datasets		scan all dataset of a given data type"
-	@echo "	scan_all_datatypes		scan all datasets of all data types"
+	@echo "	scan_all_datasets		scan all dataset of a given experiment"
+	@echo "	scan_all_experiments		scan all datasets of all experiments"
 	@echo " scan_one_dataset_rand		scan one random sequence set with a set of matrices"
-	@echo "	scan_all_datasets_rand		scan all random sequence sets of a given data type"
-	@echo "	scan_all_datatypes_rand		scan all random sequence sets datasets of all data types"
+	@echo "	scan_all_datasets_rand		scan all random sequence sets of a given experiment"
+	@echo "	scan_all_experiments_rand		scan all random sequence sets datasets of all experiments"
 	@echo "		"
 
 param: param_00
@@ -40,7 +40,7 @@ param: param_00
 ## matrix-quality. We initially restricted the analysis to the root
 ## motifs but these motifs are too degenerated -> we apply it to all
 ## the nodes of the matrix clustering result tree.
-DATA_TYPE=CHS
+EXPERIMENT=CHS
 #TF=GABPA
 #DATASET=THC_0866
 MATRICES=${TFCLUST_ALL_MOTIFS}_trimmed
@@ -49,8 +49,8 @@ MATRICES=${TFCLUST_ALL_MOTIFS}_trimmed
 ## Scan one sequence set with a given matrix file, and only return the
 ## top-scoring site per sequence for each position-specific scoring
 ## matrix.
-#SCAN_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${DATASET}/scan
-SCAN_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${DATASET}/scan
+#SCAN_DIR=results/${BOARD}/train/${EXPERIMENT}/${TF}/${DATASET}/scan
+SCAN_DIR=results/${BOARD}/train/${EXPERIMENT}/${TF}/${DATASET}/scan
 SCAN_SCRIPT=${SCAN_DIR}/scanning_cmd.sh
 SCAN_RESULT=${SCAN_DIR}/${TF}_${DATASET}_scan_top-per-seq.tsv
 SCAN_CMD=${SCHEDULER} ${RSAT_CMD} matrix-scan -v ${V} \
@@ -73,7 +73,7 @@ scan_one_dataset:
 	@echo "Scanning sequences"
 	@echo "	SCAN_DIR		${SCAN_DIR}"
 	@echo "	BOARD			${BOARD}"
-	@echo "	DATA_TYPE		${DATA_TYPE}"
+	@echo "	EXPERIMENT		${EXPERIMENT}"
 	@echo "	TF			${TF}"
 	@echo "	DATASET			${DATASET}"
 	@echo "	MATRICES		${MATRICES}"
@@ -92,8 +92,8 @@ scan_one_dataset:
 scan_all_datasets:
 	@${MAKE} iterate_datasets TASK=scan_one_dataset
 
-scan_all_datatypes:
-	@${MAKE} iterate_datatypes DATA_TYPE_TASK=scan_all_datasets
+scan_all_experiments:
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=scan_all_datasets
 
 
 ################################################################
@@ -105,8 +105,8 @@ scan_one_dataset_rand:
 scan_all_datasets_rand:
 	@${MAKE} iterate_datasets TASK=scan_one_dataset_rand
 
-scan_all_datatypes_rand:
-	@${MAKE} iterate_datatypes DATA_TYPE_TASK=scan_all_datasets_rand
+scan_all_experiments_rand:
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=scan_all_datasets_rand
 
 
 ################################################################

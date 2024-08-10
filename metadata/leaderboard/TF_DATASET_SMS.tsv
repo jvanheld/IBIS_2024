@@ -1,5 +1,6 @@
-LEF1	SRR3405063	2600	SMS	leaderboard	fastq
-NACC2	UT380-127-3	1776	SMS	leaderboard	fastq
-NFKB1	SRR3405069	39420	SMS	leaderboard	fastq
-RORB	SRR3405080	2208	SMS	leaderboard	fastq
-TIGD3	UT380-225	5948	SMS	leaderboard	fastq
+#TF	DATASET	SIZE	EXPERIMENT	BOARD	SOURCE_FORMAT	FASTA_SEQ
+LEF1	SRR3405063	2600	SMS	leaderboard	fastq	data/leaderboard/train/SMS/LEF1/SRR3405063.fasta
+NACC2	UT380-127-3	1776	SMS	leaderboard	fastq	data/leaderboard/train/SMS/NACC2/UT380-127-3.fasta
+NFKB1	SRR3405069	39420	SMS	leaderboard	fastq	data/leaderboard/train/SMS/NFKB1/SRR3405069.fasta
+RORB	SRR3405080	2208	SMS	leaderboard	fastq	data/leaderboard/train/SMS/RORB/SRR3405080.fasta
+TIGD3	UT380-225	5948	SMS	leaderboard	fastq	data/leaderboard/train/SMS/TIGD3/UT380-225.fasta

@@ -1,6 +1,6 @@
 ## Default configuration for CHS data
-DATA_TYPE=CHS
+EXPERIMENT=CHS
 #TF=GABPA
 DATASET=THC_0866
-SEQ_FORMAT=fasta
-SEQ_EXT=fasta
+SOURCE_FORMAT=fasta
+SOURCE_EXT=fasta

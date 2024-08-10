@@ -29,13 +29,14 @@ param: param_00
 
 ## Define the matrices to use as input for matrix-clustering and matrix-quality
 MATRICES=${PEAKMO_MATRICES}
+MATRICES=${PEAKMO_CLUSTERS}_aligned_logos/All_concatenated_motifs
 
 ################################################################
 ## Run peak-motifs to discover motifs in peak sequences
 PEAKMO_TASKS=purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_motifs,motifs_vs_db,scan,timelog,synthesis,small_summary
 PEAKMO_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs \
 	-v ${V} \
-	-title 'IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}' \
+	-title 'IBIS24_${BOARD}_${EXPERIMENT}_${TF}_${DATASET}' \
 	-i ${FASTA_SEQ} \
 	-2str \
 	-noov \
@@ -61,27 +62,27 @@ peakmo:
 	@mkdir -p ${PEAKMO_DIR}
 	@echo ${RUNNER_HEADER} > ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
-ifeq (${SEQ_FORMAT}, fasta)
+ifeq (${SOURCE_FORMAT}, fasta)
 	@echo "Including fetch-sequences command in the script to get sequences from peak coordinates"
 	@echo ${FETCH_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
-else ifeq (${SEQ_FORMAT}, tsv)
+else ifeq (${SOURCE_FORMAT}, tsv)
 	@echo "Including command in the script to extract fasta sequences from tsv files (PBM data)"
 	@echo ${TSV2FASTA_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
-else ifeq (${SEQ_FORMAT}, fastq)
+else ifeq (${SOURCE_FORMAT}, fastq)
 	@echo "Including command in the script to convert fastq.gz to fasta sequences"
 	@echo ${FASTQ2FASTA_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
 endif
 	@echo ${PEAKMO_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
-	@echo "${CONVERT_MATRIX_CMD}" >> ${PEAKMO_SCRIPT}
-	@echo >> ${PEAKMO_SCRIPT}
 	@mkdir -p ${PEAKMO_CLUSTERS_DIR}
 	@echo ${CLUSTER_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
 	@mkdir -p ${MATRIXQ_DIR}
+	@echo "${CONVERT_MATRIX_CMD}" >> ${PEAKMO_SCRIPT}
+	@echo >> ${PEAKMO_SCRIPT}
 	@echo ${MATRIXQ_CMD} >> ${PEAKMO_SCRIPT}
 	@echo
 	@echo "	PEAKMO_SCRIPT	${PEAKMO_SCRIPT}"
@@ -92,7 +93,7 @@ endif
 
 # all: param sequences peakmo
 ################################################################
-## Iterate over all datasets of a given data type
+## Iterate over all datasets of a given experiment
 TASK=peakmo
 peakmo_all_datasets:
 	@${MAKE} iterate_datasets TASK=peakmo

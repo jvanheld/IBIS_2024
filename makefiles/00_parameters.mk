@@ -21,36 +21,36 @@ ERR_FILE=${ERR_DIR}/sbatch_error_${NOW}.txt
 
 ################################################################
 ## Load data-type specific configuration
-DATA_TYPES=CHS GHTS HTS SMS PBM
-DATA_TYPE=CHS
-include makefiles/config_${DATA_TYPE}.mk
+EXPERIMENTS=CHS GHTS HTS SMS PBM
+EXPERIMENT=CHS
+include makefiles/config_${EXPERIMENT}.mk
 
 V=2
 
 DISCIPLINE=WET
 BOARD=leaderboard
-METADATA=metadata/${BOARD}/TF_DATASET_${DATA_TYPE}.tsv
-TEST_SEQ=data/${BOARD}/test/${DATA_TYPE}_participants.fasta
+METADATA=metadata/${BOARD}/TF_DATASET_${EXPERIMENT}.tsv
+TEST_SEQ=data/${BOARD}/test/${EXPERIMENT}_participants.fasta
 
 #DATASET=`head -n 1 ${METADATA} | cut -f 2`
 TF=`awk '$$2=="${DATASET}" {print $$1}' ${METADATA}`
-DATASET_DIR=data/${BOARD}/train/${DATA_TYPE}/${TF}
+DATASET_DIR=data/${BOARD}/train/${EXPERIMENT}/${TF}
 DATASET_PATH=${DATASET_DIR}/${DATASET}
 PEAK_COORD=${DATASET_PATH}.peaks
 FASTA_SEQ=${DATASET_PATH}.fasta
 TSV_SEQ=${DATASET_PATH}.tsv
 FASTQ_SEQ=${DATASET_PATH}.fastq.gz
-RESULT_DIR=results/${BOARD}/train/${DATA_TYPE}/${TF}/${DATASET}
+RESULT_DIR=results/${BOARD}/train/${EXPERIMENT}/${TF}/${DATASET}
 
 ## Background models estimated based on the test sequences
-BG_DIR=bg_models/${BOARD}/${DATA_TYPE}
+BG_DIR=bg_models/${BOARD}/${EXPERIMENT}
 BG_OL=2
-BG_FILE=${BG_DIR}/${DATA_TYPE}_${BG_OL}nt-noov-2str.tsv
+BG_FILE=${BG_DIR}/${EXPERIMENT}_${BG_OL}nt-noov-2str.tsv
 
 ## Iteration parameters
 TASK=oligo_tables
-DATASETS=`cut -f 2 ${METADATA} | sort -u | xargs`
-TFS=`cut -f 1 ${METADATA} | sort -u | xargs`
+DATASETS=`grep -v '^\#' ${METADATA} | cut -f 2 | sort -u | xargs`
+TFS=`grep -v '^\#' ${METADATA} | cut -f 1 | sort -u | xargs`
 
 param_00:
 	@echo
@@ -72,8 +72,8 @@ param_00:
 	@echo "Data set specification"
 #	@echo "	DISCIPLINE		${DISCIPLINE}"
 	@echo "	BOARD			${BOARD}"
-	@echo "	DATA_TYPES		${DATA_TYPES}"
-	@echo "	DATA_TYPE		${DATA_TYPE}"
+	@echo "	EXPERIMENTS		${EXPERIMENTS}"
+	@echo "	EXPERIMENT		${EXPERIMENT}"
 	@echo "	METADATA		${METADATA}"
 	@echo "	TEST_SEQ		${TEST_SEQ}"
 	@echo "	TF			${TF}"
@@ -138,11 +138,11 @@ targets_00:
 	@echo "Common targets (makefiles/00_parameters.mk)"
 	@echo "	targets			list targets"
 	@echo "	param			list parameters"
-	@echo "	metadata		build metadata table for one data type"
+	@echo "	metadata		build metadata table for one experiment"
 	@echo "	  metadata_fasta	build metadata table by finding fasta files (CHS and GHTS data)"
 	@echo "	  metadata_fastq	build metadata table by finding fastq files (HTS and SMS data)"
 	@echo "	  metadata_pbm		build metadata table for PBM data, from the TSV file"
-	@echo "	all_metadata		concatenate metadata files of all the data types"
+	@echo "	all_metadata		concatenate metadata files of all the experiments"
 	@echo "	fetch_sequences		retrieve peak sequences from UCSC (for CHS and GHTS data)"
 	@echo "	fastq2fasta		convert sequences from fastq to fasta format (for HTS and SMS data)"
 	@echo "	tsv2fasta		convert sequences from tsv files to fasta format (for PBM data)"
@@ -153,20 +153,20 @@ targets_00:
 	@echo
 	@echo "Random genome fragments"
 	@echo "	rand_fragments			select random genome fragment as negative set for a given dataset"e
-	@echo "	rand_fragments_all_datasets	run rand_fragments for all the datasets of the current data type"
-	@echo "	rand_fragments_all_datatypes	run rand_fragments for all the datasets of all the data types"
+	@echo "	rand_fragments_all_datasets	run rand_fragments for all the datasets of the current experiment"
+	@echo "	rand_fragments_all_experiments	run rand_fragments for all the datasets of all the experiments"
 	@echo
 	@echo "Sequence scanning with discovered motifs"
 	@echo "	scan_sequences		scan sequences with matrices discovered with peak-motifs"
 	@echo "	  scan_sequences_train	scan training sequences"
 	@echo "	  scan_sequences_rand	scan random genome fragments sequences"
 	@echo "	  scan_sequences_test	scan test sequences"
-	@echo "	scan_sequences_all_datasets	scan all the datasets for a given data type"
-	@echo "	scan_sequences_all_datatypes	scan all the datasets for all the data types"
+	@echo "	scan_sequences_all_datasets	scan all the datasets for a given experiment"
+	@echo "	scan_sequences_all_experiments	scan all the datasets for all the experiments"
 	@echo
 	@echo "Iterators"
-	@echo "	iterate_datasets	iterate a task over all the datasets of a given data type"
-	@echo "	iterate_datatypes	iterate a task over all the data types"
+	@echo "	iterate_datasets	iterate a task over all the datasets of a given experiment"
+	@echo "	iterate_experiments	iterate a task over all the experiments"
 	@echo
 
 ################################################################
@@ -201,56 +201,62 @@ PBM_SEQ_ID=${TF}_${DATASET}
 TSV2FASTA_CMD=sort -nr -k 8 ${TSV_SEQ} \
 	| awk -F'\t' '$$4 =="FALSE" {rank++; sig=sprintf("%.3f",$$8); bg=sprintf("%.3f", $$9); print ">${DATASET}_"spot-$$1"-"$$2"-"$$3"_signal_"sig"_bg_"bg"_rank_"rank"\n"$$6""}'\
 	> ${FASTA_SEQ}
-tsv2fasta:
+tsv2fasta_one_dataset:
 	@echo "Extracting fasta sequences from TSV file"
 	@echo "	TSV_SEQ		${TSV_SEQ}"
 	${TSV2FASTA_CMD}
 	@echo "	FASTA_SEQ	${FASTA_SEQ}"
 
+tsv2fasta:
+	@${MAKE} iterate_datasets TASK=tsv2fasta_one_dataset
 
 ################################################################
-## Iterate a task over all datasets of the leaderboard for a given data type
+## Iterate a task over all datasets of the leaderboard for a given experiment
 iterate_datasets:
 	@echo 
 	@echo "Iterating over datasets"
 	@echo "	BOARD		${BOARD}"
-	@echo "	DATA_TYPE	${DATA_TYPE}"
+	@echo "	EXPERIMENT	${EXPERIMENT}"
 	@echo "	DATASETS	${DATASETS}"
+	@echo "	TASK		${TASK}"
 	@for dataset in ${DATASETS} ; do ${MAKE} one_task DATASET=$${dataset}; done
 
 one_task:
 	@echo
-	@echo "	BOARD=${BOARD}	DATATYPE=${DATA_TYPE}	TF=${TF}	DATASET=${DATASET}"
+	@echo "	BOARD=${BOARD}	EXPERIMENT=${EXPERIMENT}	TF=${TF}	DATASET=${DATASET}"
 	${MAKE} ${TASK} TF=${TF} DATASET=${DATASET}
 
 ################################################################
-## Iterate a task over all the data types
-iterate_datatypes:
+## Iterate a task over all the experiments
+iterate_experiments:
 	@echo 
-	@echo "Iterating over data types"
-	@for datatype in ${DATA_TYPES} ; do \
-		${MAKE} one_task_datatype DATA_TYPE=$${datatype} ;  \
+	@echo "Iterating over experiments"
+	@for experiment in ${EXPERIMENTS} ; do \
+		${MAKE} one_task_experiment EXPERIMENT=$${experiment} ;  \
 	done
 
-DATA_TYPE_TASK=metadata
-one_task_datatype:
-	@echo "	DATA_TYPE	${DATA_TYPE}"
-	@${MAKE} ${DATA_TYPE_TASK}
+EXPERIMENT_TASK=metadata
+one_task_experiment:
+	@echo "	EXPERIMENT	${EXPERIMENT}"
+	@${MAKE} ${EXPERIMENT_TASK}
 
 
 ################################################################
 ## Build a table with the peak sets associated to each transcription
 ## factor.
-metadata: metadata_${SEQ_FORMAT}
+metadata: metadata_${SOURCE_FORMAT}
 
 ################################################################
 ## CHS and GHTS data (genomic data): peak coordinates, .peak files
+METADATA_HEADER="\#TF	DATASET	SIZE	EXPERIMENT	BOARD	SOURCE_FORMAT	FASTA_SEQ"
 metadata_fasta:
 	@echo
-	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
-	wc -l data/${BOARD}/train/${DATA_TYPE}/*/*.peaks  \
+	@echo "Building metadata table for ${BOARD} ${EXPERIMENT} data (source data format: ${SOURCE_FORMAT})"
+	@echo
+	@echo ${METADATA_HEADER} > ${METADATA}
+	wc -l data/${BOARD}/train/${EXPERIMENT}/*/*.peaks  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.peaks||' \
-		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2"\t${DATA_TYPE}\t${BOARD}\t${SEQ_FORMAT}"}'  > ${METADATA}
+		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2"\t${EXPERIMENT}\t${BOARD}\t${SOURCE_FORMAT}\t"$$3"/"$$4"/"$$5"/"$$6"/"$$7"/"$$8".fasta"}'  >> ${METADATA}
 	@echo
 	@echo "	METADATA	${METADATA}"
 	@echo
@@ -259,10 +265,12 @@ metadata_fasta:
 ## HTS and SMS data: fastq.gz files
 metadata_fastq:
 	@echo
-	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
-	du -sk data/${BOARD}/train/${DATA_TYPE}/*/*.fastq.gz  \
-		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.fastq.*||' \
-		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${DATA_TYPE}\t${BOARD}\t${SEQ_FORMAT}"}'  > ${METADATA}
+	@echo "Building metadata table for ${BOARD} ${EXPERIMENT} data (source data format: ${SOURCE_FORMAT})"
+	@echo
+	@echo ${METADATA_HEADER} > ${METADATA}
+	du -sk data/${BOARD}/train/${EXPERIMENT}/*/*.fastq.gz  \
+		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.fastq.gz||' \
+		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${EXPERIMENT}\t${BOARD}\t${SOURCE_FORMAT}\t"$$2"/"$$3"/"$$4"/"$$5"/"$$6"/"$$7".fasta"}' >> ${METADATA}
 	@echo
 	@echo "	METADATA	${METADATA}"
 	@echo
@@ -272,10 +280,12 @@ metadata_fastq:
 ## PBM data: TSV files
 metadata_pbm:
 	@echo
-	@echo "Building dataset table for ${DATA_TYPE} ${BOARD} ${SEQ_FORMAT} sequences"
-	du -sk data/${BOARD}/train/${DATA_TYPE}/*/*.tsv  \
+	@echo "Building metadata table for ${BOARD} ${EXPERIMENT} data (source data format: ${SOURCE_FORMAT})"
+	@echo
+	@echo ${METADATA_HEADER} > ${METADATA}
+	du -sk data/${BOARD}/train/${EXPERIMENT}/*/*.tsv  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.tsv||' \
-		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${DATA_TYPE}\t${BOARD}\t${SEQ_FORMAT}"}'  > ${METADATA}
+		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${EXPERIMENT}\t${BOARD}\t${SOURCE_FORMAT}\t"$$2"/"$$3"/"$$4"/"$$5"/"$$6"/"$$7".fasta"}'  >> ${METADATA}
 	@echo
 	@echo "	METADATA	${METADATA}"
 	@echo
@@ -284,9 +294,14 @@ metadata_pbm:
 ## Generate a metadata file with all the datasets for all the TFs
 ALL_METADATA=metadata/${BOARD}/TF_DATASET_all-types.tsv
 all_metadata:
+	@echo
+	@echo "Building metadata file for each experiments"
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=metadata
+	@echo
+	@echo "Merging metadata for all experiments"
 	ls -1  metadata/${BOARD}/TF_DATASET_* \
 		| grep -v ${ALL_METADATA} \
-		| xargs cat > ${ALL_METADATA}
+		| xargs cat | sort -u > ${ALL_METADATA}
 	@echo "	ALL_METADATA	${ALL_METADATA}"
 
 
@@ -315,7 +330,8 @@ MATRICES=${PEAKMO_MATRICES}
 
 ################################################################
 ## Convert matrices from Transfac to cluster-buster format
-CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -from transfac -to transfac -i ${MATRICES}.tf -rescale 1 -decimals 4 -o ${MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -from transfac -to cluster-buster -i ${MATRICES}_freq.tf -o ${MATRICES}_freq.cb ; cat ${MATRICES}_freq.cb | perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' > ${MATRICES}_freq.txt
+HEADER_CLEAN_CMD=perl -pe 's/^>/>${TF} ${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//; s/cluster_/c/; s/node_/n/; s/motifs/m/'
+CONVERT_MATRIX_CMD=${RSAT_CMD} convert-matrix -from transfac -to transfac -i ${MATRICES}.tf -rescale 1 -decimals 4 -o ${MATRICES}_freq.tf ; ${RSAT_CMD} convert-matrix -from transfac -to cluster-buster -i ${MATRICES}_freq.tf -o ${MATRICES}_freq.cb ; cat ${MATRICES}_freq.cb | ${HEADER_CLEAN_CMD} > ${MATRICES}_freq.txt
 convert_matrices:
 	@echo "Converting matrices from transfac to cluster-buster format"
 	@echo "	MATRICES	${MATRICES}"
@@ -382,12 +398,13 @@ cluster_matrices:
 BG_OL=2
 BG_EQUIPROBA=bg_models/equiprobable_1str.tsv
 MATRIXQ_DIR=${PEAKMO_DIR}/matrix-quality
+MATRIXQ_DIR=${MATRICES}_matrix-quality
 MATRIXQ_PREFIX=${MATRIXQ_DIR}/matrix-quality
 MATRIXQ_SEQ_OPT=-seq ${TF}_${DATASET} ${FASTA_SEQ} -seq 'test_seq' ${TEST_SEQ}
 MATRIXQ_SEQ_PLOT_OPT=-plot ${TF}_${DATASET} nwd -plot 'test_seq' nwd
 MATRIXQ_PERM=1
 MATRIXQ_SEQ_PERM_OPT=-perm ${TF}_${DATASET} ${MATRIXQ_PERM} -perm 'test_seq' ${MATRIXQ_PERM}
-MATRIXQ_TITLE=IBIS24_${BOARD}_${DATA_TYPE}_${TF}_${DATASET}
+MATRIXQ_TITLE=IBIS24_${BOARD}_${EXPERIMENT}_${TF}_${DATASET}
 MATRIXQ_CMD=${RSAT_CMD} matrix-quality  -v ${V} \
 	-html_title '${MATRIXQ_TITLE}'  \
 	-ms ${MATRICES}.tf \
@@ -437,13 +454,13 @@ rand_fragments:
 	@${RUNNER} ${RAND_SCRIPT}
 
 rand_fragments_all_datasets:
-	@echo "Running rand_fragments for all datasets ${BOARD}	${DATA_TYPE}"
+	@echo "Running rand_fragments for all datasets ${BOARD}	${EXPERIMENT}"
 	@${MAKE} iterate_datasets TASK=rand_fragments
 
 
-rand_fragments_all_datatypes:
-	@echo "Running rand_fragments for all data sets of all data types"
-	@${MAKE} iterate_datatypes DATA_TYPE_TASK=rand_fragments_all_datasets
+rand_fragments_all_experiments:
+	@echo "Running rand_fragments for all data sets of all experiments"
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=rand_fragments_all_datasets
 
 
 ################################################################
@@ -452,7 +469,7 @@ SCAN_MATRICES=${PEAKMO_CLUSTERS}_aligned_logos/All_concatenated_motifs
 SCAN_SEQ=${FASTA_SEQ}
 SCAN_DIR=${PEAKMO_DIR}/sequence-scan
 SCAN_TYPE=train
-SCAN_PREFIX=${SCAN_DIR}/${DATA_TYPE}_${TF}_${DATASET}_peakmo-clust-matrices_${SCAN_TYPE}
+SCAN_PREFIX=${SCAN_DIR}/${EXPERIMENT}_${TF}_${DATASET}_peakmo-clust-matrices_${SCAN_TYPE}
 SCAN_SCRIPT=${SCAN_PREFIX}_cmd.sh
 SCAN_RESULT=${SCAN_PREFIX}.tsv
 SCAN_CMD=${SCHEDULER} ${RSAT_CMD} matrix-scan -quick -v ${V} \
@@ -505,8 +522,8 @@ scan_sequences: scan_sequences_train scan_sequences_rand scan_sequences_test
 scan_sequences_all_datasets:
 	@${MAKE} iterate_datasets TASK=scan_sequences
 
-scan_sequences_all_datatypes:
-	@${MAKE} iterate_datatypes DATA_TYPE_TASK=scan_sequences_all_datasets
+scan_sequences_all_experiments:
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=scan_sequences_all_datasets
 
 ################################################################
 ## Parameters for the clustering of all motifs discovered for a given transcription factor
@@ -557,6 +574,6 @@ TFCLUST_SLURM_OUT=./slurm_out/TFCLUST_${BOARD}_cross-data-types_${TF}_slurm-job_
 ## Add transcription factor name as first item in the motif header of a cluster-buster file + shorten the motif ID
 %.txt : %.cb
 	cat $< \
-		| perl -pe 's/^>/>${TF} ${DATA_TYPE}_${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' \
+		| perl -pe 's/^>/>${TF} ${EXPERIMENT}_${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' \
 		> $@
 
