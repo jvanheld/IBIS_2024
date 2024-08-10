@@ -29,6 +29,7 @@ param: param_00
 
 ## Define the matrices to use as input for matrix-clustering and matrix-quality
 MATRICES=${PEAKMO_MATRICES}
+MATRICES=${PEAKMO_CLUSTERS}_aligned_logos/All_concatenated_motifs
 
 ################################################################
 ## Run peak-motifs to discover motifs in peak sequences
@@ -76,12 +77,12 @@ else ifeq (${SOURCE_FORMAT}, fastq)
 endif
 	@echo ${PEAKMO_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
-	@echo "${CONVERT_MATRIX_CMD}" >> ${PEAKMO_SCRIPT}
-	@echo >> ${PEAKMO_SCRIPT}
 	@mkdir -p ${PEAKMO_CLUSTERS_DIR}
 	@echo ${CLUSTER_CMD} >> ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
 	@mkdir -p ${MATRIXQ_DIR}
+	@echo "${CONVERT_MATRIX_CMD}" >> ${PEAKMO_SCRIPT}
+	@echo >> ${PEAKMO_SCRIPT}
 	@echo ${MATRIXQ_CMD} >> ${PEAKMO_SCRIPT}
 	@echo
 	@echo "	PEAKMO_SCRIPT	${PEAKMO_SCRIPT}"
