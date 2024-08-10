@@ -154,7 +154,7 @@ targets_00:
 	@echo "Random genome fragments"
 	@echo "	rand_fragments			select random genome fragment as negative set for a given dataset"e
 	@echo "	rand_fragments_all_datasets	run rand_fragments for all the datasets of the current experiment"
-	@echo "	rand_fragments_all_datatypes	run rand_fragments for all the datasets of all the experiments"
+	@echo "	rand_fragments_all_experiments	run rand_fragments for all the datasets of all the experiments"
 	@echo
 	@echo "Sequence scanning with discovered motifs"
 	@echo "	scan_sequences		scan sequences with matrices discovered with peak-motifs"
@@ -162,11 +162,11 @@ targets_00:
 	@echo "	  scan_sequences_rand	scan random genome fragments sequences"
 	@echo "	  scan_sequences_test	scan test sequences"
 	@echo "	scan_sequences_all_datasets	scan all the datasets for a given experiment"
-	@echo "	scan_sequences_all_datatypes	scan all the datasets for all the experiments"
+	@echo "	scan_sequences_all_experiments	scan all the datasets for all the experiments"
 	@echo
 	@echo "Iterators"
 	@echo "	iterate_datasets	iterate a task over all the datasets of a given experiment"
-	@echo "	iterate_datatypes	iterate a task over all the experiments"
+	@echo "	iterate_experiments	iterate a task over all the experiments"
 	@echo
 
 ################################################################
@@ -223,20 +223,20 @@ iterate_datasets:
 
 one_task:
 	@echo
-	@echo "	BOARD=${BOARD}	DATATYPE=${EXPERIMENT}	TF=${TF}	DATASET=${DATASET}"
+	@echo "	BOARD=${BOARD}	EXPERIMENT=${EXPERIMENT}	TF=${TF}	DATASET=${DATASET}"
 	${MAKE} ${TASK} TF=${TF} DATASET=${DATASET}
 
 ################################################################
 ## Iterate a task over all the experiments
-iterate_datatypes:
+iterate_experiments:
 	@echo 
 	@echo "Iterating over experiments"
-	@for datatype in ${EXPERIMENTS} ; do \
-		${MAKE} one_task_datatype EXPERIMENT=$${datatype} ;  \
+	@for experiment in ${EXPERIMENTS} ; do \
+		${MAKE} one_task_experiment EXPERIMENT=$${experiment} ;  \
 	done
 
 EXPERIMENT_TASK=metadata
-one_task_datatype:
+one_task_experiment:
 	@echo "	EXPERIMENT	${EXPERIMENT}"
 	@${MAKE} ${EXPERIMENT_TASK}
 
@@ -294,9 +294,14 @@ metadata_pbm:
 ## Generate a metadata file with all the datasets for all the TFs
 ALL_METADATA=metadata/${BOARD}/TF_DATASET_all-types.tsv
 all_metadata:
+	@echo
+	@echo "Building metadata file for each experiments"
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=metadata
+	@echo
+	@echo "Merging metadata for all experiments"
 	ls -1  metadata/${BOARD}/TF_DATASET_* \
 		| grep -v ${ALL_METADATA} \
-		| xargs cat > ${ALL_METADATA}
+		| xargs cat | sort -u > ${ALL_METADATA}
 	@echo "	ALL_METADATA	${ALL_METADATA}"
 
 
@@ -451,9 +456,9 @@ rand_fragments_all_datasets:
 	@${MAKE} iterate_datasets TASK=rand_fragments
 
 
-rand_fragments_all_datatypes:
+rand_fragments_all_experiments:
 	@echo "Running rand_fragments for all data sets of all experiments"
-	@${MAKE} iterate_datatypes EXPERIMENT_TASK=rand_fragments_all_datasets
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=rand_fragments_all_datasets
 
 
 ################################################################
@@ -515,8 +520,8 @@ scan_sequences: scan_sequences_train scan_sequences_rand scan_sequences_test
 scan_sequences_all_datasets:
 	@${MAKE} iterate_datasets TASK=scan_sequences
 
-scan_sequences_all_datatypes:
-	@${MAKE} iterate_datatypes EXPERIMENT_TASK=scan_sequences_all_datasets
+scan_sequences_all_experiments:
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=scan_sequences_all_datasets
 
 ################################################################
 ## Parameters for the clustering of all motifs discovered for a given transcription factor

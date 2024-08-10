@@ -13,10 +13,10 @@ targets: targets_00
 	@echo "Sequence scoring with cross-data-type matrices"
 	@echo "	scan_one_dataset		scan one dataset with a set of matrices"
 	@echo "	scan_all_datasets		scan all dataset of a given experiment"
-	@echo "	scan_all_datatypes		scan all datasets of all experiments"
+	@echo "	scan_all_experiments		scan all datasets of all experiments"
 	@echo " scan_one_dataset_rand		scan one random sequence set with a set of matrices"
 	@echo "	scan_all_datasets_rand		scan all random sequence sets of a given experiment"
-	@echo "	scan_all_datatypes_rand		scan all random sequence sets datasets of all experiments"
+	@echo "	scan_all_experiments_rand		scan all random sequence sets datasets of all experiments"
 	@echo "		"
 
 param: param_00
@@ -92,8 +92,8 @@ scan_one_dataset:
 scan_all_datasets:
 	@${MAKE} iterate_datasets TASK=scan_one_dataset
 
-scan_all_datatypes:
-	@${MAKE} iterate_datatypes EXPERIMENT_TASK=scan_all_datasets
+scan_all_experiments:
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=scan_all_datasets
 
 
 ################################################################
@@ -105,8 +105,8 @@ scan_one_dataset_rand:
 scan_all_datasets_rand:
 	@${MAKE} iterate_datasets TASK=scan_one_dataset_rand
 
-scan_all_datatypes_rand:
-	@${MAKE} iterate_datatypes EXPERIMENT_TASK=scan_all_datasets_rand
+scan_all_experiments_rand:
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=scan_all_datasets_rand
 
 
 ################################################################
