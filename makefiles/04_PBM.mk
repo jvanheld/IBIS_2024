@@ -8,13 +8,13 @@ MAKEFILE=makefiles/04_PBM.mk
 
 targets: targets_00
 	@echo "PBM tasks"
-	@echo "	metadata_pbm		build metadata table for PBM data, from the TSV file"
-	@echo "	top_seq			extract top-raking ${TOP_SPOTS} sequences as test"
-	@echo "	bg_seq			extract bottom ${BG_SPOTS} sequences as background"
-	@echo "	top_seq_all_datasets	iterate top_seq over all datasets"
-	@echo "	bg_seq_all_datasets	iterate bg_seq over all datasets"
-	@echo "	top_bg_seq_all_datasets	iterate bg_seq and bg_seq over all datasets"
-	@echo "	peakmodiff_all_datasets	run peak-motifs differential analysis in all the datasets"
+	@echo "	metadata_pbm			build metadata table for PBM data, from the TSV file"
+	@echo "	top_seq				extract top-raking ${TOP_SPOTS} sequences as test"
+	@echo "	bg_seq				extract bottom ${BG_SPOTS} sequences as background"
+	@echo "	top_seq_all_datasets		iterate top_seq over all datasets"
+	@echo "	bg_seq_all_datasets		iterate bg_seq over all datasets"
+	@echo "	top_bg_seq_all_datasets		iterate bg_seq and bg_seq over all datasets"
+	@echo "	peakmo_diff_all_datasets	run peak-motifs differential analysis in all the datasets"
 	@echo
 
 TEST_SEQ=${BG_SEQ}
@@ -41,8 +41,21 @@ param: param_00
 ## Define the matrices to use as input for matrix-clustering and matrix-quality
 MATRICES=${PEAKMO_MATRICES}
 
-metadata_pbm_all_datasets:
-	@${MAKE} iterate_datasets EXPERIMENT=PBM TASK=metadata_pbm
+#metadata_pbm_all_datasets:
+#	@${MAKE} iterate_datasets EXPERIMENT=PBM TASK=metadata_pbm
+
+metadata_pbm:
+	@echo
+	@echo "Building metadata table for ${BOARD} ${EXPERIMENT} data (source data format: ${SOURCE_FORMAT})"
+	@echo
+	@echo ${METADATA_HEADER} > ${METADATA}
+	du -sk data/${BOARD}/train/${EXPERIMENT}/*/*.tsv  \
+		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.tsv||' \
+		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${EXPERIMENT}\t${BOARD}\t${SOURCE_FORMAT}\t"$$2"/"$$3"/"$$4"/"$$5"/"$$6"/"$$7"_top${N_TOP_SPOTS}.fasta"}'  >> ${METADATA}
+	@echo
+	@echo "	METADATA	${METADATA}"
+	@echo
+
 
 ################################################################
 ## For PBM datasets, select an aribtrary number of top-ranking oligos
@@ -134,5 +147,5 @@ peakmo_diff: top_seq
 	@${RUNNER} ${PEAKMO_SCRIPT}
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 
-peakmodiff_all_datasets:
+peakmo_diff_all_datasets:
 	@${MAKE} iterate_datasets TASK=peakmo_diff

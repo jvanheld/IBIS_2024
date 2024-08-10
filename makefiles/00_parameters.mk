@@ -279,16 +279,7 @@ metadata_fastq:
 ################################################################
 ## PBM data: TSV files
 metadata_pbm:
-	@echo
-	@echo "Building metadata table for ${BOARD} ${EXPERIMENT} data (source data format: ${SOURCE_FORMAT})"
-	@echo
-	@echo ${METADATA_HEADER} > ${METADATA}
-	du -sk data/${BOARD}/train/${EXPERIMENT}/*/*.tsv  \
-		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.tsv||' \
-		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${EXPERIMENT}\t${BOARD}\t${SOURCE_FORMAT}\t"$$2"/"$$3"/"$$4"/"$$5"/"$$6"/"$$7".fasta"}'  >> ${METADATA}
-	@echo
-	@echo "	METADATA	${METADATA}"
-	@echo
+	@${MAKE} -f makefiles/04_PBM.mk metadata_pbm
 
 ################################################################
 ## Generate a metadata file with all the datasets for all the TFs
