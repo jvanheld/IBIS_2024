@@ -52,21 +52,23 @@ This can be done with the following commands.
 
 ```
 export BOARD=leaderboard
+## Note: for the final results just replace "leaderboard" by "final" in the previous statement
 
 ## Generate a metadata file for ChIP-seq experiments (CHS)
-make -f makefiles/00_parameters.mk EXPERIMENT=CHS metadata
+make -f makefiles/00_parameters.mk BOARD=${BOARD} EXPERIMENT=CHS metadata
 
 ## Check the content of the metadata file
-more metadata/leaderboard/TF_DATASET_CHS.tsv
+cat metadata/${BOARD}/TF_DATASET_CHS.tsv
 
-## Generate one metadata file per experiment (CHS GHTS HTS SMS PBM)
-make -f makefiles/00_parameters.mk iterate_experiments EXPERIMENT_TASK=metadata BOARD=${BOARD}
+## Generate a metadata file for Protein Binding Microarray experiments (PBM)
+make -f makefiles/04_PBM.mk BOARD=${BOARD} metadata_pbm
+cat metadata/${BOARD}/TF_DATASET_PBM.tsv
+
+## Generate a metadata file with all the experiments for the integration of all matrices
+make -f makefiles/00_parameters.mk BOARD=${BOARD} all_metadata
 
 ## Check the date of the metadata files
 ls -tlr metadata/${BOARD}/
-
-## Generate a metadata file with all the experiments for the integration of all matrices
-make -f makefiles/05_integration.mk all_metadata  BOARD=${BOARD}
 
 ## Count the number of datasets per TF across the metadata file
 cut -f 1 metadata/${BOARD}/TF_DATASET_all-types.tsv | sort | uniq -c | sort -nr
@@ -148,6 +150,21 @@ The same can be done for the final data by replacing "leadereboard" by "final" i
   CAMTA1    3     0     2      1     0     0
   MYF6      2     0     1      1     0     0
 
+## Getting genmic sequences for CHS and GHTS experiments
+
+ChIP-seq (CHS) and genomic high throughput sequencing (GHTS) data are provided as coordinates (bed-formatted table with extension `.peak`). In order to get the corresponding sequences in fasta format, we use the RSAT tool `fetch-sequences`, which takes as input a bed file and retrieves the corresponding genomic sequences from (UCSC genome browser)[https://genome.ucsc.edu/].  
+
+
+```
+## Fetch genomic sequences from UCSC genome browser
+make -f makefiles/00_parameters.mk BOARD=${BOARD} fetch_sequences
+
+## Check the sizes of the sequence files
+grep -v '^#' metadata/${BOARD}/TF_DATASET_CHS.tsv  | cut -f 7 | xargs du -sk
+grep -v '^#' metadata/${BOARD}/TF_DATASET_GHTS.tsv  | cut -f 7 | xargs du -sk
+
+```
+
 
 ## Motif discoery with `peak-motifs`
 
@@ -176,13 +193,13 @@ Here is the command to analyse a single dataset.
 Beware, this analysis can take several minutes or more depending on the size of the dataset. 
 
 ```
-make -f makefiles/02_peak-motifs.mk EXPERIMENT=CHS TF=GABPA DATASET=THC_0866 peakmo
+make -f makefiles/02_peak-motifs.mk BOARD=${BOARD} EXPERIMENT=CHS TF=GABPA DATASET=THC_0866 peakmo
 ````
 
 You can get the information about result files with the `param` target
 
 ```
-make -f makefiles/02_peak-motifs.mk EXPERIMENT=CHS TF=GABPA DATASET=THC_0866 param
+make -f makefiles/02_peak-motifs.mk BOARD=${BOARD} EXPERIMENT=CHS TF=GABPA DATASET=THC_0866 param
 
 ```
 
@@ -190,7 +207,7 @@ The following commands iterate the analyses over all the datasets of the 4 types
 
 ```
 for exp in CHS GHTS HTS SMS; do \
-  make -f makefiles/02_peak-motifs.mk iterate_datasets TASK=peakmo; \
+  make -f makefiles/02_peak-motifs.mk BOARD=${BOARD} EXPERIMENT=${exp} TASK=peakmo  iterate_datasets; \
 done
 ```
 
@@ -213,6 +230,28 @@ We finally retained, for each PBM dataset,
 - as **background / negative spots**, the 35,000 peaks with the lowest signal intensity, which corresponds to the bulk of the signal intensity distribution. 
 
 
+#### Commands to run peak-motifs in differential mode
 
+For this challenge, the differential mode was only applied to PBM data. It is managed in the script `makefiles.04_PBM.mk`. 
+
+
+```
+## Get the list of targets for BPM data analysis
+make -f makefiles/04_PBM.mk BOARD=${BOARD} targets
+
+## Check the parameters for PBM data analysis
+make -f makefiles/04_PBM.mk BOARD=${BOARD} param
+
+## Extract spot sequences from the tab-separated values file
+make -f makefiles/04_PBM.mk BOARD=${BOARD}  targets tsv2fasta
+
+## Get the 500 spots with the highest signal as positive spots, and the 35,000 lowest spots as background sequences
+make -f makefiles/04_PBM.mk BOARD=${BOARD}  targets top_bg_seq_all_datasets
+
+## Run peak-motifs in differential mode on all the PBM datasets
+make -f makefiles/04_PBM.mk BOARD=${BOARD} peakmo_diff_all_datasets
+
+
+```
 
 
