@@ -35,7 +35,7 @@ PEAKMO_TASKS=purge,seqlen,composition,disco,merge_motifs,split_motifs,motifs_vs_
 PEAKMO_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs \
 	-v ${V} \
 	-title 'IBIS24_${BOARD}_${EXPERIMENT}_${TF}_${DATASET}' \
-	-i ${FASTA_SEQ} \
+	-i ${TRAIN_SEQ} \
 	-2str \
 	-noov \
 	-origin center \
