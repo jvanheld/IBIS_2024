@@ -104,14 +104,14 @@ options(width = 300)
 
 ```{r param}
 #### Define parameters ####
-data_type <- "PBM"
+experiment <- "PBM"
 board <- "leaderboard"
 
 ```
 
 ```{r load_metadata}
 ## Load metadata
-metadata_file <- file.path("metadata", board, paste0("TF_DATASET_", data_type, ".tsv"))
+metadata_file <- file.path("metadata", board, paste0("TF_DATASET_", experiment, ".tsv"))
 setwd(root_dir)
 # getwd()
 metadata <- read.table(metadata_file, header = TRUE, sep="\t", comment.char = "")
