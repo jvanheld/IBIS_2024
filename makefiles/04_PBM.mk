@@ -22,7 +22,6 @@ targets: targets_00
 	@echo "	peakmo_diff_all_datasets	run peak-motifs differential analysis in all PBM datasets"
 	@echo
 
-TEST_SEQ=${BG_SEQ}
 param: param_00
 	@echo "PBM top / background sequences"
 	@echo "	N_TOP_SPOTS		${N_TOP_SPOTS}"
@@ -33,9 +32,6 @@ param: param_00
 	@echo "	N_BG_ROWS		${N_BG_ROWS}"
 	@echo "	BG_SUFFIX		${BG_SUFFIX}"
 	@echo "	BG_SEQ			${BG_SEQ}"
-	@echo
-	@echo "Redefining test sequences as background sequences"
-	@echo "	TEST_SEQ		${TEST_SEQ}"
 	@echo
 	@echo "peak-motifs differential analysis options"
 	@echo "	PEAKMO_DIR		${PEAKMO_DIR}"
