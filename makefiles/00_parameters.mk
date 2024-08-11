@@ -467,7 +467,8 @@ rand_fragments_all_experiments:
 
 ################################################################
 ## Scan sequences with matrices
-SCAN_MATRICES=${PEAKMO_CLUSTERS}_aligned_logos/All_concatenated_motifs
+#SCAN_MATRICES=${PEAKMO_CLUSTERS}_aligned_logos/All_concatenated_motifs
+SCAN_MATRICES=${TRIMMED_MATRICES}
 SCAN_SEQ=${FASTA_SEQ}
 SCAN_DIR=${PEAKMO_DIR}/sequence-scan
 SCAN_TYPE=train
@@ -519,7 +520,8 @@ scan_sequences_rand:
 scan_sequences_test:
 	@${MAKE} scan_sequences_one_type SCAN_SEQ=${TEST_SEQ} SCAN_TYPE=test
 
-scan_sequences: scan_sequences_train scan_sequences_rand scan_sequences_test
+scan_sequences: scan_sequences_train scan_sequences_rand
+#scan_sequences_test
 
 scan_sequences_all_datasets:
 	@${MAKE} iterate_datasets TASK=scan_sequences
