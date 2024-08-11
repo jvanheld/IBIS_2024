@@ -469,8 +469,9 @@ rand_fragments_all_experiments:
 ## Scan sequences with matrices
 #SCAN_MATRICES=${PEAKMO_CLUSTERS}_aligned_logos/All_concatenated_motifs
 SCAN_MATRICES=${TRIMMED_MATRICES}
+#SCAN_DIR=${PEAKMO_DIR}/sequence-scan
+SCAN_DIR=${SCAN_MATRICES}/sequence-scan
 SCAN_SEQ=${FASTA_SEQ}
-SCAN_DIR=${PEAKMO_DIR}/sequence-scan
 SCAN_TYPE=train
 SCAN_PREFIX=${SCAN_DIR}/${EXPERIMENT}_${TF}_${DATASET}_peakmo-clust-matrices_${SCAN_TYPE}
 SCAN_SCRIPT=${SCAN_PREFIX}_cmd.sh
