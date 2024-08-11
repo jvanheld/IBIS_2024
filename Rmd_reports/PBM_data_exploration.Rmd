@@ -68,7 +68,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r include=FALSE, echo=FALSE, eval=TRUE}
+```{r setup, eval=TRUE, echo=FALSE, include=FALSE}
 library(knitr)
 library(kableExtra)
 library(rprojroot)
@@ -80,19 +80,19 @@ knitr::opts_knit$set(root.dir = root_dir)
 
 # options(encoding = 'UTF-8')
 knitr::opts_chunk$set(
-  fig.width = 7, 
-  fig.height = 5, 
-  fig.path = 'figures/PBM_',
-  fig.align = "center", 
-  size = "tiny", 
-  echo = TRUE, 
-  eval = TRUE, 
-  warning = FALSE, 
-  message = FALSE, 
-  results = TRUE, 
-  root.dir = root_dir,
-  comment = "")
-
+	eval = TRUE,
+	echo = TRUE,
+	fig.align = "center",
+	fig.height = 5,
+	fig.path = "figures/PBM_",
+	fig.width = 7,
+	message = FALSE,
+	warning = FALSE,
+	comment = "",
+	results = TRUE,
+	root.dir = root_dir,
+	size = "tiny"
+)
 options(scipen = 12) ## Max number of digits for non-scientific notation
 # knitr::asis_output("\\footnotesize")
 
@@ -105,32 +105,35 @@ options(width = 300)
 ```{r param}
 #### Define parameters ####
 data_type <- "PBM"
-board <- "train"
+board <- "leaderboard"
 
 ```
 
 ```{r load_metadata}
 ## Load metadata
-metadata_file <- file.path("metadata", "leaderboard", paste0("TF_DATASET_", data_type, ".tsv"))
+metadata_file <- file.path("metadata", board, paste0("TF_DATASET_", data_type, ".tsv"))
 setwd(root_dir)
 # getwd()
-metadata <- read.table(metadata_file, header = FALSE, sep="\t")
-colnames(metadata) <- c("TF", "dataset", "size")
+metadata <- read.table(metadata_file, header = TRUE, sep="\t", comment.char = "")
+colnames(metadata)[1] <- "TF"
+rownames(metadata) <- metadata$DATASET
+# View(metadata)
+# colnames(metadata)
 
-## Separate the two normalization methods for each experiment
+## Separate the two normalization methods for each sample
 norm_methods <- c("SD", "QNZS")
-metadata[, c("norm_method", "experiment")] <- t(as.data.frame(strsplit(x = metadata$dataset, split = "_")))
+metadata[, c("norm_method", "sample")] <- t(as.data.frame(strsplit(x = metadata$DATASET, split = "_")))
 
 TFS <- unique(metadata$TF)
 datasets <- unique(metadata$dataset)
 norm_methods <- unique(metadata$norm_method)
-experiments <- unique(metadata$experiment)
+samples <- unique(metadata$sample)
 ```
 
 ```{r load_data}
 
-## Initialise with the first experiment
-exp <- experiments[1]
+## Initialise with the first sample
+#sample <- samples[1]
 setwd(root_dir)
 #### Load all the data #### 
 message("Loading PBM data")
@@ -138,10 +141,10 @@ pbm_data <- list()
 for (i in 1:nrow(metadata)) {
   #### Load one dataset ####
   TF <- metadata[i, "TF"]
-  dataset  <- metadata[i, "dataset"]
-  experiment <- metadata[i, "experiment"]
-  message("\tLoading data\tTF: ", TF, "; dataset: ", dataset, "; experiment: ", experiment)
-  data_file <- file.path("data", "leaderboard", board, "PBM", TF, paste0(dataset, ".tsv"))
+  dataset  <- metadata[i, "DATASET"]
+  sample <- metadata[i, "sample"]
+  message("\tLoading data\tTF: ", TF, "; dataset: ", dataset, "; sample: ", sample)
+  data_file <- file.path("data", board, 'train', "PBM", TF, paste0(dataset, ".tsv"))
   pbm_data[[dataset]] <- read.table(data_file, header = TRUE, sep = "\t", comment.char = "")
   names(pbm_data[[dataset]])[1] <- sub(pattern = "X.", replacement = "", x = names(pbm_data[[dataset]])[1])
   
@@ -167,16 +170,16 @@ for (i in 1:nrow(metadata)) {
 
 #### Analyse distribution of signal ####
 
-experiment <- experiments[1]
+sample <- samples[1]
 
 par(mfrow=c(2,2))
 
-for (experiment in experiments) {
+for (sample in samples) {
   
-  TF <- unique(metadata[metadata$experiment == experiment, "TF"])
+  TF <- unique(metadata[metadata$sample == sample, "TF"])
   
-  SD <- pbm_data[[paste0("SD_", experiment)]]
-  QNZS <- pbm_data[[paste0("QNZS_", experiment)]]
+  SD <- pbm_data[[paste0("SD_", sample)]]
+  QNZS <- pbm_data[[paste0("QNZS_", sample)]]
   spot_IDs <- sort(unique(c(SD$id_spot, QNZS$id_spot)))
   
   ## Make sure the two datasets have the same spot IDS
@@ -188,7 +191,7 @@ for (experiment in experiments) {
   
   ## Compare signal between normalisation methods
   plot(SD$mean_signal_intensity, QNZS$mean_signal_intensity,
-       main = paste(TF, experiment),
+       main = paste(TF, sample),
        xlab = "SD signal (log scale)",
        ylab = "QNZS signal",
        log="x",
@@ -215,8 +218,8 @@ norm_method <- "SD"
 
 par(mfrow=c(2,2))
 
-for (experiment in experiments) {
-  dataset <- paste(sep="_", norm_method, experiment) 
+for (sample in samples) {
+  dataset <- paste(sep="_", norm_method, sample) 
   TF <- unique(metadata[metadata$dataset == dataset, "TF"])
 
   attach(pbm_data[[dataset]])
@@ -266,16 +269,16 @@ par(mfrow=c(1,1))
 #### Plot the distribution of mean signal intensities ####
 
 
-experiment <- experiments[1]
+sample <- samples[1]
 
 par(mfrow=c(4,3))
 method <- "SD"
 
 #for (method in norm_methods)  {
 
-for (experiment in experiments) {
+for (sample in samples) {
   
-  dataset <- paste(sep = "_", method, experiment)
+  dataset <- paste(sep = "_", method, sample)
   TF <- unique(metadata[metadata$dataset == dataset, "TF"])
   
   
@@ -287,7 +290,7 @@ for (experiment in experiments) {
   hist(signal, breaks=1000, 
        # xlim=c(0, q95),
        col="#BBBBBB", border="#666666",
-       main=paste(TF, experiment, "\nSD signal"))
+       main=paste(TF, sample, "\nSD signal"))
   
   ## histogram of log10-transformed signal intensities
   signal_log10 <- log(signal, base=10)
@@ -321,12 +324,12 @@ for (experiment in experiments) {
 
   # hist(signal_log10, 
   #      breaks=breaks_log10, 
-  #      main=paste(TF, method, experiment, "\nlog10(signal)"))
+  #      main=paste(TF, method, sample, "\nlog10(signal)"))
   # bg_log10 <- log(pbm_data[[dataset]]$mean_background_intensity)
   # #plot(signal_log10, bg_log10)
   # hist(signal_log10 - bg_log10, 
   #      breaks=100, 
-  #      main=paste(TF, method, experiment, "\nlog10(signal/bg)"))
+  #      main=paste(TF, method, sample, "\nlog10(signal/bg)"))
 
     message(paste(collapse="\t", TF, dataset, 1000, sum(signal >1000)))
 }
@@ -344,16 +347,16 @@ par(mfrow=c(1,1))
 #### Plot the distribution of mean signal intensities ####
 
 
-experiment <- experiments[1]
+sample <- samples[1]
 
 par(mfrow=c(2,2))
 method <- "QNZS"
 
 #for (method in norm_methods)  {
 
-for (experiment in experiments) {
+for (sample in samples) {
   
-  dataset <- paste(sep = "_", method, experiment)
+  dataset <- paste(sep = "_", method, sample)
   TF <- unique(metadata[metadata$dataset == dataset, "TF"])
   
   signal <- pbm_data[[dataset]]$mean_signal_intensity
@@ -366,7 +369,7 @@ for (experiment in experiments) {
   h <- hist(signal, breaks=1000, 
        col='#BBFFDD', border = '#66BB88', 
        las=1, 
-       main=paste(TF, experiment, "\nQNZS signal"))
+       main=paste(TF, sample, "\nQNZS signal"))
   abline(v=seq(-5, 10, 1), col="gray", lwd=1)
   abline(h=seq(0, 250, 50), col="gray", lwd=1)
   abline(v=4, col="red", lwd=2)
