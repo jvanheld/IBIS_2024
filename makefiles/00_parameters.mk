@@ -38,6 +38,7 @@ DATASET_DIR=data/${BOARD}/train/${EXPERIMENT}/${TF}
 DATASET_PATH=${DATASET_DIR}/${DATASET}
 PEAK_COORD=${DATASET_PATH}.peaks
 FASTA_SEQ=${DATASET_PATH}.fasta
+TRAIN_SEQ=`awk '$$2=="${DATASET}" {print $$7}' ${METADATA}`
 TSV_SEQ=${DATASET_PATH}.tsv
 FASTQ_SEQ=${DATASET_PATH}.fastq.gz
 RESULT_DIR=results/${BOARD}/train/${EXPERIMENT}/${TF}/${DATASET}
@@ -84,6 +85,7 @@ param_00:
 	@echo "	DATASET			${DATASET}"
 	@echo "	PEAK_COORD		${PEAK_COORD}"
 	@echo "	FASTA_SEQ		${FASTA_SEQ}"
+	@echo "	TRAIN_SEQ		${TRAIN_SEQ}"
 	@echo "	FETCH_CMD		${FETCH_CMD}"
 	@echo "	FASTQ2FASTA_CMD		${FASTQ2FASTA_CMD}"
 	@echo
@@ -121,18 +123,18 @@ param_00:
 	@echo "	IBIS format		${TRIMMED_MATRICES}_freq.txt"
 	@echo
 	@echo "Random sequences"
-	@echo "	RAND_SEQ	${RAND_SEQ}"
-	@echo "	RAND_SCRIPT	${RAND_SCRIPT}"
+	@echo "	RAND_SEQ		${RAND_SEQ}"
+	@echo "	RAND_SCRIPT		${RAND_SCRIPT}"
 	@echo
 	@echo "Sequence scanning"
-	@echo "	SCAN_MATRICES	${SCAN_MATRICES}"
-	@echo "	SCAN_SEQ	${SCAN_SEQ}"
-	@echo "	SCAN_DIR	${SCAN_DIR}"
-	@echo "	SCAN_TYPE	${SCAN_TYPE}"
-	@echo "	SCAN_PREFIX	${SCAN_PREFIX}"
-	@echo "	SCAN_RESULT	${SCAN_RESULT}"
-	@echo "	SCAN_CMD	${SCAN_CMD}"
-	@echo "	SCAN_SCRIPT	${SCAN_SCRIPT}"
+	@echo "	SCAN_MATRICES		${SCAN_MATRICES}"
+	@echo "	SCAN_SEQ		${SCAN_SEQ}"
+	@echo "	SCAN_DIR		${SCAN_DIR}"
+	@echo "	SCAN_TYPE		${SCAN_TYPE}"
+	@echo "	SCAN_PREFIX		${SCAN_PREFIX}"
+	@echo "	SCAN_RESULT		${SCAN_RESULT}"
+	@echo "	SCAN_CMD		${SCAN_CMD}"
+	@echo "	SCAN_SCRIPT		${SCAN_SCRIPT}"
 	@echo
 	@echo "Iteration parameters"
 	@echo "	DATASETS		${DATASETS}"
@@ -437,14 +439,14 @@ matrix_quality:
 ################################################################
 ## Select random genomic sequences of the same lengths as the current
 ## data set
-RAND_SEQ=${DATASET_PATH}_random-genome-fragments.fa
+RAND_SEQ=`awk '$$2=="${DATASET}" {sub(/\.fasta/,"_rand-loci.fa",$$7); print $$7}' ${METADATA}`
 RAND_CMD=${SCHEDULER} ${RSAT_CMD} random-genome-fragments  \
 		-template_format fasta \
 		-i ${FASTA_SEQ} \
 		-org Homo_sapiens_GCF_000001405.40_GRCh38.p14  \
 		-return seq \
 		-o ${RAND_SEQ}
-RAND_SCRIPT=${DATASET_PATH}_random-genome-fragments_cmd.sh
+RAND_SCRIPT=${DATASET_PATH}_rand-loci.sh
 rand_fragments:
 	@echo
 	@echo "Selecting random genome fragments for ${BOARD} train ${DATASET}"
@@ -471,8 +473,9 @@ rand_fragments_all_experiments:
 SCAN_MATRICES=${TRIMMED_MATRICES}
 #SCAN_DIR=${PEAKMO_DIR}/sequence-scan
 SCAN_DIR=${SCAN_MATRICES}/sequence-scan
-SCAN_SEQ=${FASTA_SEQ}
+#SCAN_SEQ=${FASTA_SEQ}
 SCAN_TYPE=train
+SCAN_SEQ=${TRAIN_SEQ}
 SCAN_PREFIX=${SCAN_DIR}/${EXPERIMENT}_${TF}_${DATASET}_peakmo-clust-matrices_${SCAN_TYPE}
 SCAN_SCRIPT=${SCAN_PREFIX}_cmd.sh
 SCAN_RESULT=${SCAN_PREFIX}.tsv
@@ -513,7 +516,7 @@ scan_sequences_one_type:
 	@echo
 
 scan_sequences_train:
-	@${MAKE} scan_sequences_one_type SCAN_SEQ=${FASTA_SEQ} SCAN_TYPE=train
+	@${MAKE} scan_sequences_one_type SCAN_SEQ=${TRAIN_SEQ} SCAN_TYPE=train
 
 scan_sequences_rand:
 	@${MAKE} scan_sequences_one_type SCAN_SEQ=${RAND_SEQ} SCAN_TYPE=rand
