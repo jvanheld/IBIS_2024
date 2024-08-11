@@ -496,14 +496,14 @@ SCAN_CMD=${SCHEDULER} ${RSAT_CMD} matrix-scan -quick -v ${V} \
 
 scan_sequences_one_type:
 	@echo "Scanning sequences"
-	@echo "	SCAN_MATRICES	${SCAN_MATRICES}"
-	@echo "	SCAN_SEQ	${SCAN_SEQ}"
-	@echo "	SCAN_DIR	${SCAN_DIR}"
-	@echo "	SCAN_TYPE	${SCAN_TYPE}"
-	@echo "	SCAN_PREFIX	${SCAN_PREFIX}"
-	@echo "	SCAN_RESULT	${SCAN_RESULT}"
-	@echo "	SCAN_CMD	${SCAN_CMD}"
-	@echo "	SCAN_SCRIPT	${SCAN_SCRIPT}"
+	@echo "	SCAN_MATRICES		${SCAN_MATRICES}"
+	@echo "	SCAN_SEQ		${SCAN_SEQ}"
+	@echo "	SCAN_DIR		${SCAN_DIR}"
+	@echo "	SCAN_TYPE		${SCAN_TYPE}"
+	@echo "	SCAN_PREFIX		${SCAN_PREFIX}"
+	@echo "	SCAN_RESULT		${SCAN_RESULT}"
+	@echo "	SCAN_CMD		${SCAN_CMD}"
+	@echo "	SCAN_SCRIPT		${SCAN_SCRIPT}"
 	@mkdir -p ${SCAN_DIR}
 	@echo ${RUNNER_HEADER} > ${SCAN_SCRIPT}
 	@echo >> ${SCAN_SCRIPT}
@@ -511,7 +511,8 @@ scan_sequences_one_type:
 	@echo >> ${SCAN_SCRIPT}
 	@echo gzip --force ${SCAN_RESULT} >> ${SCAN_SCRIPT}
 	@${RUNNER} ${SCAN_SCRIPT}
-	@echo "	SCAN_RESULT	${SCAN_RESULT}"
+#	@echo "	SCAN_RESULT		${SCAN_RESULT}"
+	@echo "	SCAN_RESULT (gzipped)	${SCAN_RESULT}.gz"
 	@echo
 
 scan_sequences_train:
