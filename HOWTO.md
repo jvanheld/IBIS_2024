@@ -166,7 +166,7 @@ grep -v '^#' metadata/${BOARD}/TF_DATASET_GHTS.tsv  | cut -f 7 | xargs du -sk
 ```
 
 
-## Motif discoery with `peak-motifs`
+## Motif discovery with `peak-motifs`
 
 The `peak-motifs` workflow is used as main tool for motif discovery. 
 
@@ -253,5 +253,73 @@ make -f makefiles/04_PBM.mk BOARD=${BOARD} peakmo_diff_all_datasets
 
 
 ```
+
+## Sequence scanning
+
+The discovered motifs (after clustering and trimming) are used to scan sequences in order to evaluate the performance of each motif in distriminating the train seqences from background sequences. As background sequences, we use `rsat random-genome-fragments` to pick up at random genomic fragments of the same lengths as the positive training sequences. 
+
+### Downloading the reference Human genome on your local RSAT instance
+
+The selection of random genomic fragments require to dispose of a local version of the reference genome (Human genome release GRCh38). This genome can be downloaded with the following command. 
+
+**Beware:** the genome requires ~10Gb storage, and its transfer may take some time depending on your internet speed. 
+
+```
+rsat download-organism -v 3 -org Homo_sapiens_GCF_000001405.40_GRCh38.p14 -server http://rsat-tagc.univ-mrs.fr/rsat
+```
+
+### Getting random genomic sequences (background sequences)
+
+```
+## Get random genome fragments for one dataset
+make -f makefiles/02_peak-motifs.mk BOARD=${BOARD} rand_fragments 
+
+## Get random genome fragments for all the datasets of a given experiment
+make -f makefiles/02_peak-motifs.mk BOARD=${BOARD} EXPERIMENT=CHS rand_fragments_all_datasets
+
+
+## Get random genome fragments for all the datasets of a given experiment
+make -f makefiles/02_peak-motifs.mk BOARD=${BOARD} rand_fragments_all_experiments
+
+```
+
+### Sequence scanning
+
+We scan sequences using `rsat matrix-scan -quick`, with parameters mimicking the IBIS challenge procedure: 
+
+- equiprobable background model (independently and identically distributed nucleotides)
+- for each PWM, only count the best hit per sequence (i.e. the site that maximises the weight, defined as the log-likelihood ratio between the sequence probabiliies under the PWM model and under the background model)
+
+We scan three types of sequences: 
+
+- **train:** training sequences. Note that for PBM the training sequences are the 500 spots having the highest signal intensity, whereas for other experiments (CHS, GHTS, HTS, SMS) the train sequences are all the sequences downloaded from the IBIS web site ([leaderboard](https://ibis.autosome.org/download_data/leaderboard) or [final](https://ibis.autosome.org/download_data/final)).  
+
+- **rand:** random genome fragments of the same sizes as the train sequences (see previous section)
+
+- **test:** test sequences downloaded from the IBIS web site ([leaderboard](https://ibis.autosome.org/download_data/leaderboard) or [final](https://ibis.autosome.org/download_data/final)).  
+
+
+```
+## Get the list of make targets for scanning
+make -f makefiles/02_peak-motifs.mk targets | grep scan
+
+## Scan train sequences for a given dataset
+make -f makefiles/02_peak-motifs.mk scan_sequences_train
+
+## Scan random genome fragments for a given dataset
+make -f makefiles/02_peak-motifs.mk scan_sequences_rand
+
+## Scan test sequences for a given dataset
+make -f makefiles/02_peak-motifs.mk scan_sequences_test
+
+## Scan the three types of sequences (train, rand, test)
+make -f makefiles/02_peak-motifs.mk scan_sequences
+
+##  scan all the datasets for all the experiments
+make -f makefiles/02_peak-motifs.mk scan_sequences_all_experiments
+```
+
+
+
 
 
