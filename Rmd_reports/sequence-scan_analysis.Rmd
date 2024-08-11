@@ -1,0 +1,145 @@
+---
+author: "Jacques van Helden"
+date: '`r Sys.Date()`'
+output:
+  html_document:
+    code_folding: hide
+    self_contained: no
+    fig_caption: yes
+    highlight: tango
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  ioslides_presentation:
+    slide_level: 2
+    self_contained: no
+    colortheme: dolphin
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 7
+    fonttheme: structurebold
+    highlight: tango
+    smaller: yes
+    toc: yes
+    widescreen: yes
+  revealjs::revealjs_presentation:
+    theme: night
+    transition: none
+    self_contained: true
+    css: ../../slides.css
+  slidy_presentation:
+    smart: no
+    slide_level: 2
+    self_contained: yes
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 7
+    highlight: tango
+    incremental: no
+    keep_md: yes
+    smaller: yes
+    theme: cerulean
+    toc: yes
+    widescreen: yes
+  pdf_document:
+    fig_caption: yes
+    highlight: zenburn
+    toc: yes
+    toc_depth: 3
+  beamer_presentation:
+    colortheme: dolphin
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 7
+    fonttheme: structurebold
+    highlight: tango
+    incremental: no
+    keep_tex: no
+    slide_level: 2
+    theme: Montpellier
+    toc: yes
+font-import: http://fonts.googleapis.com/css?family=Risque
+title: Analysis of sequence scanning results
+subtitle: IBIS challenge 2024
+font-family: Garamond
+transition: linear
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, eval=TRUE, echo=FALSE, include=FALSE}
+library(knitr)
+library(kableExtra)
+library(rprojroot)
+# library(formattable)
+
+root_dir = rprojroot::find_rstudio_root_file()
+knitr::opts_knit$set(root.dir = root_dir)
+#setwd(root_dir)
+
+# options(encoding = 'UTF-8')
+knitr::opts_chunk$set(
+	eval = TRUE,
+	echo = TRUE,
+	fig.align = "center",
+	fig.height = 5,
+	fig.path = "figures/PBM_",
+	fig.width = 7,
+	message = FALSE,
+	warning = FALSE,
+	comment = "",
+	results = TRUE,
+	root.dir = root_dir,
+	size = "tiny"
+)
+options(scipen = 12) ## Max number of digits for non-scientific notation
+# knitr::asis_output("\\footnotesize")
+
+options(width = 300)
+# options(encoding = 'UTF-8')
+
+# getwd()
+```
+
+```{r param}
+#### Define default parameters ####
+board <- 'leaderboard'
+data_type <- "CHS"
+tf <- "GABPA"
+dataset <- "THC_0866" 
+```
+
+## Metadata
+
+```{r load_metadata}
+## Load metadata
+metadata_file <- file.path("metadata", board, "TF_DATASET_all-types.tsv")
+setwd(root_dir)
+# getwd()
+metadata <- read.table(metadata_file, header = TRUE, sep="\t", comment.char = "")
+colnames(metadata)[1] <- "TF"
+rownames(metadata) <- metadata$DATASET
+# View(metadata)
+
+TFS <- unique(metadata$TF)
+datasets <- unique(metadata$DATASET)
+experiments <- unique(metadata$EXPERIMENT)
+
+norm_methods <- unique(metadata$norm_method)
+```
+
+## Datasets
+
+- **PCM:** we scanned sequences with position-count matrices (PCM) resulting from motif discovery in in train sequence sets. Motif discovery was performed with  `peak-motifs`  using 3 algorithms: `oligo-analysis`, `dyad-analysis` and `position-analysis`. 
+
+- **sequences:** we scan three types of sequence sets. 
+
+    - **train:** training sequences. Note that for PBM the training sequences are the 500 spots having the highest signal intensity, whereas for other experiments (CHS, GHTS, HTS, SMS) the train sequences are all the sequences downloaded from the IBIS web site ([leaderboard](https://ibis.autosome.org/download_data/leaderboard) or [final](https://ibis.autosome.org/download_data/final)).  
+
+    - **rand:** random genome fragments of the same sizes as the train sequences (see previous section)
+
+    - **test:** test sequences downloaded from the IBIS web site ([leaderboard](https://ibis.autosome.org/download_data/leaderboard) or [final](https://ibis.autosome.org/download_data/final)).  
+
+
+
