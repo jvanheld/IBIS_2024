@@ -494,9 +494,6 @@ SCAN_CMD=${SCHEDULER} ${RSAT_CMD} matrix-scan -quick -v ${V} \
 	-n score \
 	-o ${SCAN_RESULT}
 
-## p-value computation takes time,, and is not reqion
-#	-return pval \
-
 scan_sequences_one_type:
 	@echo "Scanning sequences"
 	@echo "	SCAN_MATRICES	${SCAN_MATRICES}"
@@ -511,6 +508,8 @@ scan_sequences_one_type:
 	@echo ${RUNNER_HEADER} > ${SCAN_SCRIPT}
 	@echo >> ${SCAN_SCRIPT}
 	@echo ${SCAN_CMD} >> ${SCAN_SCRIPT}
+	@echo >> ${SCAN_SCRIPT}
+	@echo gzip --force ${SCAN_RESULT} >> ${SCAN_SCRIPT}
 	@${RUNNER} ${SCAN_SCRIPT}
 	@echo "	SCAN_RESULT	${SCAN_RESULT}"
 	@echo
@@ -524,8 +523,7 @@ scan_sequences_rand:
 scan_sequences_test:
 	@${MAKE} scan_sequences_one_type SCAN_SEQ=${TEST_SEQ} SCAN_TYPE=test
 
-scan_sequences: scan_sequences_train scan_sequences_rand
-#scan_sequences_test
+scan_sequences: scan_sequences_train scan_sequences_rand scan_sequences_test
 
 scan_sequences_all_datasets:
 	@${MAKE} iterate_datasets TASK=scan_sequences
