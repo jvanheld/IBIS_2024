@@ -85,7 +85,7 @@ knitr::opts_chunk$set(
 	echo = TRUE,
 	fig.align = "center",
 	fig.height = 5,
-	fig.path = "figures/PBM_",
+	fig.path = "figures/classif-stats",
 	fig.width = 7,
 	message = FALSE,
 	warning = FALSE,
@@ -107,7 +107,7 @@ options(width = 300)
 #### Define default parameters ####
 board <- 'leaderboard'
 experiment <- "CHS"
-tf <- "GABPA"
+TF <- "GABPA"
 dataset <- "THC_0866" 
 ```
 
@@ -151,124 +151,221 @@ kable(metadata_summary, caption="Summary of the metadata. Number of datasets per
 
 
 ```{r load_data}
+#### Define a function to load a data table and analyse it ####
 
-#### Load data table (sequence scanning results)
-
-
-## Initialize variables
-TF <- metadata[dataset, "TF"]
-experiment <- metadata[dataset, "EXPERIMENT"]
-seq_type <- "train"
-seq_types <- c("train", "rand", "test")
-seq_types <- c("train", "rand")
-top_hits <- list()
-
-scan_dir <- file.path("results", 
-                      board,
-                      "train", 
-                      experiment, 
-                      TF, 
-                      dataset, "peak-motifs-nopurge", "clustered_motifs", "", "matrix-clusters_aligned_logos", "All_concatenated_motifs_trimmed-info_0.1", "sequence-scan")
-
-message(paste(collapse="\t", "Reading sequence scan tables", dataset, TF, experiment))
-message("\t", scan_dir)
-## Read the data tables for the different sequence types
-for (seq_type in seq_types) {
-  scan_file <- file.path(scan_dir, 
-                       paste0(experiment, "_",
-                              TF, "_",
-                              dataset, 
-                              "_peakmo-clust-matrices_", 
-                              seq_type,
-                              ".tsv.gz"))
+#' @title Load matrix-scan results for one dataset of the IBIS challenge. 
+#' @description Load matrix-scan results for one dataset of the IBIS challenge. These results are tab-delimited files for different sequence types (by default: train, rand and test)
+#' @author Jacques van Helden
+#' @param dataset the ID of the dataset (must be present in the metadata table)
+#' @param seq_types=c("train","rand","test") sequence types for which the hit tables have to be read
+#' @examples
+#' ## Load recount metadata
+#' load_dataset(dataset=THC_0866)
+#' @return a list with the data + statistics per motif
+#' @export
+load_dataset <- function(dataset,
+                         seq_types = c("train", "rand")
+#                         seq_types = c("train", "rand", "test")
+                         ) {
+  ## Initialize variables
+  TF <- metadata[dataset, "TF"]
+  experiment <- metadata[dataset, "EXPERIMENT"]
+  top_hits <- list()
   
-  message("\t", seq_type, "\t", basename(scan_file))
-
-  system.time(top_hits[[seq_type]] <- 
-                data.table::fread(
-                  cmd = paste0("zless ", scan_file, " | grep -v '^;' "), 
-                  sep = "\t", 
-                  header = TRUE, 
-                  stringsAsFactors = FALSE, 
-                  select = c(1, 3:6, 8),
-                  showProgress = TRUE))
-  top_hits[[seq_type]]$seq_type <- seq_type
+  message("Loading sequence scan tables for dataset ", dataset, "\t", TF, "\t", experiment)
+  message("Sequence types ", paste(collapse = ",", seq_types))
   
-  ## View(top_hits[[seq_type]])
+  scan_dir <- file.path("results", 
+                        board,
+                        "train", 
+                        experiment, 
+                        TF, 
+                        dataset, "peak-motifs-nopurge", "clustered_motifs", "", "matrix-clusters_aligned_logos", "All_concatenated_motifs_trimmed-info_0.1", "sequence-scan")
+  
+  message("\t", scan_dir)
+  
+  ## Read the data tables for the different sequence types
+  for (seq_type in seq_types) {
+    scan_file <- file.path(scan_dir, 
+                           paste0(experiment, "_",
+                                  TF, "_",
+                                  dataset, 
+                                  "_peakmo-clust-matrices_", 
+                                  seq_type,
+                                  ".tsv.gz"))
+    
+    message("\t", seq_type, "\t", basename(scan_file))
+    
+    system.time(top_hits[[seq_type]] <- 
+                  data.table::fread(
+                    cmd = paste0("zless ", scan_file, " | grep -v '^;' | grep -v 10000000"), 
+                    sep = "\t", 
+                    header = TRUE, 
+                    stringsAsFactors = FALSE, 
+                    showProgress = TRUE))
+    top_hits[[seq_type]]$seq_type <- seq_type
+    ## View(top_hits[[seq_type]])
+  }
+
+  return(top_hits)
 }
 
+```
 
-merged <- rbind(top_hits[["train"]], 
-                top_hits[["rand"]]) # merge train and rand
-merged <- merged[order(merged$weight, decreasing = TRUE), ]
-motifs <- unique(merged$ft_name)
-nmotifs <- length(motifs)
+```{r ckassif_statistics}
 
-#### Compute statistics for each motif #### 
-stat_per_motif <- list()
-motif <- motifs[1]
-for (motif in motifs) {
-  stats <- merged[merged$ft_name == motif, ]
-  npos <- sum(stats$seq_type == "train") # number of positive cases
-  nneg <- sum(stats$seq_type == "rand")  # number of negative cases
-  # View(stats)
-  # head(stats)
-  # tail(stats)
-  stats$rank <- 1:nrow(stats)
-  stats$TP <- cumsum(stats$seq_type == "train")
-  stats$FP <- cumsum(stats$seq_type == "rand")
-  stats$FN <- npos - stats$TP
-  stats$TN <- nneg - stats$FP
+#' @title Compute classification statistics from two data.frames corresponding to positive and negative cases respectively. 
+#' @description Compute classification statistics from two data.frames corresponding to positive and negative cases respectively. The positive and negative data frames must contain a column with numeric scores, which will server to rank them and compute the classification statistics (TP, TN, FP, FN and derived statistics). Another column must be specified to indicate some grouping. 
+#' 
+#' For the IBIS challenge, the positive and negative datasets are feature tables produced by matrix-scan (keeping only the columns 1, 3-6 and 8). The grouping column is the ft_name column, which indicates the motif name. Statistics are computed separately for each motif in the input data table. 
+#' @author Jacques van Helden
+#' @param pos_data a data frame containing the positive cases
+#' @param neg_data a data frame containing the negative cases
+#' @param score_column="weight" column of pos_data and neg_data containing the scores §by default, weight score of matrix-scan)
+#' @param group_column=2 column containing the grouping criterion (by default, the ft_name column of matrix-scan)
+#' @param decreasing=TRUE if TRUE, score column is sorted by decreasing order, i.e. the highest scores are considered the best. 
+#' @return a list with different objects
+#' @export
+
+classif_statistics <- function(pos_data, 
+                               neg_data,
+                               label_column="seq_type",
+                               pos_label="train",
+                               neg_label="rand",
+                               score_column="weight",
+                               group_column = "ft_name",
+                               decreasing = TRUE) {
+
+  message("Computing classification statistics")
+  message("\tPositive data dimensions: ", nrow(pos_data), " x ", ncol(pos_data))
+  message("\tNegative data dimensions: ", nrow(pos_data), " x ", ncol(pos_data))
+  merged <- data.frame(rbind(pos_data, 
+                  neg_data)) # merge train and rand
+  message("\tmerged table dimensions: ", nrow(merged), " x ", ncol(merged))
   
-  ## TPR = Sn = coverage
-  stats$TPR <- stats$TP / (stats$TP + stats$FN)
+  ## Sort merged data by score
+  merged <- merged[order(merged[, score_column], decreasing = decreasing), ]
   
-  ## TPR
-  stats$FPR <- stats$FP / (stats$FP + stats$TN)
+  groups <- unique(merged[, group_column])
+  ngroups <- length(groups)
   
-  stats$Sn <- stats$TP / npos
-  stat_per_motif[[motif]] <- stats 
-}  
+  #### Compute statistics for each motif #### 
+  stat_per_group <- list()
+  group <- groups[1]
+  for (group in groups) {
+    message("\t\tgroup\t", group)
+    stats <- merged[merged$ft_name == group, ]
+    
+    npos <- sum(stats[,label_column] == pos_label) # number of positive cases
+    nneg <- sum(stats$seq_type == neg_label)  # number of negative cases
+    # View(stats)
+    # head(stats)
+    # tail(stats)
+    stats$rank <- 1:nrow(stats)
+    stats$TP <- cumsum(stats$seq_type == "train")
+    stats$FP <- cumsum(stats$seq_type == "rand")
+    stats$FN <- npos - stats$TP
+    stats$TN <- nneg - stats$FP
+    
+    ## True Positive Rate (TPR) = Sensitivity = Coverage
+    stats$TPR <- stats$TP / (stats$TP + stats$FN)
+    
+    ## False Positive Rate (TPR)
+    stats$FPR <- stats$FP / (stats$FP + stats$TN)
+
+    ## Positive Predictive Value (PPV)
+    stats$PVV <- stats$TP / (stats$TP + stats$FP)
+    
+    stat_per_group[[group]] <- stats 
+  }  
+    
+  result <- list(
+    experiment = experiment,
+    TF = TF,
+    dataset = dataset,
+    top_hits = top_hits,
+    groups = groups,
+    stat_per_group = stat_per_group
+  )
+  return(result)  
+}
   
 ```
 
 
-```{r ROC}
+```{r ROC, fig.width=8, fig.height=8, out.width="100%", fig.cap="ROC for a given dataset"}
 
-motif <- motifs[1]
-stats <- stat_per_motif[[motif]]
-plot(stats$FPR, 
-     xlab = "FPR", 
-     xlim = c(0,1),
-     
-     stats$TPR, 
-     ylab = "TPR (Sn)",
-     ylim = c(0,1),
-     
-     main = paste0(experiment, " ", TF, " ", dataset, "\nROC"),
-     
-     type = "l",
-     col = 1,
-     las = 1,
-     panel.first = c(
-       abline(h=seq(0, 1, 0.1), col="#DDDDDD"),
-       abline(v=seq(0, 1, 0.1), col="#DDDDDD")
+plot_ROC <- function(results) {
+#  attach(results)
+  ## Initialise parameters for this result set
+  dataset <- results$dataset
+  TF <- results$TF
+  experiment <- results$experiment
+  stat_per_group <- results$stat_per_group
+  groups <- results$groups
+  ngroups <- length(groups)
+  
+  message("Drawing ROC curve\t", experiment, "\t", TF, "\t", dataset, "\t", ngroups, " groups")
+  group <- groups[1]
+  stats <- stat_per_group[[group]]
+  plot(stats$FPR, 
+       xlab = "FPR", 
+       xlim = c(0,1),
+       
+       stats$TPR, 
+       ylab = "TPR (Sn)",
+       ylim = c(0,1),
+       
+       main = paste0(experiment, " ", TF, "\n", dataset, " (", ngroups, " groups)"),
+       
+       type = "l",
+       col = 1,
+       las = 1,
+       panel.first = c(
+         abline(h=seq(0, 1, 0.1), col="#DDDDDD"),
+         abline(v=seq(0, 1, 0.1), col="#DDDDDD")
        )
-     )
+  )
+  
+  abline(a = 0, b = 1, col = "black")
+  abline(v = c(0, 1), col = "black")
+  abline(h = c(0, 1), col = "black")
+  
+  for (i in 2:ngroups) {
+    group <- groups[[i]]
+    stats <- stat_per_group[[i]]
+    lines(stats$FPR,
+          stats$TPR, 
+          col = i)
+  }
+  
+  legend("bottomright", legend = groups, col = 1:ngroups, lwd=2, cex = 13/ngroups)
+#  detach(results)
 
-abline(a = 0, b = 1, col = "black")
-abline(v = c(0, 1), col = "black")
-abline(h = c(0, 1), col = "black")
-
-for (i in 2:nmotifs) {
-  motif <- motifs[[i]]
-  stats <- stat_per_motif[[i]]
-  lines(stats$FPR,
-        stats$TPR, 
-        col = i)
 }
+  
+```
 
-legend("bottomright", legend = motifs, col = 1:nmotifs, lwd=2, cex=0.7)
+
+```{r analysis, fig.width=8, fig.height=8, out.width="100%"}
+# View(metadata)
+dataset <- "YWL_B_AffSeq_A11_ZNF407.C4" ## For testing
+for (dataset in datasets) {
+  message("Treating dataset ", dataset)
+  TF <- metadata[dataset, "TF"]
+  experiment <- metadata[dataset, "EXPERIMENT"]
+  
+  if (experiment == "PBM") {
+    message ("Skipping PBM dataset ", dataset)
+    return()
+  }
+
+  message("Analysing dataset ", dataset, "\t", TF, "\t", experiment)
+  top_hits <- load_dataset(dataset)
+  results <- classif_statistics(pos_data = top_hits[["train"]],
+                                neg_data = top_hits[["rand"]])
+  plot_ROC(results)
+}
 
 ```
 
