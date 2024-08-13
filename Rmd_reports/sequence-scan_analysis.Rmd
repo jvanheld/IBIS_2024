@@ -324,7 +324,7 @@ classif_statistics <- function(pos_data,
     ## Positive Predictive Value (PPV) = Precision
     stats$PPV <- stats$TP / (stats$TP + stats$FP)
     
-    #### Compute stat per score (aggregate counts)
+    ## Compute stat per score (aggregate counts)
     if (decreasing) {
       new_score <- c(TRUE, stats[2:nrow(stats), score_column] 
                      < stats[1:(nrow(stats)-1), score_column])
@@ -335,19 +335,22 @@ classif_statistics <- function(pos_data,
     
     score_table[[motif]] <- stats[new_score, c(6, 8:ncol(stats))]
     
-    #### Compute the area under the ROC curve ####
+    ## Compute the area under the ROC curve
     nscores <- nrow(score_table[[motif]])
-    range(score_table[[motif]][2:nscores, "FPR"])
-    ## X axis interval
     x <- c(0, score_table[[motif]][, "FPR"])
     y <- c(0, score_table[[motif]][, "TPR"])
     xdiff <- x[2:length(x)] - x[1:(length(x)-1)]
-    ## Curve height
     ymean <- (y[2:length(x)] + y[1:(length(x)-1)])/2
-
     stats_per_motif[motif, "AuROC"] <- as.vector(xdiff %*% ymean)
     
-    #### Compute the AuRoC using pROC package ####
+    ## Compute the area under the Precision/recall curve
+    x <- c(0, score_table[[motif]][, "TPR"])
+    y <- c(0, score_table[[motif]][, "PPV"])
+    xdiff <- x[2:length(x)] - x[1:(length(x)-1)]
+    ymean <- (y[2:length(x)] + y[1:(length(x)-1)])/2
+    stats_per_motif[motif, "AuPR"] <- as.vector(xdiff %*% ymean)
+    
+    ## Compute the AuRoC using pROC package
     # table(true_labels)
     roc_curves[[motif]] <- pROC::roc(
       as.numeric(stats$true_label), 
@@ -355,11 +358,11 @@ classif_statistics <- function(pos_data,
       direction="<")
     auc_value <- auc(roc_curves[[motif]])
     stats_per_motif[motif, "pROC.auc"] <- auc_value
-    if (i==1) {
-      plot(roc_curves[[motif]], col = i, lty = i)
-    } else {
-      lines(roc_curves[[motif]], col = i, lty = i)
-    }
+    # if (i==1) {
+    #   plot(roc_curves[[motif]], col = i, lty = i)
+    # } else {
+    #   lines(roc_curves[[motif]], col = i, lty = i)
+    # }
   }  
   
   
@@ -436,15 +439,15 @@ plot_curves <- function(classif_stat,
     xstat <- "FPR"
     ystat <- "TPR"
     legend_pos <- "bottomright"
-#    performance_stat <- "AuROC"
-    performance_stat <- "pROC.auc"
+    performance_stat <- "AuROC"
+#    performance_stat <- "pROC.auc"
     
   } else if (type == "Precision/recall") {
-    xstat <- "PPV"
-    ystat <- "TPR"
-    legend_pos <- "topleft"
-#    performance_stat <- "AuROC"
-    performance_stat <- "pROC.auc"
+    xstat <- "TPR"
+    ystat <- "PPV"
+    legend_pos <- "bottomleft"
+    performance_stat <- "AuPR"
+#    performance_stat <- "pROC.auc"
   } else {
     stop('Invalid curve type for plot_curves(). Supported types :  "ROC",  "Precision/recall"')
   }
@@ -510,8 +513,12 @@ plot_curves <- function(classif_stat,
   
   perf <- round(digits = 3, 
                 stats_per_motif[sorted_motifs, performance_stat])
+  legend_text <- rev(paste0(sorted_motifs, " (", perf, ")"))
+  legend_text <- sub(pattern = "cluster_", "c", legend_text)
+  legend_text <- sub(pattern = "node_", "n", legend_text)
+  legend_text <- sub(pattern = "motifs", "m", legend_text)
   legend(legend_pos,
-         legend = rev(paste0(sorted_motifs, " (", perf, ")")), 
+         legend = legend_text, 
          col = rev(stats_per_motif[sorted_motifs, "color"]), 
          lwd = rev(stats_per_motif[sorted_motifs, "lwd"]),
          lty = rev(stats_per_motif[sorted_motifs, "lty"]),
@@ -523,7 +530,7 @@ plot_curves <- function(classif_stat,
 ```
 
 
-```{r analysis, fig.width=8, fig.height=8, out.width="100%"}
+```{r analysis, fig.width=16, fig.height=8, out.width="100%"}
 # View(metadata)
 dataset <- "YWL_B_AffSeq_A11_ZNF407.C4" ## For testing
 dataset <- "THC_0364.Rep-DIANA_0293"
@@ -542,25 +549,31 @@ for (dataset in datasets) {
   ## Load the positive and negative datasets
   top_hits <- load_dataset(dataset)
   
+  
+  par(mfrow=c(1,2))
   ## Compute performance statistics
   classif_stat <- classif_statistics(
     pos_data = top_hits[["train"]],
     neg_data = top_hits[["rand"]])
 
+  plot_curves(classif_stat, type = "ROC")
+  plot_curves(classif_stat, type = "Precision/recall")
+  
   
   ## Check that the manual computation of AuROC corresponds to the result of pROC::auc
-  plot(classif_stat$stats_per_motif[, c("AuROC",
-       "pROC.auc")], 
-       xlim=c(0,1),
-       ylim = c(0,1), 
-       col = "blue",
-       panel.first = abline(a=0,b=1))
-  
-  # plot_weights(top_hits)
-  #  par(mfrow=c(1,2))
-  plot_curves(classif_stat, type = "Precision/recall")
-  plot_curves(classif_stat, type = "ROC")
-#  par(mfrow=c(1,1))
+  # plot(classif_stat$stats_per_motif[, c("AuROC",
+  #                                       "AuPR")], 
+  #      main = paste0("AuROC vs AuPR: ", TF, " ", experiment, "\n", dataset),
+  #      xlim=c(0,1),
+  #      ylim = c(0,1), 
+  #      las=1,
+  #      panel.first=c(
+  #        abline(h=seq(0,1, 0.1), col="#DDDDDD"),
+  #        abline(v=seq(0,1, 0.1), col="#DDDDDD"),
+  #        abline(a=0,b=1)
+  #      ),
+  #      col = "blue")
+  # par(mfrow=c(1,1))
 }
 
 ```
