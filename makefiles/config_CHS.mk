@@ -1,6 +1,5 @@
 ## Default configuration for CHS data
 EXPERIMENT=CHS
-#TF=GABPA
 DATASET=THC_0866
 SOURCE_FORMAT=fasta
 SOURCE_EXT=fasta
