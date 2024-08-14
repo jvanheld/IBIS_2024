@@ -74,6 +74,8 @@ library(kableExtra)
 library(rprojroot)
 library(data.table)
 library(pROC)
+library(data.table)
+
 # library(formattable)
 
 root_dir = rprojroot::find_rstudio_root_file()
@@ -86,7 +88,7 @@ knitr::opts_chunk$set(
 	echo = TRUE,
 	fig.align = "center",
 	fig.height = 5,
-	fig.path = "figures/classif-stats",
+	fig.path = "figures/matrix-performances/",
 	fig.width = 7,
 	message = FALSE,
 	warning = FALSE,
@@ -124,7 +126,7 @@ colnames(metadata)[1] <- "TF"
 rownames(metadata) <- metadata$DATASET
 # View(metadata)
 
-TFS <- unique(metadata$TF)
+TFs <- unique(metadata$TF)
 datasets <- unique(metadata$DATASET)
 experiments <- unique(metadata$EXPERIMENT)
 
@@ -235,16 +237,23 @@ load_dataset <- function(dataset,
 #' @return a list with different objects
 #' @export
 
-classif_statistics <- function(pos_data, 
-                               neg_data,
-                               label_column="seq_type",
-                               pos_label="train",
-                               neg_label="rand",
-                               score_column="weight",
-                               motif_column = "ft_name",
-                               decreasing = TRUE) {
-
-  message("Computing classification statistics")
+classif_statistics <- function(
+    top_hits,
+    pos_label="train",
+    neg_label="rand",
+    label_column="seq_type",
+    score_column="weight",
+    motif_column = "ft_name",
+    decreasing = TRUE) {
+  
+  ## Initialize local variables
+  pos_data <- top_hits[[pos_label]]
+  neg_data <- top_hits[[neg_label]]
+  TF <- top_hits$TF
+  experiment <- top_hits$experiment
+  dataset <- top_hits$dataset
+  
+  message("Computing classification statistics: ", TF, " ", experiment, "\n\t", dataset)
   message("\tPositive data dimensions: ", nrow(pos_data), " x ", ncol(pos_data))
   message("\tNegative data dimensions: ", nrow(pos_data), " x ", ncol(pos_data))
   merged <- data.frame(rbind(pos_data, 
@@ -343,26 +352,23 @@ classif_statistics <- function(pos_data,
     ymean <- (y[2:length(x)] + y[1:(length(x)-1)])/2
     stats_per_motif[motif, "AuROC"] <- as.vector(xdiff %*% ymean)
     
-    ## Compute the area under the Precision/recall curve
-    x <- c(0, score_table[[motif]][, "TPR"])
-    y <- c(0, score_table[[motif]][, "PPV"])
-    xdiff <- x[2:length(x)] - x[1:(length(x)-1)]
-    ymean <- (y[2:length(x)] + y[1:(length(x)-1)])/2
-    stats_per_motif[motif, "AuPR"] <- as.vector(xdiff %*% ymean)
     
     ## Compute the AuRoC using pROC package
-    # table(true_labels)
+    ## This is for validation: I obtain the same values as 
+    ## computed manually above, with differences ~ 0.0001
     roc_curves[[motif]] <- pROC::roc(
       as.numeric(stats$true_label), 
       as.vector(stats[, score_column]), 
       direction="<")
     auc_value <- auc(roc_curves[[motif]])
     stats_per_motif[motif, "pROC.auc"] <- auc_value
-    # if (i==1) {
-    #   plot(roc_curves[[motif]], col = i, lty = i)
-    # } else {
-    #   lines(roc_curves[[motif]], col = i, lty = i)
-    # }
+
+    ## Compute the area under the Precision/recall curve
+    x <- c(0, score_table[[motif]][, "TPR"])
+    y <- c(0, score_table[[motif]][, "PPV"])
+    xdiff <- x[2:length(x)] - x[1:(length(x)-1)]
+    ymean <- (y[2:length(x)] + y[1:(length(x)-1)])/2
+    stats_per_motif[motif, "AuPR"] <- as.vector(xdiff %*% ymean)
   }  
   
   
@@ -478,7 +484,10 @@ plot_curves <- function(classif_stat,
        lty = stats_per_motif[motif, "lty"],
        
        main = paste0(type, ": ",
-                     experiment, " ", TF, "\n", dataset, " (", nmotifs, " motifs)"),
+                     TF, " ", 
+                     experiment, "\n", 
+                     dataset, " (", 
+                     nmotifs, " motifs)"),
        
        xlab = xstat, 
        xlim = c(0,1),
@@ -529,52 +538,121 @@ plot_curves <- function(classif_stat,
   
 ```
 
+## Performances
 
-```{r analysis, fig.width=16, fig.height=8, out.width="100%"}
+```{r performance_analysis, fig.width=16, fig.height=8, out.width="100%", results='asis'}
 # View(metadata)
-dataset <- "YWL_B_AffSeq_A11_ZNF407.C4" ## For testing
-dataset <- "THC_0364.Rep-DIANA_0293"
-dataset <- "UT380-127-3"
-for (dataset in datasets) {
-  TF <- metadata[dataset, "TF"]
-  experiment <- metadata[dataset, "EXPERIMENT"]
 
-  if (experiment == "PBM") {
-    message ("Skipping PBM dataset ", dataset)
-    next()
+
+## Initialise variables
+ndatasets <- length(datasets) 
+i <- 0
+
+## Test data
+tf <- "NACC2" ## for test
+experiment <- "HTS" ## for test
+# for (i in 1:length(datasets)) {
+for (tf in TFs) {
+  
+  cat(paste0("\n\n### ", tf, "\n\n"))
+  for (experiment in experiments) {
+    selection <- subset(metadata, EXPERIMENT == experiment & TF == tf)
+#    TF <- tf
+    if (nrow(selection) > 0) {
+      cat(paste0("\n\n#### ", 
+                 tf, " ", 
+                 experiment, 
+                 " (", nrow(selection), " datasets)\n\n"))
+      dataset <- selection$DATASET[1] ## for test
+      for (dataset in selection$DATASET) {
+        i <- i + 1
+#        if (i > 5) {break()}
+        if (experiment == "PBM") {
+          message ("Skipping PBM dataset ", dataset)
+          next()
+        }
+        
+        message("Analysing dataset ", i, "/", ndatasets, ": ", dataset, "\t", tf, "\t", experiment)
+        cat(paste0("\n\n##### ", tf, " ", experiment, " ", dataset, "\n\n"))
+        
+        ## Load the positive and negative datasets
+        top_hits <- load_dataset(dataset)
+        
+        
+        par(mfrow=c(1,2))
+        ## Compute performance statistics
+        classif_stat <- classif_statistics(top_hits)
+        
+        if (i == 1) {
+          stats_per_dataset_and_motif <- 
+            cbind(tf, 
+                  experiment, 
+                  dataset, 
+                  classif_stat$stats_per_motif)
+        } else {
+          stats_per_dataset_and_motif <- rbind(
+            stats_per_dataset_and_motif, 
+            cbind(dataset, 
+                  tf, 
+                  experiment, 
+                  classif_stat$stats_per_motif))
+        }
+        # View(stats_per_dataset_and_motif)
+        
+        plot_curves(classif_stat, type = "ROC")
+        plot_curves(classif_stat, type = "Precision/recall")
+        
+        
+        ## Check that the manual computation of AuROC corresponds to the result of pROC::auc
+        # plot(classif_stat$stats_per_motif[, c("AuROC",
+        #                                       "AuPR")], 
+        #      main = paste0("AuROC vs AuPR: ", TF, " ", experiment, "\n", dataset),
+        #      xlim=c(0,1),
+        #      ylim = c(0,1), 
+        #      las=1,
+        #      panel.first=c(
+        #        abline(h=seq(0,1, 0.1), col="#DDDDDD"),
+        #        abline(v=seq(0,1, 0.1), col="#DDDDDD"),
+        #        abline(a=0,b=1)
+        #      ),
+        #      col = "blue")
+        # par(mfrow=c(1,1))
+      }
+    }
   }
-
-  message("Analysing dataset ", dataset, "\t", TF, "\t", experiment)
-  
-  ## Load the positive and negative datasets
-  top_hits <- load_dataset(dataset)
-  
-  
-  par(mfrow=c(1,2))
-  ## Compute performance statistics
-  classif_stat <- classif_statistics(
-    pos_data = top_hits[["train"]],
-    neg_data = top_hits[["rand"]])
-
-  plot_curves(classif_stat, type = "ROC")
-  plot_curves(classif_stat, type = "Precision/recall")
-  
-  
-  ## Check that the manual computation of AuROC corresponds to the result of pROC::auc
-  # plot(classif_stat$stats_per_motif[, c("AuROC",
-  #                                       "AuPR")], 
-  #      main = paste0("AuROC vs AuPR: ", TF, " ", experiment, "\n", dataset),
-  #      xlim=c(0,1),
-  #      ylim = c(0,1), 
-  #      las=1,
-  #      panel.first=c(
-  #        abline(h=seq(0,1, 0.1), col="#DDDDDD"),
-  #        abline(v=seq(0,1, 0.1), col="#DDDDDD"),
-  #        abline(a=0,b=1)
-  #      ),
-  #      col = "blue")
-  # par(mfrow=c(1,1))
 }
+
+## Compute the rank of motifs by TF or by TF+experiment to select the most performing motifs
+
+# dt <- data.table(data.frame(
+#   TF = rep(c("A", "B", "C"), each = 5),
+#   experiment = rep(1:5, 3),
+#   dataset = rep(1:5, 3),
+#   AuROC = c(0.7, 0.8, 0.75, 0.85, 0.9, 0.55, 0.65, 0.6, 0.7, 0.75, 0.2, 0.4, 0.3, 0.1, 0.35)
+# ))
+
+dt <- data.table(stats_per_dataset_and_motif)
+dt$tf_exp <- paste(sep=":", dt$tf, dt$experiment)
+# dt <- data.table(
+#   TF = stats_per_dataset_and_motif$TF,
+#   AuROC = stats_per_dataset_and_motif$AuROC)
+# dt <- dt [1:30]
+# print(dt)
+dt[, rank_tf := frank(-AuROC, ties.method = "first"), by = tf]
+dt[, rank_tf_exp := frank(-AuROC, ties.method = "first"), by = tf_exp]
+dt[, rank_dataset := frank(-AuROC, ties.method = "first"), by = dataset]
+dt[order(dt$rank_tf, ), c("tf", "experiment", "AuROC", "rank_tf", "rank_tf_exp")]
+# View(dt[,  c("TF", "experiment", "dataset", "AuROC", "rank")])
+
+
+#names(dt)
+# View(dt)
+
+#### Save the results ####
+result_dir <- file.path("results", board, "train")
+result_file <- file.path(result_dir, "performances_train_vs_rand.tsv")
+write.table(x = dt, file = result_file, quote = FALSE, sep = "\t", row.names = FALSE, col.names = TRUE)
+message("Performance table saved to file\n\t", result_file)
 
 ```
 
