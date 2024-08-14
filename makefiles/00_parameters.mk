@@ -20,8 +20,18 @@ ERR_DIR=sbatch_errors
 ERR_FILE=${ERR_DIR}/sbatch_error_${NOW}.txt
 
 ################################################################
+## Table containing the metadata for each dataset
+ALL_METADATA=metadata/${BOARD}/TF_DATASET_all-types.tsv
+
+################################################################
 ## Load data-type specific configuration
 EXPERIMENTS=CHS GHTS HTS SMS PBM
+
+## Detault dataset for testing
+DATASET=THC_0866
+
+## Extract parameters from metadata for the selected dataset
+#EXPERIMENT=`awk '$$2=="${DATASET}" {print $$4}' ${ALL_METADATA}`
 EXPERIMENT=CHS
 include makefiles/config_${EXPERIMENT}.mk
 
@@ -31,14 +41,14 @@ DISCIPLINE=WET
 BOARD=leaderboard
 METADATA=metadata/${BOARD}/TF_DATASET_${EXPERIMENT}.tsv
 TEST_SEQ=data/${BOARD}/test/${EXPERIMENT}_participants.fasta
+TF=`awk '$$2=="${DATASET}" {print $$1}' ${ALL_METADATA}`
 
 #DATASET=`head -n 1 ${METADATA} | cut -f 2`
-TF=`awk '$$2=="${DATASET}" {print $$1}' ${METADATA}`
 DATASET_DIR=data/${BOARD}/train/${EXPERIMENT}/${TF}
 DATASET_PATH=${DATASET_DIR}/${DATASET}
 PEAK_COORD=${DATASET_PATH}.peaks
 FASTA_SEQ=${DATASET_PATH}.fasta
-TRAIN_SEQ=`awk '$$2=="${DATASET}" {print $$7}' ${METADATA}`
+TRAIN_SEQ=`awk '$$2=="${DATASET}" {print $$7}' ${ALL_METADATA}`
 TSV_SEQ=${DATASET_PATH}.tsv
 FASTQ_SEQ=${DATASET_PATH}.fastq.gz
 RESULT_DIR=results/${BOARD}/train/${EXPERIMENT}/${TF}/${DATASET}
@@ -76,6 +86,7 @@ param_00:
 	@echo "	EXPERIMENTS		${EXPERIMENTS}"
 	@echo "	EXPERIMENT		${EXPERIMENT}"
 	@echo "	METADATA		${METADATA}"
+	@echo "	ALL_METADATA		${ALL_METADATA}"
 	@echo "	TEST_SEQ		${TEST_SEQ}"
 	@echo "	TF			${TF}"
 	@echo "	RESULT_DIR		${RESULT_DIR}"
@@ -285,7 +296,6 @@ metadata_fastq:
 
 ################################################################
 ## Generate a metadata file with all the datasets for all the TFs
-ALL_METADATA=metadata/${BOARD}/TF_DATASET_all-types.tsv
 all_metadata:
 	@echo
 	@echo "Building metadata file for each experiments"
@@ -439,7 +449,7 @@ matrix_quality:
 ################################################################
 ## Select random genomic sequences of the same lengths as the current
 ## data set
-RAND_SEQ=`awk '$$2=="${DATASET}" {sub(/\.fasta/,"_rand-loci.fa",$$7); print $$7}' ${METADATA}`
+RAND_SEQ=`awk '$$2=="${DATASET}" {sub(/\.fasta/,"_rand-loci.fa",$$7); print $$7}' ${ALL_METADATA}`
 RAND_CMD=${SCHEDULER} ${RSAT_CMD} random-genome-fragments  \
 		-template_format fasta \
 		-i ${FASTA_SEQ} \
@@ -492,8 +502,8 @@ SCAN_CMD=${SCHEDULER} ${RSAT_CMD} matrix-scan -quick -v ${V} \
 	-return sites \
 	-uth rank_pm 1 \
 	-n score \
-	-o ${SCAN_RESULT}
-
+	| cut -f 1,3-6,8 \
+	> ${SCAN_RESULT}
 scan_sequences_one_type:
 	@echo "Scanning sequences"
 	@echo "	SCAN_MATRICES		${SCAN_MATRICES}"
@@ -507,7 +517,7 @@ scan_sequences_one_type:
 	@mkdir -p ${SCAN_DIR}
 	@echo ${RUNNER_HEADER} > ${SCAN_SCRIPT}
 	@echo >> ${SCAN_SCRIPT}
-	@echo ${SCAN_CMD} >> ${SCAN_SCRIPT}
+	@echo "${SCAN_CMD}" >> ${SCAN_SCRIPT}
 	@echo >> ${SCAN_SCRIPT}
 	@echo gzip --force ${SCAN_RESULT} >> ${SCAN_SCRIPT}
 	@${RUNNER} ${SCAN_SCRIPT}
@@ -524,6 +534,8 @@ scan_sequences_rand:
 scan_sequences_test:
 	@${MAKE} scan_sequences_one_type SCAN_SEQ=${TEST_SEQ} SCAN_TYPE=test
 
+# scan_sequences: scan_sequences_train scan_sequences_rand
+# scan_sequences: scan_sequences_test
 scan_sequences: scan_sequences_train scan_sequences_rand scan_sequences_test
 
 scan_sequences_all_datasets:
