@@ -278,7 +278,7 @@ make -f makefiles/02_peak-motifs.mk BOARD=${BOARD} rand_fragments
 make -f makefiles/02_peak-motifs.mk BOARD=${BOARD} EXPERIMENT=CHS rand_fragments_all_datasets
 
 
-## Get random genome fragments for all the datasets of a given experiment
+## Get random genome fragments for all the datasets of all experiments
 make -f makefiles/02_peak-motifs.mk BOARD=${BOARD} rand_fragments_all_experiments
 
 ```
@@ -317,7 +317,11 @@ make -f makefiles/02_peak-motifs.mk scan_sequences
 
 ##  scan all the datasets for all the experiments
 make -f makefiles/02_peak-motifs.mk scan_sequences_all_experiments
+
+## Find the sequence scanning result files and print their size in kb
+find results/${BOARD}/train -name '*_peakmo-clust-matrices*.tsv*' -exec du -sk {} \;
 ```
+
 
 
 
