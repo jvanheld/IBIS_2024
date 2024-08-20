@@ -585,17 +585,22 @@ for (tf in TFs) {
         
         if (i == 1) {
           stats_per_dataset_and_motif <- 
-            cbind(tf, 
-                  experiment, 
-                  dataset, 
-                  classif_stat$stats_per_motif)
+            cbind(
+              tf, 
+              experiment, 
+              dataset, 
+              motif = row.names(classif_stat$stats_per_motif),
+              classif_stat$stats_per_motif)
+          # names(stats_per_dataset_and_motif)
         } else {
           stats_per_dataset_and_motif <- rbind(
             stats_per_dataset_and_motif, 
-            cbind(dataset, 
-                  tf, 
-                  experiment, 
-                  classif_stat$stats_per_motif))
+            cbind(
+              dataset, 
+              tf, 
+              experiment, 
+              motif = row.names(classif_stat$stats_per_motif),
+              classif_stat$stats_per_motif))
         }
         # View(stats_per_dataset_and_motif)
         
