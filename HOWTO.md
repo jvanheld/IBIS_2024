@@ -38,7 +38,7 @@ It can be overwritten as follows
 make -f makefiles/02_peak-motifs.mk param EXPERIMENT=GHTS
 ```
 
-All the other variables will be updated automatically for the GHTS (genomic high-throughput selex) data. 
+All the other variables will be updated automatically for the GHTS (genomic high-throughput SELEX) data. 
 
 
 
@@ -114,7 +114,7 @@ Which gives the following result.
   SP140    3     0     2      0     1     0
   GABPA    2     0     1      0     1     0
 
-The same can be done for the final data by replacing "leadereboard" by "final" in the above commands (`export BOARD=final`, then re-run all the commands above). 
+The same can be done for the final data by replacing "leaderboard" by "final" in the above commands (`export BOARD=final`, then re-run all the commands above). 
 
   TF        Sum   HTS   GHTS   CHS   PBM   SMS
   --------- ----- ----- ------ ----- ----- -----
@@ -150,7 +150,7 @@ The same can be done for the final data by replacing "leadereboard" by "final" i
   CAMTA1    3     0     2      1     0     0
   MYF6      2     0     1      1     0     0
 
-## Getting genmic sequences for CHS and GHTS experiments
+## Getting genomic sequences for CHS and GHTS experiments
 
 ChIP-seq (CHS) and genomic high throughput sequencing (GHTS) data are provided as coordinates (bed-formatted table with extension `.peak`). In order to get the corresponding sequences in fasta format, we use the RSAT tool `fetch-sequences`, which takes as input a bed file and retrieves the corresponding genomic sequences from (UCSC genome browser)[https://genome.ucsc.edu/].  
 
@@ -172,9 +172,9 @@ The `peak-motifs` workflow is used as main tool for motif discovery.
 
 ### Single-dataset analysis
 
-For **CHS, GHTS, HTS and SMS experiments**, it is used in the single dataset mode, which detects exceptional motifs, with two crieria of exceptionality : 
+For **CHS, GHTS, HTS and SMS experiments**, it is used in the single dataset mode, which detects exceptional motifs, with two criteria of exceptionality : 
 
-- k-mer **over-representation** relative to the background model (the significance of the over-représntation is computed with a binomial test)
+- k-mer **over-representation** relative to the background model (the significance of the over-representation is computed with a binomial test)
 - k-mer **positional bias**¨ along the peak sequences relative to peak center (a chi-squared homogeneity test)
 
 The k-mers declared significant are then used as seeds to build position-specific scoring matrices (in absolute counts), which are further converted to position frequency matrices (PFM) following the IBIS challenge specifications. 
@@ -203,7 +203,7 @@ make -f makefiles/02_peak-motifs.mk BOARD=${BOARD} EXPERIMENT=CHS TF=GABPA DATAS
 
 ```
 
-The following commands iterate the analyses over all the datasets of the 4 types of experiments for which we run single-dataset analysis. Beware, this represents a lof of analyses, which can take several hours or days. We parallelise it on a cluster to run it efficiently.  
+The following commands iterate the analyses over all the datasets of the 4 types of experiments for which we run single-dataset analysis. Beware, this represents a lot of analyses, which can take several hours or days. We parallelize it on a cluster to run it efficiently.  
 
 ```
 for exp in CHS GHTS HTS SMS; do \
@@ -216,13 +216,13 @@ done
 For **PBM** (protein binding microarray) experiment, `peak-motifs` is used in a particular way by detecting differentially represented k-mers between two subsets of the PBM oligonucleotides : 
 
 - **positive spots**, assumed to be bound by the TF of interest in the experiment
-- **background / negativespots**, assumed not to be bound by the TF of interest
+- **background / negative spots**, assumed not to be bound by the TF of interest
 
-Positive and negative spots are selected as respectively the top and bottom entries in the lis tof spots ranked by signal intensity. 
+Positive and negative spots are selected as respectively the top and bottom entries in the list of spots ranked by signal intensity. 
 
 #### Threshold on the number of top peaks
 
-Since our primary analyses shown that the distribution of signal intensities does not follow a normal distribution, and each dataset shows a specific shape of signal distribution we avoid the recommended threshold of $4 \times \text{sd}$, and rather made practical tests by discovering over-represented k-mers in subsets of top-ranking spots with different aribtrary thresdholds. This analysis showed that the discovered matrices are remarkably  robust to  the number of top-scoring peaks retained as positive. 
+Since our primary analyses shown that the distribution of signal intensities does not follow a normal distribution, and each dataset shows a specific shape of signal distribution we avoid the recommended threshold of $4 \times \text{sd}$, and rather made practical tests by discovering over-represented k-mers in subsets of top-ranking spots with different arbitrary thresholds. This analysis showed that the discovered matrices are remarkably  robust to  the number of top-scoring peaks retained as positive. 
 
 We finally retained, for each PBM dataset, 
 
@@ -256,7 +256,7 @@ make -f makefiles/04_PBM.mk BOARD=${BOARD} peakmo_diff_all_datasets
 
 ## Sequence scanning
 
-The discovered motifs (after clustering and trimming) are used to scan sequences in order to evaluate the performance of each motif in distriminating the train seqences from background sequences. As background sequences, we use `rsat random-genome-fragments` to pick up at random genomic fragments of the same lengths as the positive training sequences. 
+The discovered motifs (after clustering and trimming) are used to scan sequences in order to evaluate the performance of each motif in discriminating the train sequences from background sequences. As background sequences, we use `rsat random-genome-fragments` to pick up at random genomic fragments of the same lengths as the positive training sequences. 
 
 ### Downloading the reference Human genome on your local RSAT instance
 
@@ -288,7 +288,7 @@ make -f makefiles/02_peak-motifs.mk BOARD=${BOARD} rand_fragments_all_experiment
 We scan sequences using `rsat matrix-scan -quick`, with parameters mimicking the IBIS challenge procedure: 
 
 - equiprobable background model (independently and identically distributed nucleotides)
-- for each PWM, only count the best hit per sequence (i.e. the site that maximises the weight, defined as the log-likelihood ratio between the sequence probabiliies under the PWM model and under the background model)
+- for each PWM, only count the best hit per sequence (i.e. the site that maximizes the weight, defined as the log-likelihood ratio between the sequence probabilities under the PWM model and under the background model)
 
 We scan three types of sequences: 
 
