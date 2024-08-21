@@ -3,14 +3,22 @@
 ##
 ## Local configuration for Jacques van Helden's laptop
 
+## Choose RSAT mode : local or docker
+RSAT_MODE=docker
+
+ifeq (${RSAT_MODE}, local)
+
 ## Use RSAT package installed on the laptop
 RSAT_CMD=rsat
 MOTIFDB_DIR=~/packages/rsat/motif_databases ## Local RSAT installation
 
+else ifeq (${RSAT_MODE}, docker)
 ## Use docker container
-DOCKER_RELEASE=eeadcsiccompbio/rsat:20240808
-#RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out ${DOCKER_RELEASE} rsat
-#MOTIFDB_DIR=/packages/rsat/public_html/motif_databases # in the Docker container
+DOCKER_RELEASE=eeadcsiccompbio/rsat:20240820
+RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out ${DOCKER_RELEASE} rsat
+MOTIFDB_DIR=/packages/rsat/public_html/motif_databases # in the Docker container
+
+endif
 
 SCHEDULER=time
 RUNNER=bash
