@@ -3,6 +3,11 @@
 ##
 ## Local configuration for Jacques van Helden's laptop
 
+
+################################################################
+## RSAT confiiguration
+################################################################
+
 ## Choose RSAT mode : local or docker
 RSAT_MODE=docker
 
@@ -19,6 +24,18 @@ RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/ou
 MOTIFDB_DIR=/packages/rsat/public_html/motif_databases # in the Docker container
 
 endif
+
+################################################################
+## Configuration for optimize-matrix-GA
+################################################################
+OMGA_DIR=/Users/jvanheld/no_backup/rsat_github/optimize-matrix-GA
+OMGA_PATH=${OMGA_DIR}/optimize-matrix-GA.py
+OMGA_PYTHON_PATH=${OMGA_DIR}/venv/Downloads/bin/python
+OMGA_CMD=${OMGA_PYTHON_PATH} ${OMGA_PATH}
+
+################################################################
+## Running configuration
+################################################################
 
 SCHEDULER=time
 RUNNER=bash
