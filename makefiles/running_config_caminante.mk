@@ -9,12 +9,12 @@
 ################################################################
 
 ## Choose RSAT mode : local or docker
-RSAT_MODE=docker
+RSAT_MODE=local
 
 ifeq (${RSAT_MODE}, local)
 
 ## Use RSAT package installed on the laptop
-RSAT_CMD=rsat
+RSAT_CMD=~/packages/rsat/bin/rsat
 MOTIFDB_DIR=~/packages/rsat/motif_databases ## Local RSAT installation
 
 else ifeq (${RSAT_MODE}, docker)
