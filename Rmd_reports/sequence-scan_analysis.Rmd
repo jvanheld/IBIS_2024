@@ -325,10 +325,12 @@ classif_statistics <- function(
     stats$TN <- nneg - stats$FP
     
     ## True Positive Rate (TPR) = Sensitivity = Coverage = Recall
-    stats$TPR <- stats$TP / (stats$TP + stats$FN)
+#    stats$TPR <- stats$TP / (stats$TP + stats$FN)
+    stats$TPR <- stats$TP / npos
     
     ## False Positive Rate (TPR)
-    stats$FPR <- stats$FP / (stats$FP + stats$TN)
+#    stats$FPR <- stats$FP / (stats$FP + stats$TN)
+    stats$FPR <- stats$FP / nneg
 
     ## Positive Predictive Value (PPV) = Precision
     stats$PPV <- stats$TP / (stats$TP + stats$FP)
