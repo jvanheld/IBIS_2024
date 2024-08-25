@@ -5,6 +5,14 @@
 
 
 ################################################################
+## Running configuration
+################################################################
+SCHEDULER=time
+RUNNER=bash
+RUNNER_HEADER="\#!/bin/bash"
+SLURM_OUT=
+
+################################################################
 ## RSAT confiiguration
 ################################################################
 
@@ -28,18 +36,10 @@ endif
 ################################################################
 ## Configuration for optimize-matrix-GA
 ################################################################
+THREADS=10
 OMGA_DIR=/Users/jvanheld/no_backup/rsat_github/optimize-matrix-GA
 OMGA_PATH=${OMGA_DIR}/optimize-matrix-GA.py
 OMGA_PYTHON_PATH=${OMGA_DIR}/venv/Downloads/bin/python
 OMGA_CMD=${OMGA_PYTHON_PATH} ${OMGA_PATH}
-
-################################################################
-## Running configuration
-################################################################
-
-SCHEDULER=time
-RUNNER=bash
-RUNNER_HEADER="\#!/bin/bash"
-SLURM_OUT=
 
 
