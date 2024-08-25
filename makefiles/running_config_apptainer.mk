@@ -1,13 +1,13 @@
 ################################################################
 ## Computer-specific settings
 
-
 ################################################################
 ## Running configuration
 ################################################################
 ## Configuration for IFB core cluster (core.cluster.france-bioinformatique.fr)
 MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
 SCHEDULER=srun time
+TODAY=date '+%Y-%m-%d'
 SLURM_OUT=./slurm_out/${BOARD}_${EXPERIMENT}_${TF}_${DATASET}_slurm-job_%j.out
 RUNNER=sbatch
 RUNNER_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}\n\#SBATCH --mem-per-cpu=16G\n"
@@ -16,10 +16,9 @@ RUNNER_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}\n\#SBATCH --mem-per-cpu=16
 ################################################################
 ## Local configuration for Apptainer on IFB core cluster
 ################################################################
-DOCKER_RELEASE=20240820
+DOCKER_RELEASE=20240825
 DOCKER_IMAGE=eeadcsiccompbio/rsat:${DOCKER_RELEASE}
 APPTAINER_DEF=makefiles/rsat_apptainer.def
-DOCKER_RELEASE=20240820
 APPTAINER_CONTAINER=rsat_apptainer/rsat_${DOCKER_RELEASE}.sif
 #RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out ${DOCKER_IMAGE} rsat
 RSAT_CMD=apptainer run rsat_apptainer/rsat_${DOCKER_RELEASE}.sif rsat
@@ -36,10 +35,9 @@ usage:
 	@echo "	RSAT_CMD		${RSAT_CMD}"
 	@echo
 	@echo "Targets"
+	@echo "	usage			print usage for the current makefile"
 	@echo "	build			build apptainer container"
 	@echo "	run			run RSAT with apptainer container"
-	@echo "	param			print parameters for the current makefile"
-	@echo "	targets			print targets for the current makefile"
 
 ################################################################
 ## Build apptainer container from the RSAT Docker image

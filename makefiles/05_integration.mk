@@ -18,7 +18,7 @@ ALL_TFS=`cat ${ALL_METADATA} | cut -f 1 | sort -u | xargs`
 TF=LEF1
 
 ## Matrix quality parameters
-MATRIXQ_SLURM_OUT=./slurm_out/TFQUALITY_${BOARD}_cross-data-types-bench_${TF}_slurm-job_%j.out
+MATRIXQ_SLURM_OUT=./slurm_out/${TODAY}/TFQUALITY_${BOARD}_cross-data-types-bench_${TF}_slurm-job_%j.out
 MATRIXQ_DIR=${MATRICES}_matrix-quality
 MATRIXQ_SCRIPT=${MATRIXQ_PREFIX}_cmd.sh
 MATRIXQ_SEQ_OPT=`awk -F'\t' '$$1=="${TF}" {print "-seq "$$4"_"$$2" data/"$$5"/train/"$$4"/"$$1"/"$$2".fasta"}' metadata/leaderboard/TF_DATASET_all-types.tsv  | xargs`

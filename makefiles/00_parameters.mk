@@ -4,6 +4,8 @@
 MAKE=make -s -f ${MAKEFILE}
 MAKEFILE=makefiles/00_parameters.mk
 
+TODAY=date '+%Y-%m-%d'
+
 ################################################################
 ## Path or command to run RSAT command, depending on the local
 ## configuration. Byb default, it is set to "rsat" (the main command,
@@ -569,7 +571,7 @@ TFCLUST_PREFIX=${TFCLUST_DIR}/matrix-clustering
 TFCLUST_ROOT_MOTIFS=${TFCLUST_PREFIX}_cluster_root_motifs
 TFCLUST_ALL_MOTIFS=${TFCLUST_PREFIX}_aligned_logos/All_concatenated_motifs
 TFCLUST_SCRIPT=${TFCLUST_PREFIX}_cmd.sh
-TFCLUST_SLURM_OUT=./slurm_out/TFCLUST_${BOARD}_cross-data-types_${TF}_slurm-job_%j.out
+TFCLUST_SLURM_OUT=./slurm_out/${TODAY}/TFCLUST_${BOARD}_cross-data-types_${TF}_slurm-job_%j.out
 
 ################################################################
 ## Define rules based on extensions to convert transfac-formatted
