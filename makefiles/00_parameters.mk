@@ -73,7 +73,6 @@ param_00:
 	@echo "	  JASPAR_MOTIFS		${JASPAR_MOTIFS}"
 	@echo "	  HOCOMOCO_MOTIFS	${HOCOMOCO_MOTIFS}"
 	@echo
-	@echo
 	@echo "Task execution parameters"
 	@echo "	SCHEDULER		${SCHEDULER}"
 	@echo "	SLURM_OUT		${SLURM_OUT}"
@@ -142,6 +141,7 @@ param_00:
 	@echo "	SCAN_SEQ		${SCAN_SEQ}"
 	@echo "	SCAN_DIR		${SCAN_DIR}"
 	@echo "	SCAN_TYPE		${SCAN_TYPE}"
+	@echo "	SCAN_THREADS		${SCAN_THREADS}"
 	@echo "	SCAN_PREFIX		${SCAN_PREFIX}"
 	@echo "	SCAN_RESULT		${SCAN_RESULT}"
 	@echo "	SCAN_CMD		${SCAN_CMD}"
@@ -450,12 +450,12 @@ matrix_quality:
 ## Select random genomic sequences of the same lengths as the current
 ## data set
 RAND_SEQ=`awk '$$2=="${DATASET}" {sub(/\.fasta/,"_rand-loci.fa",$$7); print $$7}' ${ALL_METADATA}`
-RAND_CMD=${SCHEDULER} ${RSAT_CMD} random-genome-fragments  \
+RAND_CMD="${SCHEDULER} ${RSAT_CMD} random-genome-fragments  \
 		-template_format fasta \
 		-i ${FASTA_SEQ} \
-		-org Homo_sapiens_GCF_000001405.40_GRCh38.p14  \
-		-return seq \
-		-o ${RAND_SEQ}
+		-org Homo_sapiens_GCF_000001405.40_GRCh38.p14  -return seq \
+		| ${RSAT_CMD} convert-seq -from fasta -to fasta -skip_polyN -lw 0 \
+		-o ${RAND_SEQ}"
 RAND_SCRIPT=${DATASET_PATH}_rand-loci.sh
 rand_fragments:
 	@echo
@@ -534,8 +534,6 @@ scan_sequences_rand:
 scan_sequences_test:
 	@${MAKE} scan_sequences_one_type SCAN_SEQ=${TEST_SEQ} SCAN_TYPE=test
 
-# scan_sequences: scan_sequences_train scan_sequences_rand
-# scan_sequences: scan_sequences_test
 scan_sequences: scan_sequences_train scan_sequences_rand scan_sequences_test
 
 scan_sequences_all_datasets:
