@@ -16,7 +16,7 @@ targets: targets_00
 	@echo "	scan_all_experiments		scan all datasets of all experiments"
 	@echo " scan_one_dataset_rand		scan one random sequence set with a set of matrices"
 	@echo "	scan_all_datasets_rand		scan all random sequence sets of a given experiment"
-	@echo "	scan_all_experiments_rand		scan all random sequence sets datasets of all experiments"
+	@echo "	scan_all_experiments_rand	scan all random sequence sets datasets of all experiments"
 	@echo "		"
 
 param: param_00
