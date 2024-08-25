@@ -9,8 +9,10 @@ MAKEFILE=makefiles/07_optimize_matrices.mk
 
 targets: targets_00
 	@echo "optimize-matrix-GA targets (${MAKEFILE})"
-	@echo "	help	get help message for optimize-matrix-GA"
-	@echo "	omga	run optimize-matrix-GA on one dataset"
+	@echo "	help			get help message for optimize-matrix-GA"
+	@echo "	omga_one_dataset	run optimize-matrix-GA on one dataset"
+	@echo "	omga_all_datasets	run optimize-matrix-GA on all datasets of a given experiment"
+	@echo "	omga_all_experiments	run optimize-matrix-GA on all datasets of all experiments"
 	@echo
 
 param: param_00
@@ -28,29 +30,67 @@ param: param_00
 	@echo "	NEG_SEQ			${NEG_SEQ}"
 	@echo "	OUTPUT_DIR		${OUTPUT_DIR}"
 	@echo "	OUTPUT_PREFIX		${OUTPUT_PREFIX}"
+	@echo "	OMGA_CMD_PREFIX		${OMGA_CMD_PREFIX}"
 	@echo "	OMGA_CMD		${OMGA_CMD}"
-	@echo "	OMGA_CMD_FULL		${OMGA_CMD_FULL}"
+	@echo "	OMGA_SCRIPT		${OMGA_SCRIPT}"
 	@echo
 
 help:
 	${OMGA_CMD} -h
 
-THREADS=10
-GENERATIONS=5
+GENERATIONS=20
 CHILDREN=10
 SELECT=5
 POS_SEQ=${TRAIN_SEQ}
 NEG_SEQ=${RAND_SEQ}
+
+## Choice of the matrices to optimize
 OMGA_MATRICES=${TRIMMED_MATRICES}.tf
-OUTPUT_DIR=results/${BOARD}/optimized_matrices/${TF}/${EXPERIMENT}/${DATASET}
-OUTPUT_PREFIX=${OUTPUT_DIR}/${TF}_${EXPERIMENT}_${DATASET}_clust-trimmed
-OMGA_CMD_FULL=${SCHEDULER} ${OMGA_CMD} -v ${V} -t ${THREADS} -g ${GENERATIONS} -c ${CHILDREN} -s ${SELECT} \
+OMGA_PRESUFFIX=clust-trimmed-matrices_train-vs-rand
+#OMGA_MATRICES=${PEAKMO_MATRICES}_noBS.tf
+#OMGA_PRESUFFIX=peakmo-matrices_train-vs-rand
+
+OUTPUT_DIR=results/${BOARD}/${DATA_TYPE}/${EXPERIMENT}/${TF}/${DATASET}/optimized_matrices/${OMGA_PRESUFFIX}
+OUTPUT_PREFIX=${OUTPUT_DIR}/${TF}_${EXPERIMENT}_${DATASET}_${OMGA_PRESUFFIX}
+OMGA_SCRIPT=${OUTPUT_PREFIX}_cmd.sh
+OMGA_CMD=${SCHEDULER} ${OMGA_CMD_PREFIX} -v ${V} \
+		-t ${THREADS} \
+		-g ${GENERATIONS} \
+		-c ${CHILDREN} \
+		-s ${SELECT} \
 		-m ${OMGA_MATRICES} \
 		-p ${POS_SEQ} \
 		-n ${NEG_SEQ} \
 		-b ${BG_EQUIPROBA} \
-		-r "${RSAT_CMD}" \
+		-r '"${RSAT_CMD}"' \
 		--output_prefix ${OUTPUT_PREFIX}
-omga:
+omga_one_dataset: 
+	@echo "Optimizing matrices"
+	@echo "	BOARD			${BOARD}"
+	@echo "	EXPERIMENT		${EXPERIMENT}"
+	@echo "	TF			${TF}"
+	@echo "	DATASET			${DATASET}"
+	@echo "	OMGA_MATRICES		${OMGA_MATRICES}"
+	@echo "	POS_SEQ			${POSE_SEQ}"
+	@echo "	NEG_SEQ			${NEG_SEQ}"
+	@echo "	OMGA_CMD		${OMGA_CMD}"
+	@echo "	OMGA_CMD		${OMGA_CMD}"
+	@echo "	Writing optimize-matrix-GA  script"
+	@echo "	OMGA_SCRIPT		${OMGA_SCRIPT}"
+	@${MAKE} ${OMGA_MATRICES}
 	@mkdir -p ${OUTPUT_DIR}
-	${OMGA_CMD_FULL}
+	@echo ${RUNNER_HEADER} > ${OMGA_SCRIPT}
+	@echo "#SBATCH --cpus-per-task ${THREADS}\n" >> ${OMGA_SCRIPT}
+	@echo >> ${OMGA_SCRIPT}
+	@echo ${OMGA_CMD} >> ${OMGA_SCRIPT}
+	@${RUNNER} ${OMGA_SCRIPT}
+	@echo "	OUTPUT_PREFIX		${OUTPUT_PREFIX}"
+	@echo
+
+
+omga_all_datasets:
+	@${MAKE} iterate_datasets TASK=omga_one_dataset
+
+omga_all_experiments:
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=omga_all_datasets
+

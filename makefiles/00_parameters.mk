@@ -27,7 +27,7 @@ ALL_METADATA=metadata/${BOARD}/TF_DATASET_all-types.tsv
 ## Load data-type specific configuration
 EXPERIMENTS=CHS GHTS HTS SMS PBM
 
-## Detault dataset for testing
+## Default dataset for testing
 DATASET=THC_0866
 
 ## Extract parameters from metadata for the selected dataset
@@ -39,19 +39,20 @@ V=2
 
 DISCIPLINE=WET
 BOARD=leaderboard
+DATA_TYPE=train
 METADATA=metadata/${BOARD}/TF_DATASET_${EXPERIMENT}.tsv
 TEST_SEQ=data/${BOARD}/test/${EXPERIMENT}_participants.fasta
 TF=`awk '$$2=="${DATASET}" {print $$1}' ${ALL_METADATA}`
 
 #DATASET=`head -n 1 ${METADATA} | cut -f 2`
-DATASET_DIR=data/${BOARD}/train/${EXPERIMENT}/${TF}
+DATASET_DIR=data/${BOARD}/${DATA_TYPE}/${EXPERIMENT}/${TF}
 DATASET_PATH=${DATASET_DIR}/${DATASET}
 PEAK_COORD=${DATASET_PATH}.peaks
 FASTA_SEQ=${DATASET_PATH}.fasta
 TRAIN_SEQ=`awk '$$2=="${DATASET}" {print $$7}' ${ALL_METADATA}`
 TSV_SEQ=${DATASET_PATH}.tsv
 FASTQ_SEQ=${DATASET_PATH}.fastq.gz
-RESULT_DIR=results/${BOARD}/train/${EXPERIMENT}/${TF}/${DATASET}
+RESULT_DIR=results/${BOARD}/${DATA_TYPE}/${EXPERIMENT}/${TF}/${DATASET}
 
 ## Background models estimated based on the test sequences
 BG_DIR=bg_models/${BOARD}/${EXPERIMENT}
@@ -185,6 +186,8 @@ targets_00:
 	@echo "	scan_sequences_all_experiments	scan all the datasets for all the experiments"
 	@echo
 	@echo "Iterators"
+	@echo "	list_datasets		list the datasets of the current experiment"
+	@echo "	list_experiments	list the experiment"
 	@echo "	iterate_datasets	iterate a task over all the datasets of a given experiment"
 	@echo "	iterate_experiments	iterate a task over all the experiments"
 	@echo
@@ -225,10 +228,19 @@ fastq2fasta:
 
 ################################################################
 ## Iterate a task over all datasets of the leaderboard for a given experiment
+list_datasets:
+	@echo 
+	@echo "Listing datasets"
+	@echo "	BOARD		${BOARD}"
+	@echo "	DATA_TYPE	${DATA_TYPE}"
+	@echo "	EXPERIMENT	${EXPERIMENT}"
+	@echo "	DATASETS	${DATASETS}"
+
 iterate_datasets:
 	@echo 
 	@echo "Iterating over datasets"
 	@echo "	BOARD		${BOARD}"
+	@echo "	DATA_TYPE	${DATA_TYPE}"
 	@echo "	EXPERIMENT	${EXPERIMENT}"
 	@echo "	DATASETS	${DATASETS}"
 	@echo "	TASK		${TASK}"
@@ -241,6 +253,13 @@ one_task:
 
 ################################################################
 ## Iterate a task over all the experiments
+list_experiments:
+	@echo 
+	@echo "Listing experiments"
+	@echo "	BOARD		${BOARD}"
+	@echo "	DATA_TYPE	${DATA_TYPE}"
+	@echo "	EXPERIMENTS	${EXPERIMENTS}"
+
 iterate_experiments:
 	@echo 
 	@echo "Iterating over experiments"
@@ -267,7 +286,7 @@ metadata_fasta:
 	@echo "Building metadata table for ${BOARD} ${EXPERIMENT} data (source data format: ${SOURCE_FORMAT})"
 	@echo
 	@echo ${METADATA_HEADER} > ${METADATA}
-	wc -l data/${BOARD}/train/${EXPERIMENT}/*/*.peaks  \
+	wc -l data/${BOARD}/${DATA_TYPE}/${EXPERIMENT}/*/*.peaks  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.peaks||' \
 		| awk -F'\t' '$$6 != "" {print $$7"\t"$$8"\t"$$2"\t${EXPERIMENT}\t${BOARD}\t${SOURCE_FORMAT}\t"$$3"/"$$4"/"$$5"/"$$6"/"$$7"/"$$8".fasta"}'  >> ${METADATA}
 	@echo
@@ -281,7 +300,7 @@ metadata_fastq:
 	@echo "Building metadata table for ${BOARD} ${EXPERIMENT} data (source data format: ${SOURCE_FORMAT})"
 	@echo
 	@echo ${METADATA_HEADER} > ${METADATA}
-	du -sk data/${BOARD}/train/${EXPERIMENT}/*/*.fastq.gz  \
+	du -sk data/${BOARD}/${DATA_TYPE}/${EXPERIMENT}/*/*.fastq.gz  \
 		| perl -pe 's|/|\t|g; s| +|\t|g; s|\.fastq.gz||' \
 		| awk -F'\t' '$$6 != "" {print $$6"\t"$$7"\t"$$1"\t${EXPERIMENT}\t${BOARD}\t${SOURCE_FORMAT}\t"$$2"/"$$3"/"$$4"/"$$5"/"$$6"/"$$7".fasta"}' >> ${METADATA}
 	@echo
@@ -544,8 +563,8 @@ scan_sequences_all_experiments:
 
 ################################################################
 ## Parameters for the clustering of all motifs discovered for a given transcription factor
-TFCLUST_DIR=results/${BOARD}/train/cross-data-types/${TF}
-TFCLUST_INFILES=`find results/${BOARD}/train/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs`
+TFCLUST_DIR=results/${BOARD}/${DATA_TYPE}/cross-data-types/${TF}
+TFCLUST_INFILES=`find results/${BOARD}/${DATA_TYPE}/*/${TF} -name 'peak-motifs*_motifs_discovered.tf' | awk -F'/' '{print " -matrix "$$4":"$$5":"$$6" "$$0" transfac"}' | xargs`
 TFCLUST_PREFIX=${TFCLUST_DIR}/matrix-clustering
 TFCLUST_ROOT_MOTIFS=${TFCLUST_PREFIX}_cluster_root_motifs
 TFCLUST_ALL_MOTIFS=${TFCLUST_PREFIX}_aligned_logos/All_concatenated_motifs
@@ -556,6 +575,10 @@ TFCLUST_SLURM_OUT=./slurm_out/TFCLUST_${BOARD}_cross-data-types_${TF}_slurm-job_
 ## Define rules based on extensions to convert transfac-formatted
 ## (.tf) motif file sinto frequency matrices suitable for submission
 ## to IBIS challenge.
+
+## Filter out the binding sites (BS) from a transfac file
+%_noBS.tf : %.tf
+	grep -v '^BS' $< > $@
 
 ## Trim the non-informative left and right columns of a PSSM
 %_trimmed.tf : %.tf
