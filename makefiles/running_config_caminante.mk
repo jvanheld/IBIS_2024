@@ -27,7 +27,7 @@ MOTIFDB_DIR=~/packages/rsat/motif_databases ## Local RSAT installation
 
 else ifeq (${RSAT_MODE}, docker)
 ## Use docker container
-DOCKER_RELEASE=eeadcsiccompbio/rsat:20240820
+DOCKER_RELEASE=eeadcsiccompbio/rsat:20240825
 RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out ${DOCKER_RELEASE} rsat
 MOTIFDB_DIR=/packages/rsat/public_html/motif_databases # in the Docker container
 
@@ -40,6 +40,6 @@ THREADS=10
 OMGA_DIR=/Users/jvanheld/no_backup/rsat_github/optimize-matrix-GA
 OMGA_PATH=${OMGA_DIR}/optimize-matrix-GA.py
 OMGA_PYTHON_PATH=${OMGA_DIR}/venv/Downloads/bin/python
-OMGA_CMD=${OMGA_PYTHON_PATH} ${OMGA_PATH}
+OMGA_CMD_PREFIX=${OMGA_PYTHON_PATH} ${OMGA_PATH}
 
 
