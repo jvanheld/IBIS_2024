@@ -32,7 +32,11 @@ param: param_00
 	@echo "	OUTPUT_PREFIX		${OUTPUT_PREFIX}"
 	@echo "	OMGA_CMD_PREFIX		${OMGA_CMD_PREFIX}"
 	@echo "	OMGA_CMD		${OMGA_CMD}"
+	@echo "	PLOT_AUROC_CMD		${PLOT_AUROC_CMD}"
 	@echo "	OMGA_SCRIPT		${OMGA_SCRIPT}"
+	@echo "	OPTIMIZED_MATRICES	${OPTIMIZED_MATRICES}"
+	@echo "	SCORE_TABLE		${SCORE_TABLE}"
+	@echo "	AUROC_PLOT		${AUROC_PLOT}"
 	@echo
 
 help:
@@ -64,6 +68,20 @@ OMGA_CMD=${SCHEDULER} ${OMGA_CMD_PREFIX} -v ${V} \
 		-b ${BG_EQUIPROBA} \
 		-r '"${RSAT_CMD}"' \
 		--output_prefix ${OUTPUT_PREFIX}
+
+SCORE_TABLE=${OUTPUT_PREFIX}_gen0-${GENERATIONS}_score_table.tsv
+AUROC_PLOT=${OUTPUT_PREFIX}_gen0-${GENERATIONS}_auroc-profiles.pdf 
+PLOT_AUROC_CMD=${OMGA_PYTHON_PATH} ${OMGA_DIR}/plot-auroc-profiles.py \
+	-v 1 \
+	-i ${SCORE_TABLE} \
+	-t "${TF}_${EXPERIMENT}_${DATASET}_clust-trimmed-matrices" \
+	-s "train-versus-rand" \
+	--y_step1 0.05 --y_step2 0.01 \
+	--min_y 0.0 --max_y 1.0 \
+	--xsize 16 --ysize 8 \
+	-f pdf \
+	-o ${AUROC_PLOT}
+
 omga_one_dataset: 
 	@echo "Optimizing matrices"
 	@echo "	BOARD			${BOARD}"
@@ -74,7 +92,7 @@ omga_one_dataset:
 	@echo "	POS_SEQ			${POSE_SEQ}"
 	@echo "	NEG_SEQ			${NEG_SEQ}"
 	@echo "	OMGA_CMD		${OMGA_CMD}"
-	@echo "	OMGA_CMD		${OMGA_CMD}"
+	@echo "	PLOT_AUROC_CMD		${PLOT_AUROC_CMD}"
 	@echo "	Writing optimize-matrix-GA  script"
 	@echo "	OMGA_SCRIPT		${OMGA_SCRIPT}"
 	@${MAKE} ${OMGA_MATRICES}
@@ -83,8 +101,13 @@ omga_one_dataset:
 	@echo "#SBATCH --cpus-per-task ${THREADS}\n" >> ${OMGA_SCRIPT}
 	@echo >> ${OMGA_SCRIPT}
 	@echo ${OMGA_CMD} >> ${OMGA_SCRIPT}
+	@echo >> ${OMGA_SCRIPT}
+	@echo ${PLOT_AUROC_CMD} >> ${OMGA_SCRIPT}
 	@${RUNNER} ${OMGA_SCRIPT}
 	@echo "	OUTPUT_PREFIX		${OUTPUT_PREFIX}"
+	@echo "	OPTIMIZED_MATRICES	${OPTIMIZED_MATRICES}"
+	@echo "	SCORE_TABLE		${SCORE_TABLE}"
+	@echo "	AUROC_PLOT		${AUROC_PLOT}"
 	@echo
 
 
