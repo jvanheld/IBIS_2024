@@ -10,7 +10,6 @@
 SCHEDULER=time
 RUNNER=bash
 RUNNER_HEADER="\#!/bin/bash"
-SLURM_OUT=
 
 ################################################################
 ## RSAT confiiguration
