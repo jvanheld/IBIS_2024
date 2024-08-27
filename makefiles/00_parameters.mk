@@ -1,10 +1,24 @@
 ################################################################
 ## Parameters for the analysis of ChIP-seq peaks
 
-MAKE=make -s -f ${MAKEFILE}
 MAKEFILE=makefiles/00_parameters.mk
+MAKE=make -s -f ${MAKEFILE}
 
-TODAY=date '+%Y-%m-%d'
+
+# Default goal to ensure initialization is done before inviking any other target
+.DEFAULT_GOAL := init
+
+# Init target to handle prerequisites
+init: log_dir
+	@echo "Initialization complete."
+
+# Create the log directory
+TODAY=`date '+%Y-%m-%d'`
+LOG_DIR=./slurm_out/${TODAY}/
+log_dir:
+	@mkdir -p $(LOG_DIR)
+	@echo "	Log directory created: $(LOG_DIR)"
+
 
 ################################################################
 ## Path or command to run RSAT command, depending on the local
@@ -77,6 +91,7 @@ param_00:
 	@echo "	  HOCOMOCO_MOTIFS	${HOCOMOCO_MOTIFS}"
 	@echo
 	@echo "Task execution parameters"
+	@echo "	LOG_DIR			${LOG_DIR}"
 	@echo "	SCHEDULER		${SCHEDULER}"
 	@echo "	SLURM_OUT		${SLURM_OUT}"
 	@echo "	RUNNER			${RUNNER}"
@@ -583,6 +598,7 @@ TFCLUST_SLURM_OUT=./slurm_out/${TODAY}/TFCLUST_${BOARD}_cross-data-types_${TF}_s
 	grep -v '^BS' $< > $@
 
 ## Trim the non-informative left and right columns of a PSSM
+#%_trimmed-info_${TRIM_INFO}.tf : %.tf
 %_trimmed.tf : %.tf
 	${RSAT_CMD} convert-matrix -i $< \
 		-from transfac -to transfac \
