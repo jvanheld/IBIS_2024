@@ -10,6 +10,7 @@ MAKEFILE=makefiles/07_optimize_matrices.mk
 targets: targets_00
 	@echo "optimize-matrix-GA targets (${MAKEFILE})"
 	@echo "	help			get help message for optimize-matrix-GA"
+	@echo "	omga_input_matrices	generate input matrices for optimize-matrix-GA for 1 dataset"
 	@echo "	omga_one_dataset	run optimize-matrix-GA on one dataset"
 	@echo "	omga_all_datasets	run optimize-matrix-GA on all datasets of a given experiment"
 	@echo "	omga_all_experiments	run optimize-matrix-GA on all datasets of all experiments"
@@ -35,6 +36,7 @@ param: param_00
 	@echo "	OUTPUT_DIR		${OUTPUT_DIR}"
 	@echo "	OUTPUT_PREFIX		${OUTPUT_PREFIX}"
 	@echo "	OMGA_CMD_PREFIX		${OMGA_CMD_PREFIX}"
+	@echo "	OMGA_COMPA_CMD		${OMGA_COMPA_CMD}"
 	@echo "	OMGA_CMD		${OMGA_CMD}"
 	@echo "	PLOT_AUROC_CMD		${PLOT_AUROC_CMD}"
 	@echo "	OMGA_SCRIPT		${OMGA_SCRIPT}"
@@ -53,10 +55,10 @@ CHILDREN=10
 SELECT=5
 POS_SEQ=${TF_SEQ}
 NEG_SEQ=${OTHERS_SEQ}
+OMGA_PRESUFFIX=clust-trimmed-matrices_tf-vs-others
 
 ## Choice of the matrices to optimize
 OMGA_INPUT_MATRICES=${TRIMMED_MATRICES}_c100000.tf
-OMGA_PRESUFFIX=clust-trimmed-matrices_train-vs-rand
 #OMGA_INPUT_MATRICES=${PEAKMO_MATRICES}_noBS.tf
 #OMGA_PRESUFFIX=peakmo-matrices_train-vs-rand
 
@@ -75,6 +77,14 @@ OMGA_CMD=${SCHEDULER} ${OMGA_CMD_PREFIX} -v ${V} \
 		-r '"${RSAT_CMD}"' \
 		--output_prefix ${OUTPUT_PREFIX}
 
+OMGA_COMPA=${OUTPUT_PREFIX}_gen0_vs_gen20.tab
+OMGA_COMPA_CMD=${RSAT_CMD} compare-matrices  -v 1 \
+	-file1 ${OMGA_INPUT_MATRICES} -format1 tf \
+	-file2 ${OPTIMIZED_MATRICES_TF} -format2 tf \
+	-strand DR -lth cor 0.7 -lth Ncor 0.4 \
+	-return cor,Ncor,logoDP,NsEucl,NSW,match_rank,matrix_id,matrix_name,width,strand,offset,consensus,alignments_1ton \
+	-o ${OMGA_COMPA}
+
 SCORE_TABLE=${OUTPUT_PREFIX}_gen0-${GENERATIONS}_score_table.tsv
 OPTIMIZED_MATRICES_TF=${OUTPUT_PREFIX}_gen${GENERATIONS}_scored_AuROC_top5.tf
 OPTIMIZED_MATRICES_CB=${OUTPUT_PREFIX}_gen${GENERATIONS}_scored_AuROC_top5_freq.cb
@@ -91,7 +101,19 @@ PLOT_AUROC_CMD=${OMGA_PYTHON_PATH} ${OMGA_DIR}/plot-auroc-profiles.py \
 	-f pdf \
 	-o ${AUROC_PLOT}
 
-omga_one_dataset: 
+
+omga_compa:
+	@echo "Comparing optimized matrices with initial matrices"
+	@echo "	OMGA_COMMPA_CMD		${OMGA_COMPA_CMD}"
+	${OMGA_COMPA_CMD}
+	@echo "	OMGA_COMPA		${OMGA_COMPA}"
+
+omga_input_matrices:
+	@echo "Generating input matrices for opimize-matrix-GA"
+	@${MAKE} ${OMGA_INPUT_MATRICES}
+	@echo "	OMGA_INPUT_MATRICES	${OMGA_INPUT_MATRICES}"
+
+omga_one_dataset: omga_input_matrices
 	@echo "Optimizing matrices"
 	@echo "	BOARD			${BOARD}"
 	@echo "	EXPERIMENT		${EXPERIMENT}"
@@ -112,6 +134,8 @@ omga_one_dataset:
 	@echo ${OMGA_CMD} >> ${OMGA_SCRIPT}
 	@echo >> ${OMGA_SCRIPT}
 	@echo ${PLOT_AUROC_CMD} >> ${OMGA_SCRIPT}
+	@echo >> ${OMGA_SCRIPT}
+	@echo ${OMGA_COMPA_CMD} >> ${OMGA_SCRIPT}
 	@echo >> ${OMGA_SCRIPT}
 	@echo ${MAKE} ${OPTIMIZED_MATRICES_TF} >> ${OMGA_SCRIPT}
 	@echo ${MAKE} ${OPTIMIZED_MATRICES_CB} >> ${OMGA_SCRIPT}
