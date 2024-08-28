@@ -1,4 +1,4 @@
-################################################################
+###############################################################
 ## Parameters for the analysis of ChIP-seq peaks
 
 MAKEFILE=makefiles/00_parameters.mk
@@ -10,6 +10,9 @@ MAKE=make -s -f ${MAKEFILE}
 
 # Init target to handle prerequisites
 init: log_dir
+	@echo "	BOARD		${BOARD}"
+	@echo "	EXPERIMENT	${EXPERIMENT}"
+	@echo "	TF		${TF}"
 	@echo "	Initialization complete."
 
 # Create the log directory
@@ -155,6 +158,13 @@ param_00:
 	@echo "	RAND_SEQ		${RAND_SEQ}"
 	@echo "	RAND_SCRIPT		${RAND_SCRIPT}"
 	@echo
+	@echo "Other sequences"
+	@echo "	TF_VS_OTHERS_DIR	${TF_VS_OTHERS_DIR}"
+	@echo "	OTHERS_SEQ		${OTHERS_SEQ}"
+	@echo "	TF_SEQ			${TF_SEQ}"
+	@echo "	OTHERS_CMD		${OTHERS_CMD}"
+	@echo "	TFSEQ_CMD		${TFSEQ_CMD}"
+	@echo
 	@echo "Sequence scanning"
 	@echo "	SCAN_MATRICES		${SCAN_MATRICES}"
 	@echo "	SCAN_SEQ		${SCAN_SEQ}"
@@ -191,9 +201,14 @@ targets_00:
 	@echo "	trim_matrices		Trim matrices to suppress non-informative columns on both sides"
 	@echo
 	@echo "Random genome fragments"
-	@echo "	rand_fragments			select random genome fragment as negative set for a given dataset"e
+	@echo "	rand_fragments			select random genome fragment as negative set for a given dataset"
 	@echo "	rand_fragments_all_datasets	run rand_fragments for all the datasets of the current experiment"
 	@echo "	rand_fragments_all_experiments	run rand_fragments for all the datasets of all the experiments"
+	@echo
+	@echo "Sequences from other TFs (negative sequence set)"
+	@echo "	tf_vs_others_one_tf		regroup sequences from all the other TFs of the same experiment (negative set)"
+	@echo "	tf_vs_others_all_tfs		run tf_vs_others_one_tf for each TF of the current experiment"
+	@echo "	tf_vs_others_all_experiments	run tf_vs_others_all_tfs for each the TFs of all the experiments"
 	@echo
 	@echo "Sequence scanning with discovered motifs"
 	@echo "	scan_sequences		scan sequences with matrices discovered with peak-motifs"
@@ -205,8 +220,10 @@ targets_00:
 	@echo
 	@echo "Iterators"
 	@echo "	list_datasets		list the datasets of the current experiment"
+	@echo "	list_tfs		list transcription factors for the current experiment"
 	@echo "	list_experiments	list the experiment"
 	@echo "	iterate_datasets	iterate a task over all the datasets of a given experiment"
+	@echo "	iterate_tfs		iterate a task over all the transcription factors of a given experiment"
 	@echo "	iterate_experiments	iterate a task over all the experiments"
 	@echo
 
@@ -262,12 +279,37 @@ iterate_datasets:
 	@echo "	EXPERIMENT	${EXPERIMENT}"
 	@echo "	DATASETS	${DATASETS}"
 	@echo "	TASK		${TASK}"
-	@for dataset in ${DATASETS} ; do ${MAKE} one_task DATASET=$${dataset}; done
+	@for dataset in ${DATASETS} ; do ${MAKE} one_task TASK=${TASK} DATASET=$${dataset}; done
 
 one_task:
 	@echo
 	@echo "	BOARD=${BOARD}	EXPERIMENT=${EXPERIMENT}	TF=${TF}	DATASET=${DATASET}"
 	${MAKE}  TF=${TF} EXPERIMENT=${EXPERIMENT} DATASET=${DATASET} ${TASK}
+
+################################################################
+## Iterate a task over all transcription factors for a given experiment
+list_tfs:
+	@echo 
+	@echo "Listing transcription_factors"
+	@echo "	BOARD		${BOARD}"
+	@echo "	DATA_TYPE	${DATA_TYPE}"
+	@echo "	EXPERIMENT	${EXPERIMENT}"
+	@echo "	TFS		${TFS}"
+
+iterate_tfs:
+	@echo 
+	@echo "Iterating over datasets"
+	@echo "	BOARD		${BOARD}"
+	@echo "	DATA_TYPE	${DATA_TYPE}"
+	@echo "	EXPERIMENT	${EXPERIMENT}"
+	@echo "	DATASETS	${TFS}"
+	@echo "	TF_TASK		${TF_TASK}"
+	@for tf in ${TFS} ; do ${MAKE} tf_task TASK=${TF_TASK} TF=$${tf}; done
+
+tf_task:
+	@echo
+	@echo "	BOARD=${BOARD}	EXPERIMENT=${EXPERIMENT}	TF=${TF}"
+	${MAKE}  TF=${TF} EXPERIMENT=${EXPERIMENT} ${TF_TASK}
 
 ################################################################
 ## Iterate a task over all the experiments
@@ -512,6 +554,47 @@ rand_fragments_all_datasets:
 rand_fragments_all_experiments:
 	@echo "Running rand_fragments for all data sets of all experiments"
 	@${MAKE} iterate_experiments EXPERIMENT_TASK=rand_fragments_all_datasets
+
+################################################################
+## Prepare a negative dataset for each TF by regrouping the train
+## sequences from all other factors in the same experiment
+TF_VS_OTHERS_DIR=data/${BOARD}/tf_vs_others/${EXPERIMENT}/${TF}
+
+## For PBM data only:  Top sequences associated to the TF 
+N_TOP_SPOTS=0500
+N_TOP_ROWS=1000
+N_BG_SPOTS=35000
+N_BG_ROWS=70000
+TOP_SUFFIX=top${N_TOP_SPOTS}
+BG_SUFFIX=bg${N_BG_SPOTS}
+ifeq (PBM,${EXPERIMENT})
+	OTHERS_SEQ=${TF_VS_OTHERS_DIR}/${EXPERIMENT}_${TF}_${BG_SUFFIX}.fasta
+	TF_SEQ=${TF_VS_OTHERS_DIR}/${EXPERIMENT}_${TF}_${TOP_SUFFIX}.fasta
+	OTHERS_CMD=ls -1 data/${BOARD}/train/${EXPERIMENT}/${TF}/*${BG_SUFFIX}.fasta | grep ${BG_SUFFIX} | xargs cat > ${OTHERS_SEQ}
+	TFSEQ_CMD=ls -1 data/${BOARD}/train/${EXPERIMENT}/${TF}/*${TOP_SUFFIX}.fasta | grep ${TOP_SUFFIX} | xargs cat > ${TF_SEQ}
+else
+	OTHERS_SEQ=${TF_VS_OTHERS_DIR}/${EXPERIMENT}_not_${TF}.fasta
+	TF_SEQ=${TF_VS_OTHERS_DIR}/${EXPERIMENT}_${TF}.fasta
+	OTHERS_CMD=ls -1 data/${BOARD}/train/${EXPERIMENT}/*/*.fasta | grep -v ${TF} | xargs cat > ${OTHERS_SEQ}
+	TFSEQ_CMD=ls -1 data/${BOARD}/train/${EXPERIMENT}/${TF}/*.fasta | xargs cat > ${TF_SEQ}
+endif
+TF_TASK=tf_vs_others_one_tf
+tf_vs_others_one_tf:
+	@echo
+	@echo "Generating file with all sequences from other factor than ${TF} in experiment ${EXPERIMENT}"
+	@echo "	TF_VS_OTHERS_DIR	${TF_VS_OTHERS_DIR}"
+	@mkdir -p ${TF_VS_OTHERS_DIR}
+	@${OTHERS_CMD}
+	@${TFSEQ_CMD}
+	@echo "	OTHERS_SEQ	${OTHERS_SEQ}"
+
+tf_vs_others_all_tfs:
+	@echo "Running tf_vs_others_one_dataset for all datasets ${BOARD}	${EXPERIMENT}"
+	@${MAKE} iterate_tfs TASK=rand_fragments
+
+tf_vs_others_all_experiments:
+	@echo "Running tf_vs_others_all_tfs for all data sets of all experiments"
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=rand_fragments_all_tfs
 
 
 ################################################################

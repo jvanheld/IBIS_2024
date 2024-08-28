@@ -80,12 +80,6 @@ tsv2fasta:
 ## For PBM datasets, select an aribtrary number of top-ranking oligos
 ## and consider them as binding sites, and the bottom-ranking oligos
 ## as background
-N_TOP_SPOTS=0500
-N_TOP_ROWS=1000
-N_BG_SPOTS=35000
-N_BG_ROWS=70000
-TOP_SUFFIX=top${N_TOP_SPOTS}
-BG_SUFFIX=bg${N_BG_SPOTS}
 TOP_SEQ=${DATASET_PATH}_${TOP_SUFFIX}.fasta
 BG_SEQ=${DATASET_PATH}_bg${N_BG_SPOTS}.fasta
 top_seq:

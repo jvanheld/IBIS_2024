@@ -29,7 +29,8 @@ param: param_00
 	@echo "	TRAIN_SEQ		${TRAIN_SEQ}"
 	@echo "	POS_SEQ			${POS_SEQ}"
 	@echo "	RAND_SEQ		${RAND_SEQ}"
-	@echo "	OTHER_SEQ		${OTHER_SEQ}"
+	@echo "	TF_SEQ			${TF_SEQ}"
+	@echo "	OTHERS_SEQ		${OTHER_SEQ}"
 	@echo "	NEG_SEQ			${NEG_SEQ}"
 	@echo "	OUTPUT_DIR		${OUTPUT_DIR}"
 	@echo "	OUTPUT_PREFIX		${OUTPUT_PREFIX}"
@@ -50,8 +51,8 @@ help:
 GENERATIONS=20
 CHILDREN=10
 SELECT=5
-POS_SEQ=${TRAIN_SEQ}
-NEG_SEQ=${RAND_SEQ}
+POS_SEQ=${TF_SEQ}
+NEG_SEQ=${OTHERS_SEQ}
 
 ## Choice of the matrices to optimize
 OMGA_INPUT_MATRICES=${TRIMMED_MATRICES}_c100000.tf
