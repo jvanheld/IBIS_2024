@@ -26,7 +26,7 @@ MOTIFDB_DIR=~/packages/motif_databases
 
 else ifeq (${RSAT_MODE}, docker)
 ## Use docker container
-DOCKER_RELEASE=eeadcsiccompbio/rsat:2024-08-28
+DOCKER_RELEASE=eeadcsiccompbio/rsat:2024-08-28b
 RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out ${DOCKER_RELEASE} rsat
 MOTIFDB_DIR=/packages/rsat/public_html/motif_databases
 
