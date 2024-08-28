@@ -10,7 +10,7 @@ MAKE=make -s -f ${MAKEFILE}
 
 # Init target to handle prerequisites
 init: log_dir
-	@echo "Initialization complete."
+	@echo "	Initialization complete."
 
 # Create the log directory
 TODAY=`date '+%Y-%m-%d'`
@@ -18,6 +18,7 @@ LOG_DIR=./slurm_out/${TODAY}/
 log_dir:
 	@mkdir -p $(LOG_DIR)
 	@echo "	Log directory created: $(LOG_DIR)"
+
 
 
 ################################################################
@@ -630,8 +631,12 @@ TFCLUST_SLURM_OUT=./slurm_out/${TODAY}/TFCLUST_${BOARD}_cross-data-types_${TF}_s
 		-o $@
 
 ## Add transcription factor name as first item in the motif header of a cluster-buster file + shorten the motif ID
-%.txt : %.cb
-	cat $< \
-		| perl -pe 's/^>/>${TF} ${EXPERIMENT}_${DATASET}_/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;' \
-		> $@
+%_ibis.txt : %_freq.cb
+#	@echo "Input\t"$<
+#	@echo "Output\t"$@
+#	@echo "	EXPERIMENT	${EXPERIMENT}"
+#	@echo "	TF		${TF}"
+#	@echo "	DATASET		${DATASET}"
+	@cat $< \
+		| perl -pe "s/^>/>${TF} ${EXPERIMENT}_${DATASET}_/; s/cluster_/c/; s/node_/n/; s/motifs/m/; s/oligos_/oli_/; s/positions_/pos_/; s/\.Rep-MICHELLE/M/; s/\.Rep-DIANA/D/; s/ \/name.*//;" > $@
 
