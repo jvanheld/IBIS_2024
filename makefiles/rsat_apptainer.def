@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: eeadcsiccompbio/rsat:20240828
+From: eeadcsiccompbio/rsat:2024-08-28
 #From: biocontainers/rsat:20240507_cv1
 
 %post

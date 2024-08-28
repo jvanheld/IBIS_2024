@@ -22,13 +22,13 @@ ifeq (${RSAT_MODE}, local)
 
 ## Use RSAT package installed on the laptop
 RSAT_CMD=~/packages/rsat/bin/rsat
-MOTIFDB_DIR=~/packages/rsat/motif_databases ## Local RSAT installation
+MOTIFDB_DIR=~/packages/motif_databases
 
 else ifeq (${RSAT_MODE}, docker)
 ## Use docker container
-DOCKER_RELEASE=eeadcsiccompbio/rsat:20240828
+DOCKER_RELEASE=eeadcsiccompbio/rsat:2024-08-28
 RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out ${DOCKER_RELEASE} rsat
-MOTIFDB_DIR=/packages/rsat/public_html/motif_databases # in the Docker container
+MOTIFDB_DIR=/packages/rsat/public_html/motif_databases
 
 endif
 

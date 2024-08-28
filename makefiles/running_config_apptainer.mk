@@ -16,7 +16,7 @@ RUNNER_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}\n\#SBATCH --mem=16G\n\n"
 ################################################################
 ## Local configuration for Apptainer on IFB core cluster
 ################################################################
-DOCKER_RELEASE=20240828
+DOCKER_RELEASE=2024-08-28
 DOCKER_IMAGE=eeadcsiccompbio/rsat:${DOCKER_RELEASE}
 APPTAINER_DEF=makefiles/rsat_apptainer.def
 APPTAINER_CONTAINER=rsat_apptainer/rsat_${DOCKER_RELEASE}.sif
