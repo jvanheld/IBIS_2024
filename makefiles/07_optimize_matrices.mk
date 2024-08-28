@@ -1,4 +1,4 @@
-###############################################################
+##############################################################
 ## Run genetic algorithm to optimize the matrices produced by
 ## peak-motifs according to their capability to discriiminate positive
 ## from negative sequence sets.
@@ -25,8 +25,11 @@ param: param_00
 	@echo "	GENERATIONS		${GENERATIONS}"
 	@echo "	CHILDREN		${CHILDREN}"
 	@echo "	SELECT			${SELECT}"
-	@echo "	OMGA_MATRICES		${OMGA_MATRICES}"
+	@echo "	OMGA_INPUT_MATRICES	${OMGA_INPUT_MATRICES}"
+	@echo "	TRAIN_SEQ		${TRAIN_SEQ}"
 	@echo "	POS_SEQ			${POS_SEQ}"
+	@echo "	RAND_SEQ		${RAND_SEQ}"
+	@echo "	OTHER_SEQ		${OTHER_SEQ}"
 	@echo "	NEG_SEQ			${NEG_SEQ}"
 	@echo "	OUTPUT_DIR		${OUTPUT_DIR}"
 	@echo "	OUTPUT_PREFIX		${OUTPUT_PREFIX}"
@@ -34,7 +37,9 @@ param: param_00
 	@echo "	OMGA_CMD		${OMGA_CMD}"
 	@echo "	PLOT_AUROC_CMD		${PLOT_AUROC_CMD}"
 	@echo "	OMGA_SCRIPT		${OMGA_SCRIPT}"
-	@echo "	OPTIMIZED_MATRICES	${OPTIMIZED_MATRICES}"
+	@echo "	OPTIMIZED_MATRICES_TF	${OPTIMIZED_MATRICES_TF}"
+	@echo "	OPTIMIZED_MATRICES_CB	${OPTIMIZED_MATRICES_CB}"
+	@echo "	OPTIMIZED_MATRICES_IBIS	${OPTIMIZED_MATRICES_IBIS}"
 	@echo "	SCORE_TABLE		${SCORE_TABLE}"
 	@echo "	AUROC_PLOT		${AUROC_PLOT}"
 	@echo
@@ -49,9 +54,9 @@ POS_SEQ=${TRAIN_SEQ}
 NEG_SEQ=${RAND_SEQ}
 
 ## Choice of the matrices to optimize
-OMGA_MATRICES=${TRIMMED_MATRICES}.tf
+OMGA_INPUT_MATRICES=${TRIMMED_MATRICES}.tf
 OMGA_PRESUFFIX=clust-trimmed-matrices_train-vs-rand
-#OMGA_MATRICES=${PEAKMO_MATRICES}_noBS.tf
+#OMGA_INPUT_MATRICES=${PEAKMO_MATRICES}_noBS.tf
 #OMGA_PRESUFFIX=peakmo-matrices_train-vs-rand
 
 OUTPUT_DIR=results/${BOARD}/${DATA_TYPE}/${EXPERIMENT}/${TF}/${DATASET}/optimized_matrices/${OMGA_PRESUFFIX}
@@ -62,7 +67,7 @@ OMGA_CMD=${SCHEDULER} ${OMGA_CMD_PREFIX} -v ${V} \
 		-g ${GENERATIONS} \
 		-c ${CHILDREN} \
 		-s ${SELECT} \
-		-m ${OMGA_MATRICES} \
+		-m ${OMGA_INPUT_MATRICES} \
 		-p ${POS_SEQ} \
 		-n ${NEG_SEQ} \
 		-b ${BG_EQUIPROBA} \
@@ -70,6 +75,9 @@ OMGA_CMD=${SCHEDULER} ${OMGA_CMD_PREFIX} -v ${V} \
 		--output_prefix ${OUTPUT_PREFIX}
 
 SCORE_TABLE=${OUTPUT_PREFIX}_gen0-${GENERATIONS}_score_table.tsv
+OPTIMIZED_MATRICES_TF=${OUTPUT_PREFIX}_gen${GENERATIONS}_scored_AuROC_top5.tf
+OPTIMIZED_MATRICES_CB=${OUTPUT_PREFIX}_gen${GENERATIONS}_scored_AuROC_top5_freq.cb
+OPTIMIZED_MATRICES_IBIS=${OUTPUT_PREFIX}_gen${GENERATIONS}_scored_AuROC_top5_ibis.txt
 AUROC_PLOT=${OUTPUT_PREFIX}_gen0-${GENERATIONS}_auroc-profiles.pdf 
 PLOT_AUROC_CMD=${OMGA_PYTHON_PATH} ${OMGA_DIR}/plot-auroc-profiles.py \
 	-v 1 \
@@ -88,14 +96,14 @@ omga_one_dataset:
 	@echo "	EXPERIMENT		${EXPERIMENT}"
 	@echo "	TF			${TF}"
 	@echo "	DATASET			${DATASET}"
-	@echo "	OMGA_MATRICES		${OMGA_MATRICES}"
-	@echo "	POS_SEQ			${POSE_SEQ}"
+	@echo "	OMGA_INPUT_MATRICES	${OMGA_INPUT_MATRICES}"
+	@echo "	POS_SEQ			${POS_SEQ}"
 	@echo "	NEG_SEQ			${NEG_SEQ}"
 	@echo "	OMGA_CMD		${OMGA_CMD}"
 	@echo "	PLOT_AUROC_CMD		${PLOT_AUROC_CMD}"
 	@echo "	Writing optimize-matrix-GA  script"
 	@echo "	OMGA_SCRIPT		${OMGA_SCRIPT}"
-	@${MAKE} ${OMGA_MATRICES}
+	@${MAKE} ${OMGA_INPUT_MATRICES}
 	@mkdir -p ${OUTPUT_DIR}
 	@echo ${RUNNER_HEADER} > ${OMGA_SCRIPT}
 	@echo "#SBATCH --cpus-per-task ${THREADS}\n" >> ${OMGA_SCRIPT}
@@ -103,9 +111,15 @@ omga_one_dataset:
 	@echo ${OMGA_CMD} >> ${OMGA_SCRIPT}
 	@echo >> ${OMGA_SCRIPT}
 	@echo ${PLOT_AUROC_CMD} >> ${OMGA_SCRIPT}
+	@echo >> ${OMGA_SCRIPT}
+	@echo ${MAKE} ${OPTIMIZED_MATRICES_TF} >> ${OMGA_SCRIPT}
+	@echo ${MAKE} ${OPTIMIZED_MATRICES_CB} >> ${OMGA_SCRIPT}
+	@echo ${MAKE} ${OPTIMIZED_MATRICES_IBIS} >> ${OMGA_SCRIPT}
 	@${RUNNER} ${OMGA_SCRIPT}
 	@echo "	OUTPUT_PREFIX		${OUTPUT_PREFIX}"
-	@echo "	OPTIMIZED_MATRICES	${OPTIMIZED_MATRICES}"
+	@echo "	OPTIMIZED_MATRICES_TF	${OPTIMIZED_MATRICES_TF}"
+	@echo "	OPTIMIZED_MATRICES_CB	${OPTIMIZED_MATRICES_CB}"
+	@echo "	OPTIMIZED_MATRICES_IBIS	${OPTIMIZED_MATRICES_IBIS}"
 	@echo "	SCORE_TABLE		${SCORE_TABLE}"
 	@echo "	AUROC_PLOT		${AUROC_PLOT}"
 	@echo
