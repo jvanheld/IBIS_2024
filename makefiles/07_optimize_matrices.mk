@@ -77,14 +77,6 @@ OMGA_CMD=${SCHEDULER} ${OMGA_CMD_PREFIX} -v ${V} \
 		-r '"${RSAT_CMD}"' \
 		--output_prefix ${OUTPUT_PREFIX}
 
-OMGA_COMPA=${OUTPUT_PREFIX}_gen0_vs_gen20.tab
-OMGA_COMPA_CMD=${RSAT_CMD} compare-matrices  -v ${V} \
-	-file2 ${OMGA_INPUT_MATRICES} \
-	-file1 ${OPTIMIZED_MATRICES_TF} \
-	-format2 tf -format1 tf -strand DR -lth cor 0.7 -lth Ncor 0.4 \
-	-return cor,Ncor,logoDP,NsEucl,NSW,match_rank,matrix_id,matrix_name,width,strand,offset,consensus,alignments_1ton \
-	-o ${OMGA_COMPA}
-
 SCORE_TABLE=${OUTPUT_PREFIX}_gen0-${GENERATIONS}_score_table.tsv
 OPTIMIZED_MATRICES_TF=${OUTPUT_PREFIX}_gen${GENERATIONS}_scored_AuROC_top5.tf
 OPTIMIZED_MATRICES_CB=${OUTPUT_PREFIX}_gen${GENERATIONS}_scored_AuROC_top5_freq.cb
@@ -101,12 +93,23 @@ PLOT_AUROC_CMD=${OMGA_PYTHON_PATH} ${OMGA_DIR}/plot-auroc-profiles.py \
 	-f pdf \
 	-o ${AUROC_PLOT}
 
-
+OMGA_COMPA=${OUTPUT_PREFIX}_gen0-vs-gen20
+OMGA_COMPA_TAB=${OMGA_COMPA}.tab
+OMGA_COMPA_HTML=${OMGA_COMPA}.html
+OMGA_COMPA_ALIGN=${OMGA_COMPA}_alignments_1ton.html
+OMGA_COMPA_CMD=${RSAT_CMD} compare-matrices  -v ${V} \
+	-file1 ${OPTIMIZED_MATRICES_TF} \
+	-file2 ${OMGA_INPUT_MATRICES} \
+	-format2 tf -format1 tf -strand DR -lth cor 0.7 -lth Ncor 0.4 \
+	-return cor,Ncor,logoDP,NsEucl,NSW,match_rank,matrix_id,matrix_name,width,strand,offset,consensus,alignments_1ton \
+	-o ${OMGA_COMPA}
 omga_compa:
 	@echo "Comparing optimized matrices with initial matrices"
 	@echo "	OMGA_COMMPA_CMD		${OMGA_COMPA_CMD}"
 	${OMGA_COMPA_CMD}
-	@echo "	OMGA_COMPA		${OMGA_COMPA}"
+	@echo "	OMGA_COMPA_TAB		${OMGA_COMPA_TAB}"
+	@echo "	OMGA_COMPA_HTML		${OMGA_COMPA_HTML}"
+	@echo "	OMGA_COMPA_ALIGN	${OMGA_COMPA_ALIGN}"
 
 omga_input_matrices:
 	@echo "Generating input matrices for opimize-matrix-GA"
