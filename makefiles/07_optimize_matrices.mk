@@ -45,6 +45,9 @@ param: param_00
 	@echo "	OPTIMIZED_MATRICES_IBIS	${OPTIMIZED_MATRICES_IBIS}"
 	@echo "	SCORE_TABLE		${SCORE_TABLE}"
 	@echo "	AUROC_PLOT		${AUROC_PLOT}"
+	@echo "	OMGA_COMPA_TAB		${OMGA_COMPA_TAB}"
+	@echo "	OMGA_COMPA_HTML		${OMGA_COMPA_HTML}"
+	@echo "	OMGA_COMPA_ALIGN	${OMGA_COMPA_ALIGN}"
 	@echo
 
 help:
@@ -150,6 +153,9 @@ omga_one_dataset: omga_input_matrices
 	@echo "	OPTIMIZED_MATRICES_IBIS	${OPTIMIZED_MATRICES_IBIS}"
 	@echo "	SCORE_TABLE		${SCORE_TABLE}"
 	@echo "	AUROC_PLOT		${AUROC_PLOT}"
+	@echo "	OMGA_COMPA_TAB		${OMGA_COMPA_TAB}"
+	@echo "	OMGA_COMPA_HTML		${OMGA_COMPA_HTML}"
+	@echo "	OMGA_COMPA_ALIGN	${OMGA_COMPA_ALIGN}"
 	@echo
 
 
