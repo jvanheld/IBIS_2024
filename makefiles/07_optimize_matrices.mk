@@ -78,10 +78,10 @@ OMGA_CMD=${SCHEDULER} ${OMGA_CMD_PREFIX} -v ${V} \
 		--output_prefix ${OUTPUT_PREFIX}
 
 OMGA_COMPA=${OUTPUT_PREFIX}_gen0_vs_gen20.tab
-OMGA_COMPA_CMD=${RSAT_CMD} compare-matrices  -v 1 \
-	-file1 ${OMGA_INPUT_MATRICES} -format1 tf \
-	-file2 ${OPTIMIZED_MATRICES_TF} -format2 tf \
-	-strand DR -lth cor 0.7 -lth Ncor 0.4 \
+OMGA_COMPA_CMD=${RSAT_CMD} compare-matrices  -v ${V} \
+	-file2 ${OMGA_INPUT_MATRICES} \
+	-file1 ${OPTIMIZED_MATRICES_TF} \
+	-format2 tf -format1 tf -strand DR -lth cor 0.7 -lth Ncor 0.4 \
 	-return cor,Ncor,logoDP,NsEucl,NSW,match_rank,matrix_id,matrix_name,width,strand,offset,consensus,alignments_1ton \
 	-o ${OMGA_COMPA}
 
