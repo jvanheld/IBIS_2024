@@ -98,11 +98,11 @@ OMGA_COMPA_TAB=${OMGA_COMPA}.tab
 OMGA_COMPA_HTML=${OMGA_COMPA}.html
 OMGA_COMPA_ALIGN=${OMGA_COMPA}_alignments_1ton.html
 OMGA_COMPA_CMD=${RSAT_CMD} compare-matrices  -v ${V} \
-	-file1 ${OPTIMIZED_MATRICES_TF} \
+	-file1 ${OPTIMIZED_MATRICES_TF} -format1 tf \
 	-file2 ${OMGA_INPUT_MATRICES} \
-	-format2 tf -format1 tf -strand DR -lth cor 0.7 -lth Ncor 0.4 \
+	-format2 tf  -strand DR -lth cor 0.7 -lth Ncor 0.4 \
 	-return cor,Ncor,logoDP,NsEucl,NSW,match_rank,matrix_id,matrix_name,width,strand,offset,consensus,alignments_1ton \
-	-o ${OMGA_COMPA}
+	-o ${OMGA_COMPA_TAB}
 omga_compa:
 	@echo "Comparing optimized matrices with initial matrices"
 	@echo "	OMGA_COMMPA_CMD		${OMGA_COMPA_CMD}"
