@@ -161,7 +161,7 @@ peakmo_diff_one_dataset:
 	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
 
 peakmo_diff_all_datasets:
-	@${MAKE} iterate_datasets TASK=peakmo_diff
+	@${MAKE} iterate_datasets TASK=peakmo_diff_one_dataset
 
 peakmo_diff_all_experiments:
 	@${MAKE} iterate_experiments EXPERIMENT_TASK=peakmo_diff_all_datasets
