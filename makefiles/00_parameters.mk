@@ -152,7 +152,7 @@ param_00:
 	@echo "	transfac trimmed	${TRIMMED_MATRICES}.tf"
 	@echo "	transfac freq		${TRIMMED_MATRICES}_freq.tf"
 	@echo "	cb freq			${TRIMMED_MATRICES}_freq.cb"
-	@echo "	IBIS format		${TRIMMED_MATRICES}_freq.txt"
+	@echo "	IBIS format		${TRIMMED_MATRICES}_ibis.txt"
 	@echo
 	@echo "Random sequences"
 	@echo "	RAND_SEQ		${RAND_SEQ}"
