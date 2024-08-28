@@ -622,7 +622,13 @@ TFCLUST_SLURM_OUT=./slurm_out/${TODAY}/TFCLUST_${BOARD}_cross-data-types_${TF}_s
 %_freq.tf : %.tf
 	${RSAT_CMD} convert-matrix -i $< \
 		-from transfac -to transfac \
-		-rescale 1 -decimals 4 -o $@
+		-rescale_col 1 -decimals 5 -o $@
+
+## Rescale each position of a count matrix to a total of 100000
+%_c100000.tf : %.tf
+	${RSAT_CMD} convert-matrix -i $< \
+		-from transfac -to transfac \
+		-rescale_col 100000 -decimals 0 -o $@
 
 ## Convert matrix from transfac to cluster-buster format
 %.cb : %.tf
