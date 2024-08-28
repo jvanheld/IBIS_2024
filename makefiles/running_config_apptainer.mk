@@ -49,6 +49,11 @@ build:
 run:
 	${RSAT_CMD}
 
+JOBS=`squeue -u jvanhelden | grep -v JOBID |wc -l`
+JOBS_PER_STATUS=`squeue -u jvanhelden  | grep -v JOBID | awk '{print $$5}' | sort | uniq -c | xargs`
+watch_queue:
+	@echo "Jobs at `date '+%Y-%m-%d_%H%M%S'`	${JOBS} (${JOBS_PER_STATUS})"
+
 ################################################################
 ## Configuration for optimize-matrix-GA
 ################################################################
