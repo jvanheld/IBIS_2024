@@ -106,12 +106,12 @@ cluster_one_tf:
 	@echo >> ${TFCLUST_SCRIPT}
 	@echo ${MAKE} ${TFCLUST_ROOT_MOTIFS}_info.tab >>  ${TFCLUST_SCRIPT}
 	@echo ${MAKE} ${TFCLUST_ROOT_MOTIFS}_trimmed.tf ${TFCLUST_ROOT_MOTIFS}_trimmed_info.tab >>  ${TFCLUST_SCRIPT}
-	@echo ${MAKE} ${TFCLUST_ROOT_MOTIFS}_freq.tf ${TFCLUST_ROOT_MOTIFS}_freq.cb ${TFCLUST_ROOT_MOTIFS}_freq.txt >>  ${TFCLUST_SCRIPT}
-	@echo ${MAKE} ${TFCLUST_ROOT_MOTIFS}_trimmed_freq.tf ${TFCLUST_ROOT_MOTIFS}_trimmed_freq.cb ${TFCLUST_ROOT_MOTIFS}_trimmed_freq.txt >>  ${TFCLUST_SCRIPT}
+	@echo ${MAKE} ${TFCLUST_ROOT_MOTIFS}_freq.tf ${TFCLUST_ROOT_MOTIFS}_freq.cb ${TFCLUST_ROOT_MOTIFS}_ibis.txt >>  ${TFCLUST_SCRIPT}
+	@echo ${MAKE} ${TFCLUST_ROOT_MOTIFS}_trimmed_freq.tf ${TFCLUST_ROOT_MOTIFS}_trimmed_freq.cb ${TFCLUST_ROOT_MOTIFS}_trimmed_ibis.txt >>  ${TFCLUST_SCRIPT}
 	@echo ${MAKE} ${TFCLUST_ALL_MOTIFS}_info.tab >>  ${TFCLUST_SCRIPT}
 	@echo ${MAKE} ${TFCLUST_ALL_MOTIFS}_trimmed.tf ${TFCLUST_ALL_MOTIFS}_trimmed_info.tab >>  ${TFCLUST_SCRIPT}
-	@echo ${MAKE} ${TFCLUST_ALL_MOTIFS}_freq.tf ${TFCLUST_ALL_MOTIFS}_freq.cb ${TFCLUST_ALL_MOTIFS}_freq.txt >>  ${TFCLUST_SCRIPT}
-	@echo ${MAKE} ${TFCLUST_ALL_MOTIFS}_trimmed_freq.tf ${TFCLUST_ALL_MOTIFS}_trimmed_freq.cb ${TFCLUST_ALL_MOTIFS}_trimmed_freq.txt >>  ${TFCLUST_SCRIPT}
+	@echo ${MAKE} ${TFCLUST_ALL_MOTIFS}_freq.tf ${TFCLUST_ALL_MOTIFS}_freq.cb ${TFCLUST_ALL_MOTIFS}_ibis.txt >>  ${TFCLUST_SCRIPT}
+	@echo ${MAKE} ${TFCLUST_ALL_MOTIFS}_trimmed_freq.tf ${TFCLUST_ALL_MOTIFS}_trimmed_freq.cb ${TFCLUST_ALL_MOTIFS}_trimmed_ibis.txt >>  ${TFCLUST_SCRIPT}
 	@${RUNNER} ${TFCLUST_SCRIPT}
 	@echo "	TFCLUST_DIR	${TFCLUST_DIR}"
 
@@ -127,18 +127,18 @@ cluster_all_tfs: all_metadata
 tfclust_to_ibis:
 	@echo
 	@echo "Converting cluster matrices into format suitable for IBIS challenge submission"
-	@${MAKE} ${TFCLUST_ROOT_MOTIFS}_freq.tf ${TFCLUST_ROOT_MOTIFS}_freq.cb ${TFCLUST_ROOT_MOTIFS}_freq.txt
+	@${MAKE} ${TFCLUST_ROOT_MOTIFS}_freq.tf ${TFCLUST_ROOT_MOTIFS}_freq.cb ${TFCLUST_ROOT_MOTIFS}_ibis.txt
 	@echo "	TFCLUST_ROOT_MOTIFS	${TFCLUST_ROOT_MOTIFS}"
 	@echo "	${TFCLUST_ROOT_MOTIFS}.tf"
 	@echo "	${TFCLUST_ROOT_MOTIFS}_freq.tf"
 	@echo "	${TFCLUST_ROOT_MOTIFS}_freq.cb"
-	@echo "	${TFCLUST_ROOT_MOTIFS}_freq.txt"
-	@${MAKE} ${TFCLUST_ALL_MOTIFS}_freq.tf ${TFCLUST_ALL_MOTIFS}_freq.cb ${TFCLUST_ALL_MOTIFS}_freq.txt
+	@echo "	${TFCLUST_ROOT_MOTIFS}_ibis.txt"
+	@${MAKE} ${TFCLUST_ALL_MOTIFS}_freq.tf ${TFCLUST_ALL_MOTIFS}_freq.cb ${TFCLUST_ALL_MOTIFS}_ibis.txt
 	@echo "	TFCLUST_ALL_MOTIFS	${TFCLUST_ALL_MOTIFS}"
 	@echo "	${TFCLUST_ALL_MOTIFS}.tf"
 	@echo "	${TFCLUST_ALL_MOTIFS}_freq.tf"
 	@echo "	${TFCLUST_ALL_MOTIFS}_freq.cb"
-	@echo "	${TFCLUST_ALL_MOTIFS}_freq.txt"
+	@echo "	${TFCLUST_ALL_MOTIFS}_ibis.txt"
 
 
 ################################################################
