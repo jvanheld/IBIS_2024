@@ -2,7 +2,7 @@
 ## Build RSAT apptainer container from a Docker release
 
 MAKEFILE=makefiles/build_rsat_apptainer.mk
-DOCKER_RELEASE=2024-08-28b
+DOCKER_RELEASE=2024-08-28c
 APPTAINER_DIR=rsat_apptainer
 APPTAINER_DEF=${APPTAINER_DIR}/rsat_apptainer.def
 RSAT_SIF=${APPTAINER_DIR}/rsat_${DOCKER_RELEASE}.sif
