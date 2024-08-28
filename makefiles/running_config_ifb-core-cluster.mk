@@ -11,10 +11,3 @@ RUNNER=sbatch
 RUNNER_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}\n\#SBATCH --mem-per-cpu=16G\n"
 
 
-## Local configuration for Apptainer on IFB core cluster
-#MOTIFDB_DIR=/packages/rsat/public_html/motif_databases
-#DOCKER_RELEASE=20240806
-#DOCKER_IMAGE=eeadcsiccompbio/rsat:${DOCKER_RELEASE}
-#RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out ${DOCKER_IMAGE} rsat
-#RSAT_CMD=/shared/projects/ibis_challenge/rsat_${DOCKER_RELEASE}.sif rsat
-

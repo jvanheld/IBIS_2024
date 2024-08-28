@@ -26,7 +26,7 @@ MOTIFDB_DIR=~/packages/rsat/motif_databases ## Local RSAT installation
 
 else ifeq (${RSAT_MODE}, docker)
 ## Use docker container
-DOCKER_RELEASE=eeadcsiccompbio/rsat:20240825
+DOCKER_RELEASE=eeadcsiccompbio/rsat:20240828
 RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out ${DOCKER_RELEASE} rsat
 MOTIFDB_DIR=/packages/rsat/public_html/motif_databases # in the Docker container
 

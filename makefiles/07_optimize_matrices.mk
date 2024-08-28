@@ -54,7 +54,7 @@ POS_SEQ=${TRAIN_SEQ}
 NEG_SEQ=${RAND_SEQ}
 
 ## Choice of the matrices to optimize
-OMGA_INPUT_MATRICES=${TRIMMED_MATRICES}.tf
+OMGA_INPUT_MATRICES=${TRIMMED_MATRICES}_c100000.tf
 OMGA_PRESUFFIX=clust-trimmed-matrices_train-vs-rand
 #OMGA_INPUT_MATRICES=${PEAKMO_MATRICES}_noBS.tf
 #OMGA_PRESUFFIX=peakmo-matrices_train-vs-rand
