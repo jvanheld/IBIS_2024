@@ -4,7 +4,7 @@
 ##
 ## Participants: Jacques van Helden and Bruno Contreiras Moreira
 
-include makefiles/00_parameters.mk
+include makefiles/00_init.mk
 MAKEFILE=makefiles/all.mk
 
 
@@ -26,13 +26,13 @@ all_one_board:
 	@echo "DATA PREPARATION"
 	@echo 
 	@echo "Generating metadata"
-	@make -f makefiles/00_parameters.mk all_metadata
+	@make -f makefiles/00_init.mk all_metadata
 	@echo
 	@echo "Fetching sequences for all CHS and GHTS datasets"
-	@make -f makefiles/00_parameters.mk fetch_sequences
+	@make -f makefiles/00_init.mk fetch_sequences
 	@echo
 	@echo "Converting fastq to fasta for all HTS and SMS datasets"
-	@make -f makefiles/00_parameters.mk fastq2fasta
+	@make -f makefiles/00_init.mk fastq2fasta
 	@echo
 	@echo "Extracing sequences from data tables for PBM experiments"
 	@make -f makefiles/04_PBM.mk tsv2fasta
@@ -41,10 +41,10 @@ all_one_board:
 	@make -f makefiles/04_PBM.mk top_bg_seq_all_datasets"
 	@echo
 	@echo "Selecting random genome fragments"
-	@make -f makefiles/00_parameters.mk rand_fragments_all_experiments
+	@make -f makefiles/00_init.mk rand_fragments_all_experiments
 	@echo
 	@echo "Collecting sequences for TF versus others analyses"
-	@make -f makefiles/00_parameters.mk tf_vs_others_all_experiments
+	@make -f makefiles/00_init.mk tf_vs_others_all_experiments
 	@echo
 	@echo "MOTIF DISCOVERY"
 	@echo

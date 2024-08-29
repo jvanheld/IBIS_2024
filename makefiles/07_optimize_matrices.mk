@@ -4,7 +4,7 @@
 ## from negative sequence sets.
 ##
 
-include makefiles/00_parameters.mk
+include makefiles/00_init.mk
 MAKEFILE=makefiles/07_optimize_matrices.mk
 
 targets: targets_00

@@ -2,7 +2,7 @@
 ## Run oligo-analysis on ChIp-seq peak sequences with a BG model
 ## estimated from the whole test dataset.
 
-include makefiles/00_parameters.mk
+include makefiles/00_init.mk
 MAKEFILE=makefiles/03_oligo-analysis.mk
 
 targets: targets_00

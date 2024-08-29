@@ -1,7 +1,7 @@
 ###############################################################
 ## Parameters for the analysis of ChIP-seq peaks
 
-MAKEFILE=makefiles/00_parameters.mk
+MAKEFILE=makefiles/00_init.mk
 MAKE=make -s -f ${MAKEFILE}
 
 
@@ -185,7 +185,7 @@ param_00:
 
 targets_00:
 	@echo
-	@echo "Common targets (makefiles/00_parameters.mk)"
+	@echo "Common targets (makefiles/00_init.mk)"
 	@echo "	targets			list targets"
 	@echo "	param			list parameters"
 	@echo "	metadata		build metadata table for one experiment"
@@ -193,8 +193,8 @@ targets_00:
 	@echo "	  metadata_fastq	build metadata table by finding fastq files (HTS and SMS data)"
 	@echo "	  metadata_pbm		build metadata table for PBM data, from the TSV file"
 	@echo "	all_metadata		concatenate metadata files of all the experiments"
-	@echo "	fetch_sequences		retrieve peak sequences from UCSC (for CHS and GHTS data)"
-	@echo "	fastq2fasta		convert sequences from fastq to fasta format (for HTS and SMS data)"
+	@echo "	fetch_sequences		retrieve peak sequences from UCSC for all datasets of CHS and GHTS experiments"
+	@echo "	fastq2fasta		convert sequences from fastq to fasta format for all datasets of HTS and SMS experiments"
 	@echo
 	@echo "Matrix processing"
 	@echo "	cluster_matrices	Cluster matrices discovered by peak-motifs"
@@ -243,7 +243,7 @@ fetch_sequences_one_dataset:
 	@echo "	FASTA_SEQ	${FASTA_SEQ}"
 
 ################################################################
-## Fetch peak sequences from UCSC for the genomic data
+## Fetch peak sequences from UCSC for all the genomic data
 fetch_sequences:
 	@for exp in CHS GHTS; do \
 		${MAKE} iterate_datasets EXPERIMENT=$${exp} TASK=fetch_sequences_one_dataset; \
@@ -252,13 +252,21 @@ fetch_sequences:
 ################################################################
 ## For HTS and SMS data, convert fastq sequences to fasta format
 FASTQ2FASTA_CMD=${RSAT_CMD} convert-seq -from fastq -to fasta -i ${FASTQ_SEQ} -o ${FASTA_SEQ}
-fastq2fasta:
+fastq2fasta_one_datasset:
 	@echo
 	@echo "Converting sequences from fastq.gz to fasta"
 	@echo "	FASTQ_SEQ	${FASTQ_SEQ}"
 	@${FASTQ2FASTA_CMD}
 	@echo
 	@echo "	FASTA_SEQ	${FASTA_SEQ}"
+
+################################################################
+## Convert fastq to fasta for all the datasets of HTS and SMS experiments
+fastq2fasta:
+	@for exp in HTS SMS; do \
+		${MAKE} iterate_datasets EXPERIMENT=$${exp} TASK=fastq2fasta_one_dataset; \
+	done
+
 
 
 ################################################################

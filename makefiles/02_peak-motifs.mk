@@ -3,7 +3,7 @@
 ##
 ## Participants: Jacques van Helden and Bruno Contreiras Moreira
 
-include makefiles/00_parameters.mk
+include makefiles/00_init.mk
 MAKEFILE=makefiles/02_peak-motifs.mk
 
 targets: targets_00
