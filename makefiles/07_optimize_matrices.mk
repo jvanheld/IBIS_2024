@@ -4,7 +4,7 @@
 ## from negative sequence sets.
 ##
 
-include makefiles/00_init.mk
+include makefiles/01_init.mk
 MAKEFILE=makefiles/07_optimize_matrices.mk
 
 targets: targets_00
@@ -58,11 +58,18 @@ CHILDREN=10
 SELECT=5
 POS_SEQ=${TF_SEQ}
 NEG_SEQ=${OTHERS_SEQ}
-OMGA_PRESUFFIX=clust-trimmed-matrices_tf-vs-others
 
 ## Choice of the matrices to optimize
-OMGA_INPUT_MATRICES=${TRIMMED_MATRICES}_c100000.tf
-#OMGA_INPUT_MATRICES=${PEAKMO_MATRICES}_noBS.tf
+OMGA_INPUT=peakmo
+
+ifeq (${OMGA_INPUT},clusters)
+	OMGA_INPUT_MATRICES=${TRIMMED_MATRICES}_c100000.tf
+	OMGA_PRESUFFIX=clust-trimmed-matrices_tf-vs-others
+else
+	OMGA_INPUT_MATRICES=${PEAKMO_MATRICES}_noBS_c100000.tf
+	OMGA_PRESUFFIX=peakmo-matrices_tf-vs-others
+endif
+
 #OMGA_PRESUFFIX=peakmo-matrices_train-vs-rand
 
 OUTPUT_DIR=results/${BOARD}/${DATA_TYPE}/${EXPERIMENT}/${TF}/${DATASET}/optimized_matrices/${OMGA_PRESUFFIX}
