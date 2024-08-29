@@ -12,6 +12,7 @@ targets: targets_00
 	@echo "Single-dataset motif discovery"
 	@echo "	peakmo			discover motifs in peak sequences"
 	@echo "	peakmo_all_datasets	run peak-motifs in all the datasets of this type of experiment"
+	@echo "	peakmo_all_experiments	run peak-motifs in all the datasets of all experiments"
 	@echo
 	@echo "Differential motif discovery"
 	@echo "	peakmo_diff_one_dataset		run differential motif discovery on one dataset"
@@ -102,6 +103,8 @@ TASK=peakmo
 peakmo_all_datasets:
 	@${MAKE} iterate_datasets TASK=peakmo
 
+peakmo_all_experiments:
+	@${MAKE} iterate_experiments TASK=peakmo_all_datasets
 
 ################################################################
 ## Run differential analysis with peak-motifs, to discover motifs in
@@ -112,7 +115,7 @@ POS_SUFFIX=train
 NEG_SEQ=${OTHERS_SEQ}
 NEG_SUFFIX=others
 DIFF_SUFFIX=${POS_SUFFIX}-vs-${NEG_SUFFIX}
-PEAKMO_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}_${DIFF_SUFFIX}
+PEAKMO_DIFF_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}_${DIFF_SUFFIX}
 PEAKMO_DIFF_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs  \
 	-v ${V} \
 	-title ${BOARD}_${EXPERIMENT}_${TF}_${DATASET}_train_vs_bg  \
@@ -134,15 +137,15 @@ PEAKMO_DIFF_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs  \
 	-noov \
 	-img_format png  \
 	${PEAKMO_OPT} \
-	-outdir ${PEAKMO_DIR}
-PEAKMO_DIFF_SCRIPT=${PEAKMO_DIR}/peak-motif${PEAKMO_OPT}_${DIFF_SUFFIX}_cmd.sh
+	-outdir ${PEAKMO_DIFF_DIR}
+PEAKMO_DIFF_SCRIPT=${PEAKMO_DIFF_DIR}/peak-motif${PEAKMO_OPT}_${DIFF_SUFFIX}_cmd.sh
 
 peakmo_diff_one_dataset:
 	@echo
 	@echo "Running peak-motifs in differential analysis mode"
 	@echo
 	@echo "Writing peak-motif script for differential analysis	${PEAKMO_DIFF_SCRIPT}"
-	@mkdir -p ${PEAKMO_DIR}
+	@mkdir -p ${PEAKMO_DIFF_DIR}
 	@echo ${RUNNER_HEADER} > ${PEAKMO_DIFF_SCRIPT}
 	@echo >> ${PEAKMO_DIFF_SCRIPT}
 	@echo ${PEAKMO_DIFF_CMD} >> ${PEAKMO_DIFF_SCRIPT}
@@ -158,7 +161,7 @@ peakmo_diff_one_dataset:
 	@echo "	PEAKMO_DIFF_SCRIPT	${PEAKMO_DIFF_SCRIPT}"
 	@echo "Running peak-motifs"
 	@${RUNNER} ${PEAKMO_DIFF_SCRIPT}
-	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
+	@echo "	PEAKMO_DIFF_DIR	${PEAKMO_DIFF_DIR}"
 
 peakmo_diff_all_datasets:
 	@${MAKE} iterate_datasets TASK=peakmo_diff_one_dataset
