@@ -1,4 +1,4 @@
-################################################################
+$################################################################
 ## Computer-specific settings
 
 ################################################################
@@ -38,6 +38,7 @@ usage:
 	@echo "	usage			print usage for the current makefile"
 	@echo "	build			build apptainer container"
 	@echo "	run			run RSAT with apptainer container"
+	@echo "	watch_queue		montior the number of job per status"
 
 ################################################################
 ## Build apptainer container from the RSAT Docker image
