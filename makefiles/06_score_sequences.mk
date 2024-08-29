@@ -4,8 +4,8 @@
 ## Score each sequence with matrix-scan for a 2-group classification
 ## problem
 
-#include makefiles/00_init.mk 
-include makefiles/00_init.mk
+#include makefiles/01_init.mk 
+include makefiles/01_init.mk
 MAKEFILE=makefiles/06_score_sequences.mk
 
 targets: targets_00

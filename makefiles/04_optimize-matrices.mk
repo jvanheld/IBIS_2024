@@ -5,7 +5,7 @@
 ##
 
 include makefiles/01_init.mk
-MAKEFILE=makefiles/07_optimize_matrices.mk
+MAKEFILE=makefiles/04_optimize-matrices.mk
 
 targets: targets_00
 	@echo "optimize-matrix-GA targets (${MAKEFILE})"
