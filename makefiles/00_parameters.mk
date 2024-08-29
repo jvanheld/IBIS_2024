@@ -55,7 +55,7 @@ DATASET=THC_0866
 EXPERIMENT=CHS
 include makefiles/config_${EXPERIMENT}.mk
 
-V=2
+V=1
 
 DISCIPLINE=WET
 BOARD=leaderboard
