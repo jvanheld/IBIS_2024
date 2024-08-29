@@ -26,34 +26,34 @@ all_one_board:
 	@echo "DATA PREPARATION"
 	@echo 
 	@echo "Generating metadata"
-	@make -f makefiles/01_init.mk all_metadata
+	@make BOARD=${BOARD} -f makefiles/01_init.mk all_metadata
 	@echo
 	@echo "Fetching sequences for all CHS and GHTS datasets"
-	@make -f makefiles/01_init.mk fetch_sequences
+	@make BOARD=${BOARD} -f makefiles/01_init.mk fetch_sequences
 	@echo
 	@echo "Converting fastq to fasta for all HTS and SMS datasets"
-	@make -f makefiles/01_init.mk fastq2fasta
+	@make BOARD=${BOARD} -f makefiles/01_init.mk fastq2fasta
 	@echo
 	@echo "Extracing sequences from data tables for PBM experiments"
-	@make -f makefiles/03_PBM.mk tsv2fasta
+	@make BOARD=${BOARD} -f makefiles/03_PBM.mk tsv2fasta
 	@echo
 	@echo "Extracting top and background spots for PBM experiments"
-	@make -f makefiles/03_PBM.mk top_bg_seq_all_datasets"
+	@make BOARD=${BOARD} -f makefiles/03_PBM.mk top_bg_seq_all_datasets
 	@echo
 	@echo "Selecting random genome fragments"
-	@make -f makefiles/01_init.mk rand_fragments_all_experiments
+	@make BOARD=${BOARD} -f makefiles/01_init.mk rand_fragments_all_experiments
 	@echo
 	@echo "Collecting sequences for TF versus others analyses"
-	@make -f makefiles/01_init.mk tf_vs_others_all_experiments
+	@make BOARD=${BOARD} -f makefiles/01_init.mk tf_vs_others_all_experiments
 	@echo
 	@echo "MOTIF DISCOVERY"
 	@echo
 	@echo "Motif discovery with peak-motifs"
-	@make -f makefiles/02_peak-motifs.mk peakmo_all_experiments EXPERIMENTS='CHS GHTS SMS HTS'
+	@make BOARD=${BOARD} -f makefiles/02_peak-motifs.mk peakmo_all_experiments EXPERIMENTS='CHS GHTS SMS HTS'
 	@echo
 	@echo "Differential motif discovery with peak-motifs"
-	@make -f makefiles/02_peak-motifs.mk peakmo_diff_all_experiments EXPERIMENTS='CHS GHTS SMS HTS'
-	@make -f makefiles/03_PBM.mk peakmo_diff_all_datasets
+	@make BOARD=${BOARD} -f makefiles/02_peak-motifs.mk peakmo_diff_all_experiments EXPERIMENTS='CHS GHTS SMS HTS'
+	@make BOARD=${BOARD} -f makefiles/03_PBM.mk peakmo_diff_all_datasets
 	@echo
 	@echo "MOTIF OPTIMIZATION"
 	@echo

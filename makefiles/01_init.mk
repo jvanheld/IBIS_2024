@@ -1,7 +1,7 @@
 ###############################################################
 ## Parameters for the analysis of ChIP-seq peaks
 
-MAKEFILE=makefiles/00_init.mk
+MAKEFILE=makefiles/01_init.mk
 MAKE=make -s -f ${MAKEFILE}
 
 
@@ -185,7 +185,7 @@ param_00:
 
 targets_00:
 	@echo
-	@echo "Common targets (makefiles/00_init.mk)"
+	@echo "Common targets (makefiles/01_init.mk)"
 	@echo "	targets			list targets"
 	@echo "	param			list parameters"
 	@echo "	metadata		build metadata table for one experiment"
@@ -194,6 +194,7 @@ targets_00:
 	@echo "	  metadata_pbm		build metadata table for PBM data, from the TSV file"
 	@echo "	all_metadata		concatenate metadata files of all the experiments"
 	@echo "	fetch_sequences		retrieve peak sequences from UCSC for all datasets of CHS and GHTS experiments"
+	@echo "	fastq2fasta_one_dataset	convert sequences from fastq to fasta format for one datasets of either HTS or SMS experiment"
 	@echo "	fastq2fasta		convert sequences from fastq to fasta format for all datasets of HTS and SMS experiments"
 	@echo
 	@echo "Matrix processing"
@@ -252,7 +253,7 @@ fetch_sequences:
 ################################################################
 ## For HTS and SMS data, convert fastq sequences to fasta format
 FASTQ2FASTA_CMD=${RSAT_CMD} convert-seq -from fastq -to fasta -i ${FASTQ_SEQ} -o ${FASTA_SEQ}
-fastq2fasta_one_datasset:
+fastq2fasta_one_dataset:
 	@echo
 	@echo "Converting sequences from fastq.gz to fasta"
 	@echo "	FASTQ_SEQ	${FASTQ_SEQ}"
@@ -598,11 +599,11 @@ tf_vs_others_one_tf:
 
 tf_vs_others_all_tfs:
 	@echo "Running tf_vs_others_one_dataset for all datasets ${BOARD}	${EXPERIMENT}"
-	@${MAKE} iterate_tfs TASK=rand_fragments
+	@${MAKE} iterate_tfs TASK=tf_vs_others_one_tf
 
 tf_vs_others_all_experiments:
 	@echo "Running tf_vs_others_all_tfs for all data sets of all experiments"
-	@${MAKE} iterate_experiments EXPERIMENT_TASK=rand_fragments_all_tfs
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=tf_vs_others_all_tfs
 
 
 ################################################################
