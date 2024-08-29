@@ -112,7 +112,7 @@ peakmo_all_datasets:
 	@${MAKE} iterate_datasets TASK=peakmo
 
 peakmo_all_experiments:
-	@${MAKE} iterate_experiments TASK=peakmo_all_datasets
+	@${MAKE} iterate_experiments EXPERIMENT_TASK=peakmo_all_datasets
 
 ################################################################
 ## Run differential analysis with peak-motifs, to discover motifs in
