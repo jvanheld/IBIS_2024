@@ -379,7 +379,7 @@ metadata_fastq:
 # ################################################################
 # ## PBM data: TSV files
 # metadata_pbm:
-# 	@${MAKE} -f makefiles/04_PBM.mk metadata_pbm
+# 	@${MAKE} -f makefiles/03_PBM.mk metadata_pbm
 
 ################################################################
 ## Generate a metadata file with all the datasets for all the TFs
@@ -389,7 +389,7 @@ all_metadata:
 	@for exp in CHS GHTS HTS SMS; do \
 		${MAKE} metadata EXPERIMENT=$${exp} ; \
 	done
-	@make -f makefiles/04_PBM.mk metadata_pbm
+	@make -f makefiles/03_PBM.mk metadata_pbm
 	@echo
 	@echo "Merging metadata for all experiments"
 	ls -1  metadata/${BOARD}/TF_DATASET_* \

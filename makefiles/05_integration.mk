@@ -4,7 +4,7 @@
 ## Integration of the motifs discovered across the different data
 ## types
 
-include makefiles/00_init.mk 
+include makefiles/01_init.mk 
 MAKEFILE=makefiles/05_integration.mk
 
 

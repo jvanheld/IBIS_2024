@@ -2,8 +2,8 @@
 ## Analysis of Protein Binding Microarray (PBM) data for the IBIS
 ## challenge 2024
 
-include makefiles/00_init.mk
-MAKEFILE=makefiles/04_PBM.mk
+include makefiles/01_init.mk
+MAKEFILE=makefiles/03_PBM.mk
 include makefiles/config_PBM.mk
 
 targets: targets_00

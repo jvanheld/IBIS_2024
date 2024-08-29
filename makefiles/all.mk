@@ -35,10 +35,10 @@ all_one_board:
 	@make -f makefiles/01_init.mk fastq2fasta
 	@echo
 	@echo "Extracing sequences from data tables for PBM experiments"
-	@make -f makefiles/02_PBM.mk tsv2fasta
+	@make -f makefiles/03_PBM.mk tsv2fasta
 	@echo
 	@echo "Extracting top and background spots for PBM experiments"
-	@make -f makefiles/02_PBM.mk top_bg_seq_all_datasets"
+	@make -f makefiles/03_PBM.mk top_bg_seq_all_datasets"
 	@echo
 	@echo "Selecting random genome fragments"
 	@make -f makefiles/01_init.mk rand_fragments_all_experiments
@@ -49,11 +49,11 @@ all_one_board:
 	@echo "MOTIF DISCOVERY"
 	@echo
 	@echo "Motif discovery with peak-motifs"
-	@make -f makefiles/01_peak-motifs.mk peakmo_all_experiments EXPERIMENTS='CHS GHTS SMS HTS'
+	@make -f makefiles/02_peak-motifs.mk peakmo_all_experiments EXPERIMENTS='CHS GHTS SMS HTS'
 	@echo
 	@echo "Differential motif discovery with peak-motifs"
-	@make -f makefiles/01_peak-motifs.mk peakmo_diff_all_experiments EXPERIMENTS='CHS GHTS SMS HTS'
-	@make -f makefiles/02_PBM.mk peakmo_diff_all_datasets
+	@make -f makefiles/02_peak-motifs.mk peakmo_diff_all_experiments EXPERIMENTS='CHS GHTS SMS HTS'
+	@make -f makefiles/03_PBM.mk peakmo_diff_all_datasets
 	@echo
 	@echo "MOTIF OPTIMIZATION"
 	@echo
