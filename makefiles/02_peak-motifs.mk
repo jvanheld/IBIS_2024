@@ -22,7 +22,7 @@ targets: targets_00
 
 param: param_00
 	@echo
-	@echo "peak-motifs options"
+	@echo "peak-motifs options, single-dataset mode"
 	@echo "	PEAKMO_OPT		${PEAKMO_OPT}"
 	@echo "	PEAKMO_PRERIX		${PEAKMO_PREFIX}"
 	@echo "	PEAKMO_DIR		${PEAKMO_DIR}"
@@ -33,6 +33,14 @@ param: param_00
 	@echo " PEAKMO_SCAN_PREFIX	${PEAKMO_SCAN_PREFIX}"
 	@echo "	PEAKMO_SCRIPT		${PEAKMO_SCRIPT}"
 	@echo
+	@echo "peak-motifs options, differential mode"
+	@echo "	POS_SEQ			${POS_SEQ}"
+	@echo "	NEG_SEQ			${NEG_SEQ}"
+	@echo "	DIFF_SUFFIX		${DIFF_SUFFIX}"
+	@echo "	PEAKMO_DIFF_CMD		${PEAKMO_DIFF_CMD}"
+	@echo "	PEAKMO_DIFF_SCRIPT	${PEAKMO_DIFF_SCRIPT}"
+	@echo
+
 
 ## Define the matrices to use as input for matrix-clustering
 #MATRICES=${PEAKMO_MATRICES}
