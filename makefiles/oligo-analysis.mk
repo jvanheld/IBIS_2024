@@ -122,7 +122,7 @@ oligos:
 	@mkdir -p ${OLIGO_DIR}
 	@echo
 	@echo "Writing oligo-analysis script	${OLIGO_SCRIPT}"
-	@echo ${RUNNER_HEADER} > ${OLIGO_SCRIPT}
+	@echo -e ${RUNNER_HEADER} > ${OLIGO_SCRIPT}
 	@for ol in `seq ${MINOL} ${MAXOL}`; do \
 		${MAKE} oligos_one_len OL=$${ol} ; \
 	done

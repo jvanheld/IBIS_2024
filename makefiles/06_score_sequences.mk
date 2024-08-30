@@ -82,7 +82,7 @@ scan_one_dataset:
 	@echo "	Writing matrix-clustering script"
 	@echo "	SCAN_SCRIPT	${SCAN_SCRIPT}"
 	@mkdir -p ${SCAN_DIR}
-	@echo ${RUNNER_HEADER} > ${SCAN_SCRIPT}
+	@echo -e ${RUNNER_HEADER} > ${SCAN_SCRIPT}
 	@echo >> ${SCAN_SCRIPT}
 	@echo ${SCAN_CMD} >> ${SCAN_SCRIPT}
 	@${RUNNER} ${SCAN_SCRIPT}

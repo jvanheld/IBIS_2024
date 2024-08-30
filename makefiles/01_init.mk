@@ -160,8 +160,8 @@ param_00:
 	@echo
 	@echo "Other sequences"
 	@echo "	TF_VS_OTHERS_DIR	${TF_VS_OTHERS_DIR}"
-	@echo "	OTHERS_SEQ		${OTHERS_SEQ}"
 	@echo "	TF_SEQ			${TF_SEQ}"
+	@echo "	OTHERS_SEQ		${OTHERS_SEQ}"
 	@echo "	OTHERS_CMD		${OTHERS_CMD}"
 	@echo "	TFSEQ_CMD		${TFSEQ_CMD}"
 	@echo
@@ -170,7 +170,6 @@ param_00:
 	@echo "	SCAN_SEQ		${SCAN_SEQ}"
 	@echo "	SCAN_DIR		${SCAN_DIR}"
 	@echo "	SCAN_TYPE		${SCAN_TYPE}"
-	@echo "	SCAN_THREADS		${SCAN_THREADS}"
 	@echo "	SCAN_PREFIX		${SCAN_PREFIX}"
 	@echo "	SCAN_RESULT		${SCAN_RESULT}"
 	@echo "	SCAN_CMD		${SCAN_CMD}"
@@ -550,7 +549,7 @@ rand_fragments:
 	@echo "Selecting random genome fragments for ${BOARD} train ${DATASET}"
 	@echo "	RAND_SCRIPT	${RAND_SCRIPT}"
 	@echo "	RAND_SEQ	${RAND_SEQ}"
-	@echo ${RUNNER_HEADER} > ${RAND_SCRIPT}
+	@echo -e ${RUNNER_HEADER} > ${RAND_SCRIPT}
 	@echo >> ${RAND_SCRIPT}
 	@echo ${RAND_CMD} >> ${RAND_SCRIPT}
 	@${RUNNER} ${RAND_SCRIPT}
@@ -644,7 +643,7 @@ scan_sequences_one_type:
 	@echo "	SCAN_CMD		${SCAN_CMD}"
 	@echo "	SCAN_SCRIPT		${SCAN_SCRIPT}"
 	@mkdir -p ${SCAN_DIR}
-	@echo ${RUNNER_HEADER} > ${SCAN_SCRIPT}
+	@echo -e ${RUNNER_HEADER} > ${SCAN_SCRIPT}
 	@echo >> ${SCAN_SCRIPT}
 	@echo "${SCAN_CMD}" >> ${SCAN_SCRIPT}
 	@echo >> ${SCAN_SCRIPT}

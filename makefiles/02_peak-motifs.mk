@@ -74,7 +74,7 @@ peakmo:
 	@echo
 	@echo "Writing peak-motif script	${PEAKMO_SCRIPT}"
 	@mkdir -p ${PEAKMO_DIR}
-	@echo ${RUNNER_HEADER} > ${PEAKMO_SCRIPT}
+	@echo -e ${RUNNER_HEADER} > ${PEAKMO_SCRIPT}
 	@echo >> ${PEAKMO_SCRIPT}
 ifeq (${SOURCE_FORMAT}, fasta)
 	@echo "Including fetch-sequences command in the script to get sequences from peak coordinates"
@@ -154,7 +154,7 @@ peakmo_diff_one_dataset:
 	@echo
 	@echo "Writing peak-motif script for differential analysis	${PEAKMO_DIFF_SCRIPT}"
 	@mkdir -p ${PEAKMO_DIFF_DIR}
-	@echo ${RUNNER_HEADER} > ${PEAKMO_DIFF_SCRIPT}
+	@echo -e ${RUNNER_HEADER} > ${PEAKMO_DIFF_SCRIPT}
 	@echo >> ${PEAKMO_DIFF_SCRIPT}
 	@echo ${PEAKMO_DIFF_CMD} >> ${PEAKMO_DIFF_SCRIPT}
 	@echo >> ${PEAKMO_DIFF_SCRIPT}

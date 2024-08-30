@@ -41,9 +41,9 @@ param: param_00
 	@echo "	POS_SEQ			${POS_SEQ}"
 	@echo "	RAND_SEQ		${RAND_SEQ}"
 	@echo "	TF_SEQ			${TF_SEQ}"
-	@echo "	OTHERS_SEQ		${OTHER_SEQ}"
+	@echo "	OTHERS_SEQ		${OTHERS_SEQ}"
 	@echo "	NEG_SEQ			${NEG_SEQ}"
-	@echo "	OMGA_DIR		${OMGA_DIR}"
+	@echo "	OMGA_OUT_DIR		${OMGA_OUT_DIR}"
 	@echo "	OMGA_OUT_PREFIX		${OMGA_OUT_PREFIX}"
 	@echo "	OMGA_CMD_PREFIX		${OMGA_CMD_PREFIX}"
 	@echo "	OMGA_COMPA_CMD		${OMGA_COMPA_CMD}"
@@ -82,8 +82,8 @@ endif
 
 #OMGA_PRESUFFIX=peakmo-matrices_train-vs-rand
 
-OMGA_DIR=results/${BOARD}/${DATA_TYPE}/${EXPERIMENT}/${TF}/${DATASET}/optimized_matrices/${OMGA_PRESUFFIX}
-OMGA_OUT_PREFIX=${OMGA_DIR}/${TF}_${EXPERIMENT}_${DATASET}_${OMGA_PRESUFFIX}
+OMGA_OUT_DIR=results/${BOARD}/${DATA_TYPE}/${EXPERIMENT}/${TF}/${DATASET}/optimized_matrices/${OMGA_PRESUFFIX}
+OMGA_OUT_PREFIX=${OMGA_OUT_DIR}/${TF}_${EXPERIMENT}_${DATASET}_${OMGA_PRESUFFIX}
 OMGA_SCRIPT=${OMGA_OUT_PREFIX}_cmd.sh
 OMGA_CMD=${SCHEDULER} ${OMGA_CMD_PREFIX} -v ${V} \
 		-t ${THREADS} \
@@ -150,8 +150,8 @@ omga_one_dataset: omga_input_matrices
 	@echo "	Writing optimize-matrix-GA  script"
 	@echo "	OMGA_SCRIPT		${OMGA_SCRIPT}"
 	@${MAKE} ${OMGA_INPUT_MATRICES}
-	@mkdir -p ${OMGA_DIR}
-	@echo ${RUNNER_HEADER} > ${OMGA_SCRIPT}
+	@mkdir -p ${OMGA_OUT_DIR}
+	@echo -e ${RUNNER_HEADER} > ${OMGA_SCRIPT}
 	@echo "#SBATCH --cpus-per-task ${THREADS}\n" >> ${OMGA_SCRIPT}
 	@echo >> ${OMGA_SCRIPT}
 	@echo ${OMGA_CMD} >> ${OMGA_SCRIPT}
