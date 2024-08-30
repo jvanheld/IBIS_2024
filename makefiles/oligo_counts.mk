@@ -36,7 +36,7 @@ SCRIPT=${OLIGO_PREFIX}_cmd.sh
 oligo_table:
 	@echo "Running oligo-analysis	${OL}	${BOARD} ${TF} ${DATASET}"
 	@mkdir -p ${OLIGO_DIR}
-	@echo ${RUNNER_HEADER} > ${SCRIPT}
+	@echo -e ${RUNNER_HEADER} > ${SCRIPT}
 	@echo ${CMD} >> ${SCRIPT}
 	@echo "	SCRIPT	${SCRIPT}"
 	@${RUNNER} ${SCRIPT}
