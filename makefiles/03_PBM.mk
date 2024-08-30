@@ -1,6 +1,8 @@
 ################################################################
 ## Analysis of Protein Binding Microarray (PBM) data for the IBIS
 ## challenge 2024
+##
+##
 
 include makefiles/01_init.mk
 MAKEFILE=makefiles/03_PBM.mk
@@ -34,7 +36,7 @@ param: param_00
 	@echo "	BG_SEQ			${BG_SEQ}"
 	@echo
 	@echo "peak-motifs differential analysis options"
-	@echo "	PEAKMO_DIR		${PEAKMO_DIR}"
+	@echo "	PEAKMO_DIFF_DIR		${PEAKMO_DIFF_DIR}"
 	@echo "	PEAKMO_DIFF_CMD		${PEAKMO_DIFF_CMD}"
 	@echo "	PEAKMO_DIFF_SCRIPT	${PEAKMO_DIFF_SCRIPT}"
 	@echo
@@ -112,7 +114,7 @@ top_bg_seq_all_datasets: top_seq_all_datasets bg_seq_all_datasets
 ## train sequences that are over-represented with respecct to
 ## background sequences.
 DIFF_SUFFIX=${TOP_SUFFIX}_vs_${BG_SUFFIX}
-PEAKMO_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}_${DIFF_SUFFIX}
+PEAKMO_DIFF_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}_${DIFF_SUFFIX}
 PEAKMO_DIFF_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs  \
 	-v ${V} \
 	-title ${BOARD}_${EXPERIMENT}_${TF}_${DATASET}_train_vs_bg  \
@@ -134,16 +136,16 @@ PEAKMO_DIFF_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs  \
 	-noov \
 	-img_format png  \
 	${PEAKMO_OPT} \
-	-outdir ${PEAKMO_DIR}
-PEAKMO_DIFF_SCRIPT=${PEAKMO_DIR}/peak-motif${PEAKMO_OPT}_${DIFF_SUFFIX}_cmd.sh
+	-outdir ${PEAKMO_DIFF_DIR}
+PEAKMO_DIFF_SCRIPT=${PEAKMO_DIFF_DIR}/peak-motif${PEAKMO_OPT}_${DIFF_SUFFIX}_cmd.sh
 
 peakmo_diff: top_seq
 	@echo
 	@echo "Running peak-motifs in differential analysis mode"
 	@echo
 	@echo "Writing peak-motif script for differential analysis	${PEAKMO_DIFF_SCRIPT}"
-	@mkdir -p ${PEAKMO_DIR}
-	@echo ${RUNNER_HEADER} > ${PEAKMO_DIFF_SCRIPT}
+	@mkdir -p ${PEAKMO_DIFF_DIR}
+	@echo -e ${RUNNER_HEADER} > ${PEAKMO_DIFF_SCRIPT}
 	@echo >> ${PEAKMO_DIFF_SCRIPT}
 	@echo ${PEAKMO_DIFF_CMD} >> ${PEAKMO_DIFF_SCRIPT}
 	@echo >> ${PEAKMO_DIFF_SCRIPT}
@@ -158,7 +160,7 @@ peakmo_diff: top_seq
 	@echo "	PEAKMO_DIFF_SCRIPT	${PEAKMO_DIFF_SCRIPT}"
 	@echo "Running peak-motifs"
 	@${RUNNER} ${PEAKMO_DIFF_SCRIPT}
-	@echo "	PEAKMO_DIR	${PEAKMO_DIR}"
+	@echo "	PEAKMO_DIFF_DIR	${PEAKMO_DIFF_DIR}"
 
 peakmo_diff_all_datasets:
 	@${MAKE} iterate_datasets TASK=peakmo_diff
