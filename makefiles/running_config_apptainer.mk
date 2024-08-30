@@ -5,21 +5,34 @@
 ## Running configuration
 ################################################################
 ## Configuration for IFB core cluster (core.cluster.france-bioinformatique.fr)
-MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
 SLURM_OUT=${LOG_DIR}/${BOARD}_${EXPERIMENT}_${TF}_${DATASET}_slurm-job_%j.out
 SCHEDULER=srun time
 RUNNER=sbatch
 RUNNER_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}\n\#SBATCH --mem=16G\n\nTMPDIR=/shared/projects/ibis_challenge/tmp/\nTMP=\$${TMPDIR}\nTEMP=\$${TMPDIR}\nmkdir -p \$${TMPDIR}\nexport TMPDIR TMP TEMP\n\n"
 
 ################################################################
-## Local configuration for Apptainer on IFB core cluster
-################################################################
+## Local configuration for Apptainer on IFB-core-cluster
+##
 DOCKER_RELEASE=2024-08-28c
 DOCKER_IMAGE=eeadcsiccompbio/rsat:${DOCKER_RELEASE}
 APPTAINER_DEF=makefiles/rsat_apptainer.def
 APPTAINER_CONTAINER=rsat_apptainer/rsat_${DOCKER_RELEASE}.sif
-#RSAT_CMD=docker run -v $$PWD:/home/rsat_user -v $$PWD/results:/home/rsat_user/out ${DOCKER_IMAGE} rsat
+
+
+################################################################
+## RSAT confiiguration
+##
+## Path or command to run RSAT command, depending on the local
+## configuration. By default, it is set to "rsat" (the main command,
+## which runs all the rsat tools as sub-commands), but can be adapted
+## to run rsat from a specific path, or from a container (e.g. docker
+## or apptainer)
+##
 RSAT_CMD=apptainer run rsat_apptainer/rsat_${DOCKER_RELEASE}.sif rsat
+MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
+
+################
+## Targets
 
 usage:
 	@echo
