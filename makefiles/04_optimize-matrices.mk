@@ -60,11 +60,14 @@ param: param_00
 	@echo "	OMGA_COMPA_ALIGN	${OMGA_COMPA_ALIGN}"
 	@echo
 	@echo "Performance table collection"
-	@echo "	COLLECT_DIR			${COLLECT_DIR}"
-	@echo "	COLLECT_TABLE			${COLLECT_TABLE}"
-	@echo "	COLLECT_TABLE_SORTED		${COLLECT_TABLE_SORTED}"
-	@echo "	SELECT_TABLE_1TYPE		${SELECT_TABLE_1TYPE}"
-	@echo "	SELECT_TABLE_INITIAL		${SELECT_TABLE_INITIAL}"
+	@echo "	COLLECT_DIR		${COLLECT_DIR}"
+	@echo "	COLLECT_TABLE		${COLLECT_TABLE}"
+	@echo "	COLLECT_TABLE_COLUMNS	${COLLECT_TABLE_COLUMNS}"
+	@echo "	COLLECT_TABLE_SORTED	${COLLECT_TABLE_SORTED}"
+	@echo "	SELECT_TABLE_1TYPE	${SELECT_TABLE_1TYPE}"
+	@echo "	SELECT_TABLE_INITIAL	${SELECT_TABLE_INITIAL}"
+	@echo "	COLLECTED_PSSM_FINAL	${COLLECTED_PSSM_FINAL}"
+	@echo
 
 help:
 	${OMGA_CMD} -h
@@ -250,10 +253,10 @@ MATRIX_TYPE=peakmo-matrices_tf-vs-others
 SELECT_TABLE_1TYPE=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}.tsv
 SELECT_TABLE_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0.tsv
 SELECT_TABLE_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}.tsv
-TFTOP4_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0_top4-per-TF.tsv
-TFTOP4_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}_top4-per-TF.tsv
-COLLECT_PSSM_FINAL_SCRIPT=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}_top4-per-TF_matrices_cmd.sh
-COLLECTED_PSSM_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}_top4-per-TF_matrices.tf
+SELECTTED_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0_topTFxEXO.tsv
+SELECTTED_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}_topTFxEXP.tsv
+COLLECT_PSSM_FINAL_SCRIPT=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}_topTFxEXP_matrices_cmd.sh
+COLLECTED_PSSM_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}_topTFxEXP_matrices
 omga_select_matrices_one_type:
 	@echo
 	@echo "Selecting matrices	${MATRIX_TYPE}"
@@ -262,38 +265,55 @@ omga_select_matrices_one_type:
 	@echo "	MATRIX_TYPE		${MATRIX_TYPE}"
 	@echo "	SELECT_TABLE_1TYPE	`wc -l ${SELECT_TABLE_1TYPE}`"
 	@awk -F'\t' 'BEGIN { OFS=FS } \
-		NR == 1 { print $$0, "rank[TF]"; next } \
-		$$1 == 0 { rank[$$17]++; print $$0, rank[$$17] }' ${SELECT_TABLE_1TYPE} > ${SELECT_TABLE_INITIAL}
+		NR == 1 { print $$0, "rank[TF_EXP]"; next } \
+		$$1 == 0 { key =  $$17 "_" $$16 ; rank[key]++; print $$0, rank[key] }' ${SELECT_TABLE_1TYPE} > ${SELECT_TABLE_INITIAL}
 	@echo "	SELECT_TABLE_INITIAL	`wc -l ${SELECT_TABLE_INITIAL}`"
 	@awk -F'\t' 'BEGIN { OFS=FS } \
-		NR == 1 { print $$0, "rank[TF]"; next } \
-		$$1 == ${OMGA_GENERATIONS} { rank[$$17]++; print $$0, rank[$$17] }' ${SELECT_TABLE_1TYPE} > ${SELECT_TABLE_FINAL}
+		NR == 1 { print $$0, "rank[TF_EXP]"; next } \
+		$$1 == ${OMGA_GENERATIONS} { key =  $$17 "_" $$16 ; rank[key]++; print $$0, rank[key] }' ${SELECT_TABLE_1TYPE} > ${SELECT_TABLE_FINAL}
+#	@awk -F'\t' 'BEGIN { OFS=FS } \
+#		NR == 1 { print $$0, "rank[TF]"; next } \
+#		$$1 == ${OMGA_GENERATIONS} { rank[$$17]++; print $$0, rank[$$17] }' ${SELECT_TABLE_1TYPE} > ${SELECT_TABLE_FINAL}
 	@echo "	SELECT_TABLE_FINAL	`wc -l ${SELECT_TABLE_FINAL}`"
 	@awk -F'\t' ' NR==1 {print $$0; next }; \
-		$$NF <= 4 {print $$0}' ${SELECT_TABLE_INITIAL} > ${TFTOP4_INITIAL}
-	@echo "	TFTOP4_INITIAL		`wc -l ${TFTOP4_INITIAL}`"
+		$$NF <= 1 {print $$0}' ${SELECT_TABLE_INITIAL} > ${SELECTTED_INITIAL}
+	@echo "	SELECTTED_INITIAL		`wc -l ${SELECTTED_INITIAL}`"
 	@awk -F'\t' ' NR==1 {print $$0; next }; \
-		$$NF <= 4 {print $$0}' ${SELECT_TABLE_FINAL} > ${TFTOP4_FINAL}
-	@echo "	TFTOP4_FINAL		`wc -l ${TFTOP4_FINAL}`"
+		$$NF <= 1 {print $$0}' ${SELECT_TABLE_FINAL} > ${SELECTTED_FINAL}
+	@echo "	SELECTTED_FINAL		`wc -l ${SELECTTED_FINAL}`"
 	@echo
 	@echo "Gathering PSSMs"
-
-SHELL=bash
-
-test2:
-	@echo
 	@echo "Collecting final matrices"
-#	awk -F'\t' ' NR==1 { next } { print "${RSAT_CMD} retrieve-matrix -v 1 -i "$$12" -id "$$2" | perl -pe s/^>/^>"$$17"/" }' ${TFTOP4_FINAL}  > ${COLLECT_PSSM_FINAL_SCRIPT}
-#	awk -F'\t' ' NR==1 { next } { print "${RSAT_CMD} retrieve-matrix -v 1 -i "$$12" -id "$$2" | perl -pe \"s/^>/^>\"$$17\"/\" }' ${TFTOP4_FINAL} > ${COLLECT_PSSM_FINAL_SCRIPT}
-#	awk -F'\t' ' NR==1 { next } { print "${RSAT_CMD} retrieve-matrix -v 1 -i "$$12" -id "$$2" | perl -pe \"s/^>/^>\"$$17\"/\" }' ${TFTOP4_FINAL} > ${COLLECT_PSSM_FINAL_SCRIPT}
-#	awk -F'\t' -v perl_cmd='perl -pe "s/^>/^>$$17/"' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 1 -i "$$12" -id "$$2" | " perl_cmd }' ${TFTOP4_FINAL}
-	awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_/; s/positions/pos/ ; s/dyads/dya/; s/oligos/oli/\"" }' ${TFTOP4_FINAL} > ${COLLECT_PSSM_FINAL_SCRIPT}
+	awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"substr($$16,1,1)"_/\"" }' ${SELECTTED_FINAL} > ${COLLECT_PSSM_FINAL_SCRIPT}
+#	awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"substr($$16,1,1)"_/; s/positions_/p/ ; s/dyads/d/; s/oligos_/o/; s/mkv/mv/\"" }' ${SELECTTED_FINAL} > ${COLLECT_PSSM_FINAL_SCRIPT}
 	@echo "	COLLECT_PSSM_SCRIPT	${COLLECT_PSSM_FINAL_SCRIPT}"
-	bash ${COLLECT_PSSM_FINAL_SCRIPT} > ${COLLECTED_PSSM_FINAL}
-#	@rm -f ${COLLECED_PSSM_FINAL}
-#	@cat ${COLLECT_PSSM_FINAL_SCRIPT} | while IFS= read -r command; do \
-#			${RSAT_CMD} $${command} >> ${COLLECTED_PSSM_FINAL} ; \
-#		done
+	@echo "	COLLECTED_PSSM_FINAL	${COLLECTED_PSSM_FINAL}"
+	@bash ${COLLECT_PSSM_FINAL_SCRIPT} > ${COLLECTED_PSSM_FINAL}.tf
+	@echo "	COLLECTED_PSSM_FINAL .tf	${COLLECTED_PSSM_FINAL}.tf"
+#	@echo "${SHELL} ${COLLECT_PSSM_FINAL_SCRIPT}"
+	@${MAKE} ${COLLECTED_PSSM_FINAL}_freq.tf
+	@echo "	COLLECTED_PSSM_FINAL ibis.txt	${COLLECTED_PSSM_FINAL}_freq.tf"
+	@${MAKE} ${COLLECTED_PSSM_FINAL}_freq.cb
+	@echo "	COLLECTED_PSSM_FINAL ibis.txt	${COLLECTED_PSSM_FINAL}_ibis.txt"
+	@${MAKE} ${COLLECTED_PSSM_FINAL}_ibis.txt
+	@echo "	COLLECTED_PSSM_FINAL ibis.txt	${COLLECTED_PSSM_FINAL}_ibis.txt"
 
-	@echo "${SHELL} ${COLLECT_PSSM_FINAL_SCRIPT}"
-	@echo "	COLLECTED_PSSM		${COLLECTED_PSSM_FINAL}"
+
+%_ibis.txt : %_freq.cb
+	@echo "Input\t$<"
+	@echo "Output\t$@"
+#	@awk '{	if ($$1 ~ /^>/) {sub("_", "\t", $$1);  sub("cluster_", "c", $$1); sub("node_", "n", $$1); sub("motifs", "m", $$1); sub("oligos_", "oli_", $$1); sub("positions_", "pos_", $$1); sub("dyads_", "dya_", $$1); sub(/\.Rep-MICHELLE/, "M", $$1); sub(/\.Rep-DIANA/, "D", $$1); sub(/ \/name.*/, "", $$1) } print }' "$<" > "$@"
+	awk '{	if ($$1 ~ /^>/) { 			\
+		sub("_", " ", $$1);  			\
+		sub("cluster_", "c", $$1); 		\
+		sub("node_", "n", $$1); 		\
+		sub("motifs", "m", $$1); 		\
+		sub("oligos_", "o", $$1); 		\
+		sub("positions_", "p", $$1); 		\
+		sub("nt", "", $$1);	 		\
+		sub("mkv", "mv", $$1);			\
+		sub("dyads_", "d_", $$1); 		\
+		sub(/\.Rep-MICHELLE/, "M", $$1); 	\
+		sub(/\.Rep-DIANA/, "D", $$1); 		\
+		sub(/\/name.*/, "", $$0);		\
+		} print }' $< > $@
