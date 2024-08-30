@@ -100,7 +100,7 @@ cluster_one_tf:
 	@echo "	Writing matrix-clustering script	${TF}"
 	@echo "	TFCLUST_SCRIPT	${TFCLUST_SCRIPT}"
 	@mkdir -p ${TFCLUST_DIR}
-	@echo ${RUNNER_HEADER} > ${TFCLUST_SCRIPT}
+	@echo -e ${RUNNER_HEADER} > ${TFCLUST_SCRIPT}
 	@echo >> ${TFCLUST_SCRIPT}
 	@echo ${TFCLUST_CMD} >> ${TFCLUST_SCRIPT}
 	@echo >> ${TFCLUST_SCRIPT}
@@ -152,7 +152,7 @@ quality_one_tf: ${MATRICES}.tf ${MATRICES}_info.tab
 	@echo "	MATRICES		${MATRICES}"
 	@echo "	MATRIXQ_SCRIPT	${MATRIXQ_SCRIPT}"
 	@mkdir -p ${MATRIXQ_DIR}
-	@echo ${RUNNER_HEADER} > ${MATRIXQ_SCRIPT}
+	@echo -e ${RUNNER_HEADER} > ${MATRIXQ_SCRIPT}
 	@echo >> ${MATRIXQ_SCRIPT}
 	@echo ${MATRIXQ_CMD} >> ${MATRIXQ_SCRIPT}
 	@${RUNNER} ${MATRIXQ_SCRIPT}
