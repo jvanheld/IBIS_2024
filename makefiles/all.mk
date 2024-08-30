@@ -61,4 +61,6 @@ all_one_board:
 	@make BOARD=${BOARD} -f makefiles/03_PBM.mk peakmo_diff_all_datasets
 	@echo
 	@echo "MOTIF OPTIMIZATION"
+	@make BOARD=${BOARD} -f makefiles/04_optimize-matrices.mk omga_all_experiments
+	@make BOARD=${BOARD} -f makefiles/04_optimize-matrices.mk omga_collect_tables
 	@echo
