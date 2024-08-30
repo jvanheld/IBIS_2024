@@ -22,14 +22,12 @@ log_dir:
 	@mkdir -p $(LOG_DIR)
 	@echo "	Log directory created: $(LOG_DIR)"
 
-
-
 ################################################################
-## Path or command to run RSAT command, depending on the local
-## configuration. Byb default, it is set to "rsat" (the main command,
-## which runs all the rsat tools as sub-commands), but can be adapted
-## to run rsat from a specific path, or from a container (e.g. docker
-## or apptainer)
+##
+## Load a site-specific running configuration, includes paths and
+## commands
+##
+
 
 include makefiles/running_config.mk
 
