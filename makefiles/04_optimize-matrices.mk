@@ -60,13 +60,15 @@ param: param_00
 	@echo "	OMGA_COMPA_ALIGN	${OMGA_COMPA_ALIGN}"
 	@echo
 	@echo "Performance table collection"
+	@echo "	MATRIX_TYPES		${MATRIX_TYPES}"
+	@echo "	MATRIX_TYPE		${MATRIX_TYPE}"
 	@echo "	COLLECT_DIR		${COLLECT_DIR}"
 	@echo "	COLLECT_TABLE		${COLLECT_TABLE}"
 	@echo "	COLLECT_TABLE_COLUMNS	${COLLECT_TABLE_COLUMNS}"
 	@echo "	COLLECT_TABLE_SORTED	${COLLECT_TABLE_SORTED}"
 	@echo "	SELECT_TABLE_1TYPE	${SELECT_TABLE_1TYPE}"
 	@echo "	SELECT_TABLE_INITIAL	${SELECT_TABLE_INITIAL}"
-	@echo "	COLLECTED_PSSM_FINAL	${COLLECTED_PSSM_FINAL}"
+	@echo "	COLLECTED_PSSM_FINAL*	${COLLECTED_PSSM_FINAL}*"
 	@echo
 
 help:
@@ -249,7 +251,8 @@ omga_select_matrices:
 		${MAKE} omga_select_matrices_one_type MATRIX_TYPE=$${t} ; \
 	done 
 
-MATRIX_TYPE=peakmo-matrices_tf-vs-others
+MATRIX_TYPE=clust-trimmed-matrices_tf-vs-others
+#MATRIX_TYPE=peakmo-matrices_tf-vs-others
 SELECT_TABLE_1TYPE=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}.tsv
 SELECT_TABLE_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0.tsv
 SELECT_TABLE_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}.tsv
