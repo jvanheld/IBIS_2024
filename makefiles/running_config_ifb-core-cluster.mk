@@ -1,15 +1,24 @@
 ################################################################
 ## Computer-specific settings
 
-
+################################################################
 ## Configuration for IFB core cluster (core.cluster.france-bioinformatique.fr)
-RSAT_CMD=rsat
-MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
 SLURM_OUT=${LOG_DIR}/${BOARD}_${EXPERIMENT}_${TF}_${DATASET}_slurm-job_%j.out
 SCHEDULER=srun time
 RUNNER=sbatch
-#RUNNER_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}\n\#SBATCH --mem-per-cpu=16G\n"
 RUNNER_HEADER="\#!/bin/bash\n\#SBATCH -o ${SLURM_OUT}\n\#SBATCH --mem=16G\n\nTMPDIR=/shared/projects/ibis_challenge/tmp/\nTMP=\$${TMPDIR}\nTEMP=\$${TMPDIR}\nmkdir -p \$${TMPDIR}\nexport TMPDIR TMP TEMP\n\n"
+
+################################################################
+## RSAT confiiguration
+##
+## Path or command to run RSAT command, depending on the local
+## configuration. By default, it is set to "rsat" (the main command,
+## which runs all the rsat tools as sub-commands), but can be adapted
+## to run rsat from a specific path, or from a container (e.g. docker
+## or apptainer)
+##
+RSAT_CMD=rsat
+MOTIFDB_DIR=/shared/projects/rsat_organism/motif_databases
 
 
 ################################################################
