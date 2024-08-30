@@ -145,7 +145,8 @@ peakmo_diff: top_seq
 	@echo
 	@echo "Writing peak-motif script for differential analysis	${PEAKMO_DIFF_SCRIPT}"
 	@mkdir -p ${PEAKMO_DIFF_DIR}
-	@echo -e ${RUNNER_HEADER} > ${PEAKMO_DIFF_SCRIPT}
+#	@echo -e ${RUNNER_HEADER} > ${PEAKMO_DIFF_SCRIPT}
+	@echo ${RUNNER_HEADER} > ${PEAKMO_DIFF_SCRIPT}
 	@echo >> ${PEAKMO_DIFF_SCRIPT}
 	@echo ${PEAKMO_DIFF_CMD} >> ${PEAKMO_DIFF_SCRIPT}
 	@echo >> ${PEAKMO_DIFF_SCRIPT}
