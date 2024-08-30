@@ -9,13 +9,18 @@ MAKEFILE=makefiles/all.mk
 
 
 param: param_00
-	@echo "Parameters"
+	@echo
 
 targets: targets_00
 	@echo
 	@echo "Targets"
 	@echo "	all_one_board	run all the required task for one board"
 	@echo "	all		run all the required tasks for both leaderbord and final boards"
+
+
+################################################################
+## Run all the analyses to produce IBIS challenge results
+################################################################
 
 all:
 	@${MAKE} all_one_board BOARD=leaderboard
