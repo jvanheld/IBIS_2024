@@ -1,5 +1,13 @@
 # How to reproduce the analyses of the RSAT team for the IBIS challenge 2024
 
+
+## The short story
+
+
+
+
+## Some details
+
 ## make basics
 
 All results are generated using `make` scripts in the
