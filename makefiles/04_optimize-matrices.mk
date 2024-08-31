@@ -208,7 +208,7 @@ omga_results_per_type:
 		| sort | uniq -c | sort -k 2 -k 3 -k 4 \
 		> ${RESULTS_PER_TYPE}
 	@echo "	RESULTS_PER_TYPE	${RESULTS_PER_TYPE}"
-	${RSAT_CMD} contingency_table -i ${RESULTS_PER_TYPE} -col1 2 -col2 3 -margin -sort freq -o ${RESULTS_PER_TYPE_XTAB}"
+	${RSAT_CMD} contingency-table -i ${RESULTS_PER_TYPE} -col1 2 -col2 3 -margin -sort freq -o ${RESULTS_PER_TYPE_XTAB}
 	@echo "	RESULTS_PER_TYPE_XTAB	${RESULTS_PER_TYPE_XTAB}"
 
 ################################################################
