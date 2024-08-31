@@ -66,6 +66,7 @@ param: param_00
 	@echo "	MATRIX_TYPES		${MATRIX_TYPES}"
 	@echo "	MATRIX_TYPE		${MATRIX_TYPE}"
 	@echo "	RESULTS_PER_TYPE	${RESULTS_PER_TYPE}"
+	@echo "	COLLECT_FILES		`wc -l ${COLLECT_FILES}`"
 	@echo "	COLLECT_DIR		${COLLECT_DIR}"
 	@echo "	COLLECT_TABLE		${COLLECT_TABLE}"
 	@echo "	COLLECT_TABLE_COLUMNS	${COLLECT_TABLE_COLUMNS}"
@@ -198,6 +199,7 @@ omga_all_experiments:
 ## Count the number of final optimization tables per matrix type, TF
 ## and experiment
 RESULTS_PER_TYPE=${COLLECT_DIR}/results_per_type_${BOARD}_all-TFs.tsv
+RESULTS_PER_TYPE_XTAB=${COLLECT_DIR}/results_per_type_${BOARD}_all-TFs_cross-table.tsv
 omga_results_per_type:
 	@mkdir -p ${COLLECT_DIR}
 	@echo "Counting the number of optimization results per matrix type, TF and experiment"
@@ -206,6 +208,8 @@ omga_results_per_type:
 		| sort | uniq -c | sort -k 2 -k 3 -k 4 \
 		> ${RESULTS_PER_TYPE}
 	@echo "	RESULTS_PER_TYPE	${RESULTS_PER_TYPE}"
+	${RSAT_CMD} contingency_table -i ${RESULTS_PER_TYPE} -col1 2 -col2 3 -margin -sort freq -o ${RESULTS_PER_TYPE_XTAB}"
+	@echo "	RESULTS_PER_TYPE_XTAB	${RESULTS_PER_TYPE_XTAB}"
 
 ################################################################
 ## Collect all the performance tables, sort them and select matrices for submission
@@ -272,8 +276,8 @@ omga_select_matrices:
 	done 
 
 # Choice of the default matrix type
-MATRIX_TYPE=clust-trimmed-matrices_train-vs-rand
-#MATRIX_TYPE=clust-trimmed-matrices_tf-vs-others
+#MATRIX_TYPE=clust-trimmed-matrices_train-vs-rand
+MATRIX_TYPE=clust-trimmed-matrices_tf-vs-others
 #MATRIX_TYPE=peakmo-matrices_tf-vs-others
 
 SELECT_TABLE_1TYPE=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}.tsv
