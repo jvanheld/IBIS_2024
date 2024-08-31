@@ -3,7 +3,7 @@
 
 ## The short story
 
-After having installed the required software, downloaded the data and organised it in the right way, all the aznalyses can be reproduced with one `make` target. 
+After having installed the required software [LINK TO ADD TO THE INSTALL.md], downloaded the data and organised it in the right way, all the aznalyses can be reproduced with one `make` target. 
 
 ```
 make -f makefiles/all.mk all
@@ -13,7 +13,73 @@ make -f makefiles/all.mk all
 
 The command ``make -f makefiles/all.mk all` calls the other makefiles to run the successive steps of the data preparation and analysis. 
 
+### Choose your board
 
+The environment variable `BOARD` should be set to either `leaderboard`or `final`. 
+In the example below we set it to `leaderboard`. 
+
+```
+export BOARD=leaderboard
+```
+
+### Data preparation
+
+Generate the metadata
+
+```
+@make BOARD=${BOARD} -f makefiles/01_init.mk all_metadata
+```
+
+
+### Fetching sequences for all CHS and GHTS datasets
+
+```
+make BOARD=${BOARD} -f makefiles/01_init.mk fetch_sequences
+```
+
+### Converting fastq to fasta for all HTS and SMS datasets
+
+```
+make BOARD=${BOARD} -f makefiles/01_init.mk fastq2fasta
+```
+
+### Extracing sequences from data tables for PBM experiments
+
+ ```
+make BOARD=${BOARD} -f makefiles/03_PBM.mk tsv2fasta
+```
+
+### Extracting top and background spots for PBM experiments
+
+```
+make BOARD=${BOARD} -f makefiles/03_PBM.mk top_bg_seq_all_datasets
+```
+
+ ### Selecting random genome fragments 
+
+```
+make BOARD=${BOARD} -f makefiles/01_init.mk rand_fragments_all_experiments
+```
+
+### Collecting sequences for TF versus others analyses
+
+BOARD=${BOARD} -f makefiles/01_init.mk tf_vs_others_all_experiments
+	@echo
+	@echo "MOTIF DISCOVERY"
+	@echo
+	@echo "Motif discovery with peak-motifs"
+	@make BOARD=${BOARD} -f makefiles/02_peak-motifs.mk peakmo_all_experiments EXPERIMENTS='CHS GHTS SMS HTS'
+	@echo
+	@echo "Differential motif discovery with peak-motifs"
+	@make BOARD=${BOARD} -f makefiles/02_peak-motifs.mk peakmo_diff_all_experiments EXPERIMENTS='CHS GHTS SMS HTS'
+	@make BOARD=${BOARD} -f makefiles/03_PBM.mk peakmo_diff_all_datasets
+	@echo
+	@echo "MOTIF OPTIMIZATION"
+	@make BOARD=${BOARD} -f makefiles/04_optimize-matrices.mk omga_all_experiments
+	@make BOARD=${BOARD} -f makefiles/04_optimize-matrices.mk omga_collect_tables
+	@echo
+
+```
 
 
 ## Some details
