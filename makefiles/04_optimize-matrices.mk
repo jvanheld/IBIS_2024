@@ -293,7 +293,8 @@ _omga_add_one_table:
 MATRIX_TYPES=`grep -v "^generation" ${COLLECT_TABLE_SORTED} | cut -f 20 | sort -u | xargs`
 omga_select_matrices:
 	@for t in ${MATRIX_TYPES} ; do \
-		${MAKE} omga_select_matrices_one_type MATRIX_TYPE=$${t} ; \
+		${MAKE}  MATRIX_TYPE=$${t} omga_select_one_type ; \
+		${MAKE}  MATRIX_TYPE=$${t} omga_select_matrices_one_type ; \
 	done 
 
 # Choice of the default matrix type
@@ -301,6 +302,8 @@ omga_select_matrices:
 #MATRIX_TYPE=clust-trimmed-matrices_tf-vs-others
 MATRIX_TYPE=peakmo-matrices_tf-vs-others
 
+################################################################
+## Select the optimized matrices of one given matrrix type
 SELECT_TABLE_1TYPE=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}.tsv
 SELECT_TABLE_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0.tsv
 SELECT_TABLE_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}.tsv
@@ -310,13 +313,15 @@ COLLECT_PSSM_INITIAL_SCRIPT=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0_topTFxEX
 COLLECT_PSSM_FINAL_SCRIPT=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}_topTFxEXP_matrices_cmd.sh
 COLLECTED_PSSM_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0_topTFxEXP_matrices
 COLLECTED_PSSM_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}_topTFxEXP_matrices
-omga_select_matrices_one_type:
+omga_select_one_type:
 	@echo
 	@echo "Selecting matrices	${MATRIX_TYPE}"
 	@head -n 1 ${COLLECT_TABLE_SORTED} > ${SELECT_TABLE_1TYPE}
 	@awk '$$20=="${MATRIX_TYPE}"' ${COLLECT_TABLE_SORTED} >> ${SELECT_TABLE_1TYPE}
 	@echo "	MATRIX_TYPE		${MATRIX_TYPE}"
 	@echo "	SELECT_TABLE_1TYPE	`wc -l ${SELECT_TABLE_1TYPE}`"
+
+omga_select_matrices_one_type:
 	@awk -F'\t' 'BEGIN { OFS=FS } \
 		NR == 1 { print $$0, "rank[TF_EXP]"; next } \
 		$$1 == 0 { key =  $$17 "_" $$16 ; rank[key]++; print $$0, rank[key] }' ${SELECT_TABLE_1TYPE} > ${SELECT_TABLE_INITIAL}
@@ -371,7 +376,6 @@ omga_select_matrices_one_type:
 %_ibis.txt : %_freq.cb
 	@echo "Input\t$<"
 	@echo "Output\t$@"
-#	@awk '{	if ($$1 ~ /^>/) {sub("_", "\t", $$1);  sub("cluster_", "c", $$1); sub("node_", "n", $$1); sub("motifs", "m", $$1); sub("oligos_", "oli_", $$1); sub("positions_", "pos_", $$1); sub("dyads_", "dya_", $$1); sub(/\.Rep-MICHELLE/, "M", $$1); sub(/\.Rep-DIANA/, "D", $$1); sub(/ \/name.*/, "", $$1) } print }' "$<" > "$@"
 	awk '{	if ($$1 ~ /^>/) { 			\
 		sub("_", " ", $$1);  			\
 		sub("cluster_", "c", $$1); 		\
@@ -384,5 +388,24 @@ omga_select_matrices_one_type:
 		sub("dyads_", "d_", $$1); 		\
 		sub(/\.Rep-MICHELLE/, "M", $$1); 	\
 		sub(/\.Rep-DIANA/, "D", $$1); 		\
+		sub("-", "_", $$1); 			\
 		sub(/\/name.*/, "", $$0);		\
 		} print }' $< > $@
+
+################################################################
+## A rule to select PSSM from an optimization score table with added
+## columns indicating the path of the transfac file (COLLECT_TABLE)
+##
+%_matrices.tf %_matrices_ibis.txt : %.tsv
+	@echo "Collecting matrices from a selected score table"
+	@echo "	Score table: $<"
+	@echo "	Selected matrices: $@"
+	@echo "	Preparing bash script to retrieve matrices"
+	@awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"substr($$16,1,1)"_/\"" }' $< > $*_cmd.sh
+	@echo "	Bash script	$*_cmd.sh"
+	@echo "	Collecting final matrices"
+	@bash $*_cmd.sh > $@
+	@echo "	Transfac-formatted matrices: $@";
+	@echo "	Converting matrices to IBIS format"
+	@${MAKE}  $*_matrices_freq.tf  $*_matrices_freq.cb  $*_matrices_ibis.txt
+	@echo "	IBIS-formatted matrices	$*_matrices_ibis.txt"
