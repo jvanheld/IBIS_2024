@@ -22,6 +22,9 @@ targets: targets_00
 	@echo "	omga_one_dataset		run optimize-matrix-GA on one dataset"
 	@echo "	omga_all_datasets		run optimize-matrix-GA on all datasets of a given experiment"
 	@echo "	omga_all_experiments		run optimize-matrix-GA on all datasets of all experiments"
+	@echo
+	@echo "Collection of all results and selection of the matrices"
+	@echo "	omga_results_per_type		count the number of results per matrix type, TF and experiment"
 	@echo "	omga_collect_tables		collect the performance stat tables for all experiment for a given TF"
 	@echo "	omga_select_matrices		select 4 top-raking matrices per TF for each matrix type"
 	@echo
@@ -62,6 +65,7 @@ param: param_00
 	@echo "Performance table collection"
 	@echo "	MATRIX_TYPES		${MATRIX_TYPES}"
 	@echo "	MATRIX_TYPE		${MATRIX_TYPE}"
+	@echo "	RESULTS_PER_TYPE	${RESULTS_PER_TYPE}"
 	@echo "	COLLECT_DIR		${COLLECT_DIR}"
 	@echo "	COLLECT_TABLE		${COLLECT_TABLE}"
 	@echo "	COLLECT_TABLE_COLUMNS	${COLLECT_TABLE_COLUMNS}"
@@ -156,7 +160,8 @@ omga_one_dataset: omga_input_matrices
 	@echo "	OMGA_SCRIPT		${OMGA_SCRIPT}"
 	@${MAKE} ${OMGA_INPUT_MATRICES}
 	@mkdir -p ${OMGA_OUT_DIR}
-	@echo -e ${RUNNER_HEADER} > ${OMGA_SCRIPT}
+#	@echo -e ${RUNNER_HEADER} > ${OMGA_SCRIPT}
+	@echo ${RUNNER_HEADER} > ${OMGA_SCRIPT}
 	@echo "#SBATCH --cpus-per-task ${THREADS}\n" >> ${OMGA_SCRIPT}
 	@echo >> ${OMGA_SCRIPT}
 	@echo ${OMGA_CMD} >> ${OMGA_SCRIPT}
@@ -186,6 +191,18 @@ omga_all_datasets:
 
 omga_all_experiments:
 	@${MAKE} iterate_experiments EXPERIMENT_TASK=omga_all_datasets
+
+
+
+################################################################
+## Count the number of final optimization tables per matrix type, TF
+## and experiment
+RESULTS_PER_TYPE=${COLLECT_DIR}/results_per_type_${BOARD}_all-TFs.tsv
+omga_results_per_type:
+	find results/${BOARD}/train \
+		-name '*_gen0-20_auroc-profiles.pdf' | awk -F'/' 'BEGIN { OFS="\t" } { print $$8, $$5, $$4 }' \
+		| sort | uniq -c | sort -k 2 -k 3 -k 4 \
+		> ${RESULTS_PER_TYPE}
 
 ################################################################
 ## Collect all the performance tables, sort them and select matrices for submission
@@ -222,7 +239,7 @@ omga_collect_tables:
 	@echo
 	@echo "Sorting collected score table"
 	@grep "^generation" ${COLLECT_TABLE} | sort -u > ${COLLECT_TABLE_SORTED}
-	@grep -v "^generation" ${COLLECT_TABLE} | awk -F\t '$$10==1' | sort -k 4 -r >> ${COLLECT_TABLE_SORTED}
+	grep -v "^generation" ${COLLECT_TABLE} | awk -F'\t' '$$10==1' | sort -k 4 -r >> ${COLLECT_TABLE_SORTED}
 	@echo "	COLLECT_TABLE_SORTED	`wc -l ${COLLECT_TABLE_SORTED}`"
 	@echo
 	@echo "	Selecting matrices before optimisation (generation=0) and after (generation=${OMGA_GENERATION})"
@@ -251,8 +268,10 @@ omga_select_matrices:
 		${MAKE} omga_select_matrices_one_type MATRIX_TYPE=$${t} ; \
 	done 
 
-MATRIX_TYPE=clust-trimmed-matrices_tf-vs-others
-#MATRIX_TYPE=peakmo-matrices_tf-vs-others
+# Choice of the default matrix type
+#MATRIX_TYPE=clust-trimmed-matrices_tf-vs-others
+MATRIX_TYPE=peakmo-matrices_tf-vs-others
+
 SELECT_TABLE_1TYPE=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}.tsv
 SELECT_TABLE_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0.tsv
 SELECT_TABLE_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}.tsv
