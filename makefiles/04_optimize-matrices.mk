@@ -204,7 +204,7 @@ omga_results_per_type:
 	@mkdir -p ${COLLECT_DIR}
 	@echo "Counting the number of optimization results per matrix type, TF and experiment"
 	@find results/${BOARD}/train \
-		-name '*_gen0-20_auroc-profiles.pdf' | awk -F'/' 'BEGIN { OFS="\t" } { print $$8, $$5, $$4 }' \
+		-name '*_gen0-20_score_table.tsv' | awk -F'/' 'BEGIN { OFS="\t" } { print $$8, $$5, $$4 }' \
 		| sort | uniq -c | sort -k 2 -k 3 -k 4 \
 		> ${RESULTS_PER_TYPE}
 	@echo "	RESULTS_PER_TYPE	${RESULTS_PER_TYPE}"
