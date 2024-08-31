@@ -8,14 +8,24 @@ Support of the challenge presentation teleconference (video + slides):
 <https://disk.yandex.ru/d/82FEnwPn158pog>
 
 
-
 ## Software environment installation
 
-See <INSALL.md>]. 
+Instructions to install the required software environment can be found in [INSTALL.md](INSTALL.md). 
 
-# Methods
 
-## Motif discovery approaches
+
+## How to reproduce our results?
+
+All results are generated using `make` scripts in the
+`makefiles`directory.
+
+Detailed instructions to launch these `make` scripts are provided in
+the [HOWTO.md](HOWTO.md) file.
+
+
+## Methods
+
+### Motif discovery approaches
 
 We ran different approaches and statistical models to detect exceptional motifs. 
 
@@ -33,7 +43,7 @@ to these criteria. These k-mers then serve as seeds to generate
 position-specific scoring matrices (PSSM) based on a scanning of the
 train sequences.
 
-## Motif clustering
+### Motif clustering
 
 The different motif discovery methods return similar yet slightly different motifs, which are partly redundant. We use the RSAT program  `matrix-clustering` to cluster the motifs at different stages : 
 
@@ -52,7 +62,7 @@ The different motif discovery methods return similar yet slightly different moti
     robust to the experimental method used to characterize binding
     sites.
 
-## Motif enrichment
+### Analysis of motif enrichment in train sequences
 
 - `matrix-quality`
 
@@ -83,12 +93,11 @@ on multiple criteria
 
 - ...
 
+### Motif optimisation
 
+[TO BE WRITTEN]
 
-# How to reproduce our results?
+### Motif selection
 
-All results are generated using `make` scripts in the
-`makefiles`directory.
+[TO BE WRITTEN]
 
-Detailed instructions to launch these `make` scripts are provided in
-the [HOWTO.md](HOWTO.md) file.
