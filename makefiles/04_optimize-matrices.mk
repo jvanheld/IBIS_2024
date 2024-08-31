@@ -208,7 +208,7 @@ omga_results_per_type:
 		| sort | uniq -c | sort -k 2 -k 3 -k 4 \
 		> ${RESULTS_PER_TYPE}
 	@echo "	RESULTS_PER_TYPE	${RESULTS_PER_TYPE}"
-	${RSAT_CMD} contingency-table -i ${RESULTS_PER_TYPE} -col1 2 -col2 3 -margin -sort freq -o ${RESULTS_PER_TYPE_XTAB}
+	@gawk '{ matrix[$$3][$$4] = $$1; row[$$3] += $$1; col[$$4] += $$1; total[$$3] += $$1; grand_total += $$1; } END { printf "\t"; for (c in col) printf "%s\t", c; print "Row Total"; for (r in row) { printf "%s\t", r; sum = 0; for (c in col) { val = matrix[r][c] ? matrix[r][c] : 0; printf "%s\t", val; sum += val; } printf "%s\n", sum; } printf "Column Total\t"; for (c in col) printf "%s\t", col[c]; printf "%s\n", grand_total; }'  ${RESULTS_PER_TYPE} > ${RESULTS_PER_TYPE_XTAB}
 	@echo "	RESULTS_PER_TYPE_XTAB	${RESULTS_PER_TYPE_XTAB}"
 
 ################################################################
