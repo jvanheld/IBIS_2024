@@ -215,26 +215,24 @@ omga_all_experiments:
 
 ################################################################
 ## Count the number of final optimization tables per matrix type, TF
-## and experiment
+## and experiment, and produce a cross-table (TF=rows,
+## experiment=columns, counts of score tables in the cells)
+##
 RESULTS_PER_TYPE=${COLLECT_DIR}/results_per_type_${BOARD}_all-TFs.tsv
 RESULTS_PER_TYPE_XTAB=${COLLECT_DIR}/results_per_type_${BOARD}_all-TFs_cross-table.tsv
 omga_results_per_type: _omga_collect_files
 	@mkdir -p ${COLLECT_DIR}
 	@echo "Counting the number of optimization results per matrix type, TF and experiment"
-#	@find results/${BOARD}/train \
-#		-name '*_gen0-20_score_table.tsv' | awk -F'/' 'BEGIN { OFS="\t" } { print $$8, $$5, $$4 }' \
-#		| sort | uniq -c | sort -k 2 -k 3 -k 4 \
-#		> ${RESULTS_PER_TYPE}
-	awk -F'/' 'BEGIN { OFS="\t" } { print $$8, $$5, $$4 }' ${COLLECT_FILES} \
+	@awk -F'/' 'BEGIN { OFS="\t" } { print $$8, $$5, $$4 }' ${COLLECT_FILES} \
 		| sort | uniq -c | sort -k 2 -k 3 -k 4 \
 		> ${RESULTS_PER_TYPE}
-
 	@echo "	RESULTS_PER_TYPE	${RESULTS_PER_TYPE}"
 	@gawk '{ matrix[$$3][$$4] = $$1; row[$$3] += $$1; col[$$4] += $$1; total[$$3] += $$1; grand_total += $$1; } END { printf "\t"; for (c in col) printf "%s\t", c; print "Row Total"; for (r in row) { printf "%s\t", r; sum = 0; for (c in col) { val = matrix[r][c] ? matrix[r][c] : 0; printf "%s\t", val; sum += val; } printf "%s\n", sum; } printf "Column Total\t"; for (c in col) printf "%s\t", col[c]; printf "%s\n", grand_total; }'  ${RESULTS_PER_TYPE} > ${RESULTS_PER_TYPE_XTAB}
 	@echo "	RESULTS_PER_TYPE_XTAB	${RESULTS_PER_TYPE_XTAB}"
 
 ################################################################
 ## Collect all the performance tables, sort them and select matrices for submission
+##
 COLLECT_DIR=results/${BOARD}/train/cross-experiments
 COLLECT_TABLE_PREFIX=${COLLECT_DIR}/optimize-matrix_scores_${BOARD}_all-TFs
 COLLECT_FILES=${COLLECT_TABLE_PREFIX}_files.txt
@@ -300,8 +298,8 @@ omga_select_matrices:
 
 # Choice of the default matrix type
 #MATRIX_TYPE=clust-trimmed-matrices_train-vs-rand
-MATRIX_TYPE=clust-trimmed-matrices_tf-vs-others
-#MATRIX_TYPE=peakmo-matrices_tf-vs-others
+#MATRIX_TYPE=clust-trimmed-matrices_tf-vs-others
+MATRIX_TYPE=peakmo-matrices_tf-vs-others
 
 SELECT_TABLE_1TYPE=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}.tsv
 SELECT_TABLE_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0.tsv
