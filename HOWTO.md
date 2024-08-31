@@ -9,6 +9,12 @@ After having installed the required software, downloaded the data and organised 
 make -f makefiles/all.mk all
 ```
 
+## Synthetic description of the steps
+
+The command ``make -f makefiles/all.mk all` calls the other makefiles to run the successive steps of the data preparation and analysis. 
+
+
+
 
 ## Some details
 
