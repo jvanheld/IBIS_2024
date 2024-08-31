@@ -22,6 +22,7 @@ targets: targets_00
 	@echo "Differential motif discovery (top versus background spots) with peak-motifs"
 	@echo "	peakmo_diff			run peak-motifs differential analysis in a given dataset"
 	@echo "	peakmo_diff_all_datasets	run peak-motifs differential analysis in all PBM datasets"
+	@echo "	omga_one_dataset		run optimize-matrix-GA on the motifs discovered with differential analysis"
 	@echo
 
 param: param_00
@@ -39,6 +40,8 @@ param: param_00
 	@echo "	PEAKMO_DIFF_DIR		${PEAKMO_DIFF_DIR}"
 	@echo "	PEAKMO_DIFF_CMD		${PEAKMO_DIFF_CMD}"
 	@echo "	PEAKMO_DIFF_SCRIPT	${PEAKMO_DIFF_SCRIPT}"
+	@echo "	PEAKMO_DIFF_SYNTHESIS	${PEAKMO_DIFF_SYNTHESIS}"
+	@echo "	PEAKMO_DIFF_MATRICES*	${PEAKMO_DIFF_MATRICES}*"
 	@echo
 
 ## Define the matrices to use as input for matrix-clustering and matrix-quality
@@ -115,6 +118,8 @@ top_bg_seq_all_datasets: top_seq_all_datasets bg_seq_all_datasets
 ## background sequences.
 DIFF_SUFFIX=${TOP_SUFFIX}_vs_${BG_SUFFIX}
 PEAKMO_DIFF_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}_${DIFF_SUFFIX}
+PEAKMO_DIFF_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}_${DIFF_SUFFIX}
+PEAKMO_DIFF_MATRICES=${PEAKMO_DIFF_DIR}/results/discovered_motifs/peak-motifs_motifs_discovered
 PEAKMO_DIFF_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs  \
 	-v ${V} \
 	-title ${BOARD}_${EXPERIMENT}_${TF}_${DATASET}_train_vs_bg  \
@@ -165,3 +170,13 @@ peakmo_diff: top_seq
 
 peakmo_diff_all_datasets:
 	@${MAKE} iterate_datasets TASK=peakmo_diff
+
+################################################################
+## Run optimize-matrix-GA on the differential peak-motifs result
+omga_one_dataset:
+	@make -f makefiles/04_optimize-matrices.mk omga_one_dataset \
+		EXPERIMENT=PBM \
+		PEAKMO_MATRICES=${PEAKMO_DIFF_MATRICES} \
+		POS_SEQ=${TOP_SEQ} \
+		NEG_SEQ=${BG_SEQ} \
+		OMGA_PRESUFFIX=peakmo-diff-matrices_top${N_TOP_SPOTS}-vs-bg${N_BG_SPOTS}_tf-vs-others
