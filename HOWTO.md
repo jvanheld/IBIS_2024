@@ -22,6 +22,11 @@ In the example below we set it to `leaderboard`.
 export BOARD=leaderboard
 ```
 
+### Adapt the configuration file according to your settings
+
+TO BE WRITTEN
+
+
 ### Data preparation
 
 Generate the metadata
