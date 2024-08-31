@@ -73,6 +73,8 @@ param: param_00
 	@echo "	COLLECT_TABLE_SORTED	${COLLECT_TABLE_SORTED}"
 	@echo "	SELECT_TABLE_1TYPE	${SELECT_TABLE_1TYPE}"
 	@echo "	SELECT_TABLE_INITIAL	${SELECT_TABLE_INITIAL}"
+	@echo "	SELECT_TABLE_FINAL	${SELECT_TABLE_FINAL}"
+	@echo "	COLLECTED_PSSM_INITIAL*	${COLLECTED_PSSM_INITIAL}*"
 	@echo "	COLLECTED_PSSM_FINAL*	${COLLECTED_PSSM_FINAL}*"
 	@echo
 
@@ -122,6 +124,22 @@ PLOT_AUROC_CMD=${OMGA_PYTHON_PATH} ${OMGA_DIR}/plot-auroc-profiles.py \
 	--xsize 16 --ysize 8 \
 	-f pdf \
 	-o ${AUROC_PLOT}
+%_auroc-profiles.pdf : %_score_table.tsv
+	@echo "Generating AuROC evolution plot"
+	@echo "Input\t$<"
+	@echo "Output\t$@"
+	${OMGA_PYTHON_PATH} ${OMGA_DIR}/plot-auroc-profiles.py \
+		-v 1 \
+		-i $< \
+		-t "${TF}_${EXPERIMENT}_${DATASET}_clust-trimmed-matrices" \
+		-s "train-versus-rand" \
+		--y_step1 0.05 --y_step2 0.01 \
+		--min_y 0.0 --max_y 1.0 \
+		--xsize 16 --ysize 8 \
+		-f pdf \
+		-o $@
+
+
 
 OMGA_COMPA=${OMGA_OUT_PREFIX}_gen0-vs-gen20
 OMGA_COMPA_TAB=${OMGA_COMPA}.tab
@@ -200,13 +218,17 @@ omga_all_experiments:
 ## and experiment
 RESULTS_PER_TYPE=${COLLECT_DIR}/results_per_type_${BOARD}_all-TFs.tsv
 RESULTS_PER_TYPE_XTAB=${COLLECT_DIR}/results_per_type_${BOARD}_all-TFs_cross-table.tsv
-omga_results_per_type:
+omga_results_per_type: _omga_collect_files
 	@mkdir -p ${COLLECT_DIR}
 	@echo "Counting the number of optimization results per matrix type, TF and experiment"
-	@find results/${BOARD}/train \
-		-name '*_gen0-20_score_table.tsv' | awk -F'/' 'BEGIN { OFS="\t" } { print $$8, $$5, $$4 }' \
+#	@find results/${BOARD}/train \
+#		-name '*_gen0-20_score_table.tsv' | awk -F'/' 'BEGIN { OFS="\t" } { print $$8, $$5, $$4 }' \
+#		| sort | uniq -c | sort -k 2 -k 3 -k 4 \
+#		> ${RESULTS_PER_TYPE}
+	awk -F'/' 'BEGIN { OFS="\t" } { print $$8, $$5, $$4 }' ${COLLECT_FILES} \
 		| sort | uniq -c | sort -k 2 -k 3 -k 4 \
 		> ${RESULTS_PER_TYPE}
+
 	@echo "	RESULTS_PER_TYPE	${RESULTS_PER_TYPE}"
 	@gawk '{ matrix[$$3][$$4] = $$1; row[$$3] += $$1; col[$$4] += $$1; total[$$3] += $$1; grand_total += $$1; } END { printf "\t"; for (c in col) printf "%s\t", c; print "Row Total"; for (r in row) { printf "%s\t", r; sum = 0; for (c in col) { val = matrix[r][c] ? matrix[r][c] : 0; printf "%s\t", val; sum += val; } printf "%s\n", sum; } printf "Column Total\t"; for (c in col) printf "%s\t", col[c]; printf "%s\n", grand_total; }'  ${RESULTS_PER_TYPE} > ${RESULTS_PER_TYPE_XTAB}
 	@echo "	RESULTS_PER_TYPE_XTAB	${RESULTS_PER_TYPE_XTAB}"
@@ -231,7 +253,8 @@ omga_collect_tables:
 	@echo "	COLLECT_DIR	${COLLECT_DIR}"
 	@mkdir -p ${COLLECT_DIR}
 	@echo
-	@${MAKE} _omga_collect_files
+#	@${MAKE} _omga_collect_files
+	@${MAKE} omga_results_per_type
 
 	@echo
 	@echo "Merging score tables from optimize-matrix-GA"
@@ -256,7 +279,7 @@ omga_collect_tables:
 
 _omga_collect_files:
 	@echo "Getting the list of files to merge"
-	@find results/${BOARD}/train -name '*_gen0-20*.tsv' > ${COLLECT_FILES}
+	@find results/${BOARD}/train -name '*gen0-20_score_table.tsv' > ${COLLECT_FILES}
 	@echo "	COLLECT_FILES	`wc -l ${COLLECT_FILES}`"
 
 #OPT_MATRICES=$(subst _score_table.tsv,_scored.tf,${ROC_TABLE})
@@ -283,9 +306,11 @@ MATRIX_TYPE=clust-trimmed-matrices_tf-vs-others
 SELECT_TABLE_1TYPE=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}.tsv
 SELECT_TABLE_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0.tsv
 SELECT_TABLE_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}.tsv
-SELECTTED_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0_topTFxEXO.tsv
-SELECTTED_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}_topTFxEXP.tsv
+SELECTED_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0_topTFxEXO.tsv
+SELECTED_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}_topTFxEXP.tsv
+COLLECT_PSSM_INITIAL_SCRIPT=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0_topTFxEXP_matrices_cmd.sh
 COLLECT_PSSM_FINAL_SCRIPT=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}_topTFxEXP_matrices_cmd.sh
+COLLECTED_PSSM_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0_topTFxEXP_matrices
 COLLECTED_PSSM_FINAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen${OMGA_GENERATIONS}_topTFxEXP_matrices
 omga_select_matrices_one_type:
 	@echo
@@ -301,30 +326,46 @@ omga_select_matrices_one_type:
 	@awk -F'\t' 'BEGIN { OFS=FS } \
 		NR == 1 { print $$0, "rank[TF_EXP]"; next } \
 		$$1 == ${OMGA_GENERATIONS} { key =  $$17 "_" $$16 ; rank[key]++; print $$0, rank[key] }' ${SELECT_TABLE_1TYPE} > ${SELECT_TABLE_FINAL}
-#	@awk -F'\t' 'BEGIN { OFS=FS } \
-#		NR == 1 { print $$0, "rank[TF]"; next } \
-#		$$1 == ${OMGA_GENERATIONS} { rank[$$17]++; print $$0, rank[$$17] }' ${SELECT_TABLE_1TYPE} > ${SELECT_TABLE_FINAL}
 	@echo "	SELECT_TABLE_FINAL	`wc -l ${SELECT_TABLE_FINAL}`"
 	@awk -F'\t' ' NR==1 {print $$0; next }; \
-		$$NF <= 1 {print $$0}' ${SELECT_TABLE_INITIAL} > ${SELECTTED_INITIAL}
-	@echo "	SELECTTED_INITIAL		`wc -l ${SELECTTED_INITIAL}`"
+		$$NF <= 1 {print $$0}' ${SELECT_TABLE_INITIAL} > ${SELECTED_INITIAL}
+	@echo "	SELECTED_INITIAL		`wc -l ${SELECTED_INITIAL}`"
 	@awk -F'\t' ' NR==1 {print $$0; next }; \
-		$$NF <= 1 {print $$0}' ${SELECT_TABLE_FINAL} > ${SELECTTED_FINAL}
-	@echo "	SELECTTED_FINAL		`wc -l ${SELECTTED_FINAL}`"
+		$$NF <= 1 {print $$0}' ${SELECT_TABLE_FINAL} > ${SELECTED_FINAL}
+	@echo "	SELECTED_FINAL		`wc -l ${SELECTED_FINAL}`"
 	@echo
 	@echo "Gathering PSSMs"
 	@echo "Collecting final matrices"
-	awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"substr($$16,1,1)"_/\"" }' ${SELECTTED_FINAL} > ${COLLECT_PSSM_FINAL_SCRIPT}
-#	awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"substr($$16,1,1)"_/; s/positions_/p/ ; s/dyads/d/; s/oligos_/o/; s/mkv/mv/\"" }' ${SELECTTED_FINAL} > ${COLLECT_PSSM_FINAL_SCRIPT}
-	@echo "	COLLECT_PSSM_SCRIPT	${COLLECT_PSSM_FINAL_SCRIPT}"
+	awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"substr($$16,1,1)"_/\"" }' ${SELECTED_INITIAL} > ${COLLECT_PSSM_INITIAL_SCRIPT}
+	@echo "Collecting final matrices"
+	awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"substr($$16,1,1)"_/\"" }' ${SELECTED_FINAL} > ${COLLECT_PSSM_FINAL_SCRIPT}
+#	@echo "	COLLECT_PSSM_INITIAL_SCRIPT	${COLLECT_PSSM_INITIAL_SCRIPT}"
+#	@echo "	COLLECTED_PSSM_INITIAL	${COLLECTED_PSSM_INITIAL}"
+#	@bash ${COLLECT_PSSM_INITIAL_SCRIPT} > ${COLLECTED_PSSM_INITIAL}.tf
+#	@echo "	COLLECTED_PSSM_INITIAL .tf	${COLLECTED_PSSM_INITIAL}.tf"
+#	@${MAKE} ${COLLECTED_PSSM_INITIAL}_freq.tf
+#	@echo "	COLLECTED_PSSM_INITIAL ibis.txt	${COLLECTED_PSSM_INITIAL}_freq.tf"
+
+	@echo "	COLLECTED_PSSM_INITIAL	${COLLECTED_PSSM_INITIAL}"
+	@echo "	COLLECT_PSSM_INITIAL_SCRIPT	${COLLECT_PSSM_INITIAL_SCRIPT}"
+	@bash ${COLLECT_PSSM_INITIAL_SCRIPT} > ${COLLECTED_PSSM_INITIAL}.tf
+	@echo "	COLLECTED_PSSM_INITIAL .tf	${COLLECTED_PSSM_INITIAL}.tf"
+	@${MAKE} ${COLLECTED_PSSM_INITIAL}_freq.tf
+	@echo "	COLLECTED_PSSM_INITIAL freq.tf	${COLLECTED_PSSM_INITIAL}_freq.tf"
+	@${MAKE} ${COLLECTED_PSSM_INITIAL}_freq.cb
+	@echo "	COLLECTED_PSSM_INITIAL freq_cb	${COLLECTED_PSSM_INITIAL}_freq.cb"
+	@${MAKE} ${COLLECTED_PSSM_INITIAL}_ibis.txt
+	@echo "	COLLECTED_PSSM_INITIAL ibis.txt	${COLLECTED_PSSM_INITIAL}_ibis.txt"
+
+
 	@echo "	COLLECTED_PSSM_FINAL	${COLLECTED_PSSM_FINAL}"
+	@echo "	COLLECT_PSSM_FINAL_SCRIPT	${COLLECT_PSSM_FINAL_SCRIPT}"
 	@bash ${COLLECT_PSSM_FINAL_SCRIPT} > ${COLLECTED_PSSM_FINAL}.tf
 	@echo "	COLLECTED_PSSM_FINAL .tf	${COLLECTED_PSSM_FINAL}.tf"
-#	@echo "${SHELL} ${COLLECT_PSSM_FINAL_SCRIPT}"
 	@${MAKE} ${COLLECTED_PSSM_FINAL}_freq.tf
-	@echo "	COLLECTED_PSSM_FINAL ibis.txt	${COLLECTED_PSSM_FINAL}_freq.tf"
+	@echo "	COLLECTED_PSSM_FINAL freq.tf	${COLLECTED_PSSM_FINAL}_freq.tf"
 	@${MAKE} ${COLLECTED_PSSM_FINAL}_freq.cb
-	@echo "	COLLECTED_PSSM_FINAL ibis.txt	${COLLECTED_PSSM_FINAL}_ibis.txt"
+	@echo "	COLLECTED_PSSM_FINAL freq_cb	${COLLECTED_PSSM_FINAL}_freq.cb"
 	@${MAKE} ${COLLECTED_PSSM_FINAL}_ibis.txt
 	@echo "	COLLECTED_PSSM_FINAL ibis.txt	${COLLECTED_PSSM_FINAL}_ibis.txt"
 
