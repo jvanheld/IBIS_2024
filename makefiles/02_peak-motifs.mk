@@ -39,6 +39,8 @@ param: param_00
 	@echo "	DIFF_SUFFIX		${DIFF_SUFFIX}"
 	@echo "	PEAKMO_DIFF_CMD		${PEAKMO_DIFF_CMD}"
 	@echo "	PEAKMO_DIFF_SCRIPT	${PEAKMO_DIFF_SCRIPT}"
+	@echo "	PEAKMO_DIFF_SYNTHESIS	${PEAKMO_DIFF_SYNTHESIS}"
+	@echo "	PEAKMO_DIFF_MATRICES*	${PEAKMO_DIFF_MATRICES}*"
 	@echo
 
 
@@ -124,6 +126,8 @@ NEG_SEQ=${OTHERS_SEQ}
 NEG_SUFFIX=others
 DIFF_SUFFIX=${POS_SUFFIX}-vs-${NEG_SUFFIX}
 PEAKMO_DIFF_DIR=${RESULT_DIR}/peak-motifs${PEAKMO_OPT}_${DIFF_SUFFIX}
+PEAKMO_DIFF_MATRICES=${PEAKMO_DIFF_DIR}/results/discovered_motifs/peak-motifs_motifs_discovered
+PEAKMO_DIFD_SYNTHESIS=${PEAKMO_DIFF_DIR}/peak-motifs_synthesis.html
 PEAKMO_DIFF_CMD=${SCHEDULER} ${RSAT_CMD} peak-motifs  \
 	-v ${V} \
 	-title ${BOARD}_${EXPERIMENT}_${TF}_${DATASET}_train_vs_bg  \
@@ -170,6 +174,8 @@ peakmo_diff_one_dataset:
 	@echo "Running peak-motifs"
 	@${RUNNER} ${PEAKMO_DIFF_SCRIPT}
 	@echo "	PEAKMO_DIFF_DIR	${PEAKMO_DIFF_DIR}"
+	@echo "	PEAKMO_DIFF_SYNTHESIS	${PEAKMO_DIFF_SYNTHESIS}"
+	@echo "	PEAKMO_DIFF_MATRICES*	${PEAKMO_DIFF_MATRICES}*"
 
 peakmo_diff_all_datasets:
 	@${MAKE} iterate_datasets TASK=peakmo_diff_one_dataset
