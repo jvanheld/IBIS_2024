@@ -339,9 +339,9 @@ omga_select_matrices_one_type:
 	@echo
 	@echo "Gathering PSSMs"
 	@echo "Collecting final matrices"
-	awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"substr($$16,1,1)"_/\"" }' ${SELECTED_INITIAL} > ${COLLECT_PSSM_INITIAL_SCRIPT}
+	awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"$$17"_"substr($$16,1,1)"_/\"" }' ${SELECTED_INITIAL} > ${COLLECT_PSSM_INITIAL_SCRIPT}
 	@echo "Collecting final matrices"
-	awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"substr($$16,1,1)"_/\"" }' ${SELECTED_FINAL} > ${COLLECT_PSSM_FINAL_SCRIPT}
+	awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"$$17"_"substr($$16,1,1)"_/\"" }' ${SELECTED_FINAL} > ${COLLECT_PSSM_FINAL_SCRIPT}
 #	@echo "	COLLECT_PSSM_INITIAL_SCRIPT	${COLLECT_PSSM_INITIAL_SCRIPT}"
 #	@echo "	COLLECTED_PSSM_INITIAL	${COLLECTED_PSSM_INITIAL}"
 #	@bash ${COLLECT_PSSM_INITIAL_SCRIPT} > ${COLLECTED_PSSM_INITIAL}.tf
@@ -401,7 +401,7 @@ omga_select_matrices_one_type:
 	@echo "	Score table: $<"
 	@echo "	Selected matrices: $@"
 	@echo "	Preparing bash script to retrieve matrices"
-	@awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"substr($$16,1,1)"_/\"" }' $< > $*_cmd.sh
+	@awk -F'\t' 'NR==1 { next } { print "~/packages/rsat/bin/rsat retrieve-matrix -v 0 -i "$$12" -id "$$2" | perl -pe \"s/^AC  /AC  "$$17"_"$$17"_"substr($$16,1,1)"_/\"" }' $< > $*_cmd.sh
 	@echo "	Bash script	$*_cmd.sh"
 	@echo "	Collecting final matrices"
 	@bash $*_cmd.sh > $@
