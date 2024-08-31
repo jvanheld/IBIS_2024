@@ -56,7 +56,8 @@ include makefiles/config_${EXPERIMENT}.mk
 V=1
 
 DISCIPLINE=WET
-BOARD=leaderboard
+#BOARD=leaderboard
+BOARD=final
 DATA_TYPE=train
 METADATA=metadata/${BOARD}/TF_DATASET_${EXPERIMENT}.tsv
 TEST_SEQ=data/${BOARD}/test/${EXPERIMENT}_participants.fasta
