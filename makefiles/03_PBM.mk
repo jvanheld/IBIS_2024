@@ -22,7 +22,8 @@ targets: targets_00
 	@echo "Differential motif discovery (top versus background spots) with peak-motifs"
 	@echo "	peakmo_diff			run peak-motifs differential analysis in a given dataset"
 	@echo "	peakmo_diff_all_datasets	run peak-motifs differential analysis in all PBM datasets"
-	@echo "	omga_one_dataset		run optimize-matrix-GA on the motifs discovered with differential analysis"
+	@echo "	omga_one_dataset_PBM		run optimize-matrix-GA on the motifs discovered with differential analysis"
+	@echo "	omga_all_datasets_PBM		run optimize-matrix-GA on all the PBM datasets"
 	@echo
 
 param: param_00
@@ -173,10 +174,13 @@ peakmo_diff_all_datasets:
 
 ################################################################
 ## Run optimize-matrix-GA on the differential peak-motifs result
-omga_one_dataset:
+omga_one_dataset_PBM:
 	@make -f makefiles/04_optimize-matrices.mk omga_one_dataset \
 		EXPERIMENT=PBM \
 		PEAKMO_MATRICES=${PEAKMO_DIFF_MATRICES} \
 		POS_SEQ=${TOP_SEQ} \
 		NEG_SEQ=${BG_SEQ} \
 		OMGA_PRESUFFIX=peakmo-diff-matrices_top${N_TOP_SPOTS}-vs-bg${N_BG_SPOTS}_tf-vs-others
+
+omga_all_datasets_PBM:
+	@${MAKE} iterate_datasets TASK=omga_one_dataset_PBM
