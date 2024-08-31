@@ -199,10 +199,13 @@ omga_all_experiments:
 ## and experiment
 RESULTS_PER_TYPE=${COLLECT_DIR}/results_per_type_${BOARD}_all-TFs.tsv
 omga_results_per_type:
-	find results/${BOARD}/train \
+	@mkdir -p ${COLLECT_DIR}
+	@echo "Counting the number of optimization results per matrix type, TF and experiment"
+	@find results/${BOARD}/train \
 		-name '*_gen0-20_auroc-profiles.pdf' | awk -F'/' 'BEGIN { OFS="\t" } { print $$8, $$5, $$4 }' \
 		| sort | uniq -c | sort -k 2 -k 3 -k 4 \
 		> ${RESULTS_PER_TYPE}
+	@echo "	RESULTS_PER_TYPE	${RESULTS_PER_TYPE}"
 
 ################################################################
 ## Collect all the performance tables, sort them and select matrices for submission
@@ -269,8 +272,9 @@ omga_select_matrices:
 	done 
 
 # Choice of the default matrix type
+MATRIX_TYPE=clust-trimmed-matrices_train-vs-rand
 #MATRIX_TYPE=clust-trimmed-matrices_tf-vs-others
-MATRIX_TYPE=peakmo-matrices_tf-vs-others
+#MATRIX_TYPE=peakmo-matrices_tf-vs-others
 
 SELECT_TABLE_1TYPE=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}.tsv
 SELECT_TABLE_INITIAL=${COLLECT_TABLE_PREFIX}_${MATRIX_TYPE}_gen0.tsv
