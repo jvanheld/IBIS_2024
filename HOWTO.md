@@ -3,7 +3,11 @@
 
 ## The short story
 
+After having installed the required software, downloaded the data and organised it in the right way, all the aznalyses can be reproduced with one `make` target. 
 
+```
+make -f makefiles/all.mk all
+```
 
 
 ## Some details
