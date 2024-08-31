@@ -23,6 +23,13 @@ Detailed instructions to launch these `make` scripts are provided in
 the [HOWTO.md](HOWTO.md) file.
 
 
+## Availability
+
+This material is available
+
+- on  github: <https://github.com/jvanheld/IBIS_2024/>
+- tagged versions are archived on zenodo [ADD LINK]
+
 ## Methods
 
 ### Motif discovery approaches
