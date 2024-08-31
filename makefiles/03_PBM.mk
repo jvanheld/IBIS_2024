@@ -176,6 +176,7 @@ peakmo_diff_all_datasets:
 ## Run optimize-matrix-GA on the differential peak-motifs result
 omga_one_dataset_PBM:
 	@make -f makefiles/04_optimize-matrices.mk omga_one_dataset \
+		DATASET=${DATASET} \
 		EXPERIMENT=PBM \
 		PEAKMO_MATRICES=${PEAKMO_DIFF_MATRICES} \
 		POS_SEQ=${TOP_SEQ} \
