@@ -12,7 +12,18 @@ Support of the challenge presentation teleconference (video + slides):
 
 Instructions to install the required software environment can be found in [INSTALL.md](INSTALL.md). 
 
+## Submission for the final board
 
+Wrap-up report
+
+Documents
+
+| Doc | Path
+|----------|-------------------------------|
+| Method wrap-up | [reports/IBIS-challenge-final-stage_method-write-up_RSAT-team_2024-09-01.docx](reports/IBIS-challenge-final-stage_method-write-up_RSAT-team_2024-09-01.docx)] |
+| Final PWM | RSAT-team_final-board_PWM.txt |
+| Zip archive | [submissions/final/RSAT-team_IBIS-2024_final_submission.zip](submissions/final/RSAT-team_IBIS-2024_final_submission.zip) |
+| Full URL to the zip archive | |
 
 ## How to reproduce our results?
 
@@ -23,7 +34,7 @@ Detailed instructions to launch these `make` scripts are provided in
 the [HOWTO.md](HOWTO.md) file.
 
 
-## Availability
+## Availability 
 
 This material is available
 
