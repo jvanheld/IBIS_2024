@@ -377,6 +377,7 @@ omga_select_matrices_one_type:
 	@echo "Input\t$<"
 	@echo "Output\t$@"
 	awk '{	if ($$1 ~ /^>/) { 			\
+                if (NR > 1) { print "" }		\
 		sub("_", " ", $$1);  			\
 		sub("cluster_", "c", $$1); 		\
 		sub("node_", "n", $$1); 		\
