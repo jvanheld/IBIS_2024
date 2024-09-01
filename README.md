@@ -23,6 +23,7 @@ Documents
 | Method wrap-up | [reports/IBIS-challenge-final-stage_method-write-up_RSAT-team_2024-09-01.docx](reports/IBIS-challenge-final-stage_method-write-up_RSAT-team_2024-09-01.docx) |
 | Final PWM | [submissions/final/PWM.txt](submissions/final/PWM.txt) |
 | Zip archive | [submissions/final/RSAT-team_IBIS-2024_final_submission.zip](submissions/final/RSAT-team_IBIS-2024_final_submission.zip) |
+| Full URL of the method write-up | [https://github.com/jvanheld/IBIS_2024/raw/main/reports/IBIS-challenge-final-stage_method-write-up_RSAT-team_2024-09-01.docx](https://github.com/jvanheld/IBIS_2024/raw/main/reports/IBIS-challenge-final-stage_method-write-up_RSAT-team_2024-09-01.docx) |
 | Full URL to the zip archive | [https://github.com/jvanheld/IBIS_2024/raw/main/submissions/final/RSAT-team_IBIS-2024_final_submission.zip](https://github.com/jvanheld/IBIS_2024/raw/main/submissions/final/RSAT-team_IBIS-2024_final_submission.zip)|
 
 ## How to reproduce our results?
