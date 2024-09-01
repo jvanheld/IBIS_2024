@@ -16,7 +16,8 @@ RUNNER_HEADER="\#!/bin/bash"
 ################################################################
 
 ## Choose RSAT mode : local or docker
-RSAT_MODE=docker
+RSAT_MODE=local
+#RSAT_MODE=docker
 
 ifeq (${RSAT_MODE}, local)
 
