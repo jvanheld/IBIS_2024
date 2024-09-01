@@ -388,6 +388,7 @@ omga_select_matrices_one_type:
 		sub("dyads_", "d_", $$1); 		\
 		sub(/\.Rep-MICHELLE/, "M", $$1); 	\
 		sub(/\.Rep-DIANA/, "D", $$1); 		\
+		sub("test_vs_ctrl", "diff", $$1);	\
 		sub("-", "_", $$1); 			\
 		sub(/\/name.*/, "", $$0);		\
 		} print }' $< > $@
