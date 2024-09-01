@@ -392,7 +392,10 @@ omga_select_matrices_one_type:
 		sub("test_vs_ctrl", "diff", $$1);	\
 		sub("-", "_", $$1); 			\
 		sub(/\/name.*/, "", $$0);		\
-		} print }' $< > $@
+		}					\
+		gsub("\t", " ");			\
+		sub(/ $$/, "");				\
+		print }' $< > $@
 
 ################################################################
 ## A rule to select PSSM from an optimization score table with added
