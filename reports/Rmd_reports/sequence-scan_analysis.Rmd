@@ -1,0 +1,674 @@
+---
+author: "Jacques van Helden"
+date: '`r Sys.Date()`'
+output:
+  html_document:
+    code_folding: hide
+    self_contained: yes
+    fig_caption: yes
+    highlight: tango
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  ioslides_presentation:
+    slide_level: 2
+    self_contained: no
+    colortheme: dolphin
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 7
+    fonttheme: structurebold
+    highlight: tango
+    smaller: yes
+    toc: yes
+    widescreen: yes
+  revealjs::revealjs_presentation:
+    theme: night
+    transition: none
+    self_contained: true
+    css: ../../slides.css
+  slidy_presentation:
+    smart: no
+    slide_level: 2
+    self_contained: yes
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 7
+    highlight: tango
+    incremental: no
+    keep_md: yes
+    smaller: yes
+    theme: cerulean
+    toc: yes
+    widescreen: yes
+  pdf_document:
+    fig_caption: yes
+    highlight: zenburn
+    toc: yes
+    toc_depth: 3
+  beamer_presentation:
+    colortheme: dolphin
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 7
+    fonttheme: structurebold
+    highlight: tango
+    incremental: no
+    keep_tex: no
+    slide_level: 2
+    theme: Montpellier
+    toc: yes
+font-import: http://fonts.googleapis.com/css?family=Risque
+title: Analysis of sequence scanning results
+subtitle: IBIS challenge 2024
+font-family: Garamond
+transition: linear
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, eval=TRUE, echo=FALSE, include=FALSE}
+library(knitr)
+library(kableExtra)
+library(rprojroot)
+library(data.table)
+library(pROC)
+library(data.table)
+
+# library(formattable)
+
+root_dir = rprojroot::find_rstudio_root_file()
+knitr::opts_knit$set(root.dir = root_dir)
+#setwd(root_dir)
+
+# options(encoding = 'UTF-8')
+knitr::opts_chunk$set(
+	eval = TRUE,
+	echo = TRUE,
+	fig.align = "center",
+	fig.height = 5,
+	fig.path = "figures/matrix-performances/",
+	fig.width = 7,
+	message = FALSE,
+	warning = FALSE,
+	comment = "",
+	results = TRUE,
+	root.dir = root_dir,
+	size = "tiny"
+)
+options(scipen = 12) ## Max number of digits for non-scientific notation
+# knitr::asis_output("\\footnotesize")
+
+options(width = 300)
+# options(encoding = 'UTF-8')
+
+# getwd()
+```
+
+```{r param}
+#### Define default parameters ####
+board <- 'leaderboard'
+experiment <- "CHS"
+TF <- "GABPA"
+dataset <- "THC_0866" 
+```
+
+## Metadata
+
+```{r load_metadata}
+## Load metadata
+metadata_file <- file.path("metadata", board, "TF_DATASET_all-types.tsv")
+setwd(root_dir)
+# getwd()
+metadata <- read.table(metadata_file, header = TRUE, sep="\t", comment.char = "")
+colnames(metadata) <- c(
+  "TF", 
+  "DATASET", 
+  "size", 
+  "EXPERIMENT", 
+  "BOARD", 
+  "seq_format",
+  "fasta_file_path"
+  )
+rownames(metadata) <- metadata$DATASET
+# View(metadata)
+
+TFs <- unique(metadata$TF)
+datasets <- unique(metadata$DATASET)
+experiments <- unique(metadata$EXPERIMENT)
+
+```
+
+```{r metadata_summary}
+# View(metadata)
+metadata_summary <- table(metadata[, c("TF", "EXPERIMENT")])
+metadata_summary <- cbind(metadata_summary, total=apply(metadata_summary, 1, sum))
+metadata_summary <- metadata_summary[order(metadata_summary[, "total"], decreasing = TRUE), ]
+kable(metadata_summary, caption="Summary of the metadata. Number of datasets per transcription factor (rows) and experiment (colums)")
+```
+
+
+## Datasets
+
+- **PCM:** we scanned sequences with position-count matrices (PCM) resulting from motif discovery in in train sequence sets. Motif discovery was performed with  `peak-motifs`  using 3 algorithms: `oligo-analysis`, `dyad-analysis` and `position-analysis`. 
+
+- **sequences:** we scan three types of sequence sets. 
+
+    - **train:** training sequences. Note that for PBM the training sequences are the 500 spots having the highest signal intensity, whereas for other experiments (CHS, GHTS, HTS, SMS) the train sequences are all the sequences downloaded from the IBIS web site ([leaderboard](https://ibis.autosome.org/download_data/leaderboard) or [final](https://ibis.autosome.org/download_data/final)).  
+
+    - **rand:** random genome fragments of the same sizes as the train sequences (see previous section)
+
+    - **test:** test sequences downloaded from the IBIS web site ([leaderboard](https://ibis.autosome.org/download_data/leaderboard) or [final](https://ibis.autosome.org/download_data/final)).  
+
+
+```{r load_data}
+#### Define a function to load a data table and analyse it ####
+
+#' @title Load matrix-scan results for one dataset of the IBIS challenge. 
+#' @description Load matrix-scan results for one dataset of the IBIS challenge. These results are tab-delimited files for different sequence types (by default: train, rand and test)
+#' @author Jacques van Helden
+#' @param dataset the ID of the dataset (must be present in the metadata table)
+#' @param seq_types=c("train","rand","test") sequence types for which the hit tables have to be read
+#' @examples
+#' ## Load recount metadata
+#' load_dataset(dataset=THC_0866)
+#' @return a list with the data + statistics per motif (motif)
+#' @export
+load_dataset <- function(dataset,
+                         seq_types = c("train", "rand")
+#                         seq_types = c("train", "rand", "test")
+                         ) {
+  ## Initialize variables
+  TF <- metadata[dataset, "TF"]
+  experiment <- metadata[dataset, "EXPERIMENT"]
+
+  top_hits <- list()
+  top_hits$dataset <- dataset
+  top_hits$TF <- TF
+  top_hits$experiment <- experiment
+  top_hits$board <- board
+
+  
+  message("Loading sequence scan tables for dataset ", dataset, "\t", TF, "\t", experiment)
+  message("Sequence types ", paste(collapse = ",", seq_types))
+  
+  scan_dir <- file.path("results", 
+                        board,
+                        "train", 
+                        experiment, 
+                        TF, 
+                        dataset, "peak-motifs-nopurge", "clustered_motifs", "", "matrix-clusters_aligned_logos", "All_concatenated_motifs_trimmed-info_0.1", "sequence-scan")
+  
+  message("\t", scan_dir)
+  
+  ## Read the data tables for the different sequence types
+  for (seq_type in seq_types) {
+    scan_file <- file.path(scan_dir, 
+                           paste0(experiment, "_",
+                                  TF, "_",
+                                  dataset, 
+                                  "_peakmo-clust-matrices_", 
+                                  seq_type,
+                                  ".tsv.gz"))
+    
+    message("\t", seq_type, "\t", basename(scan_file))
+    
+    system.time(top_hits[[seq_type]] <- 
+                  data.table::fread(
+                    cmd = paste0("zless ", scan_file, " | grep -v '^;' | grep -v 10000000"), 
+                    sep = "\t", 
+                    header = TRUE, 
+                    stringsAsFactors = FALSE, 
+                    showProgress = TRUE))
+    top_hits[[seq_type]]$seq_type <- seq_type
+    ## View(top_hits[[seq_type]])
+  }
+
+  
+  return(top_hits)
+}
+
+```
+
+```{r ckassif_statistics}
+
+#' @title Compute classification statistics from two data.frames corresponding to positive and negative cases respectively. 
+#' @description Compute classification statistics from two data.frames corresponding to positive and negative cases respectively. The positive and negative data frames must contain a column with numeric scores, which will server to rank them and compute the classification statistics (TP, TN, FP, FN and derived statistics). Another column must be specified to indicate some grouping (in our case, by motif). 
+#' 
+#' For the IBIS challenge, the positive and negative datasets are feature tables produced by matrix-scan (keeping only the columns 1, 3-6 and 8). The grouping column is the ft_name column, which indicates the motif name. Statistics are computed separately for each motif in the input data table. 
+#' @author Jacques van Helden
+#' @param pos_data a data frame containing the positive cases
+#' @param neg_data a data frame containing the negative cases
+#' @param score_column="weight" column of pos_data and neg_data containing the scores §by default, weight score of matrix-scan)
+#' @param motif_column=2 column containing the grouping criterion (by default, the ft_name column of matrix-scan)
+#' @param decreasing=TRUE if TRUE, score column is sorted by decreasing order, i.e. the highest scores are considered the best. 
+#' @return a list with different objects
+#' @export
+
+classif_statistics <- function(
+    top_hits,
+    pos_label="train",
+    neg_label="rand",
+    label_column="seq_type",
+    score_column="weight",
+    motif_column = "ft_name",
+    decreasing = TRUE) {
+  
+  ## Initialize local variables
+  pos_data <- top_hits[[pos_label]]
+  neg_data <- top_hits[[neg_label]]
+  TF <- top_hits$TF
+  experiment <- top_hits$experiment
+  dataset <- top_hits$dataset
+  
+  message("Computing classification statistics: ", TF, " ", experiment, "\n\t", dataset)
+  message("\tPositive data dimensions: ", nrow(pos_data), " x ", ncol(pos_data))
+  message("\tNegative data dimensions: ", nrow(pos_data), " x ", ncol(pos_data))
+  merged <- data.frame(rbind(pos_data, 
+                  neg_data)) # merge train and rand
+  message("\tmerged table before cleaning: ", nrow(merged), " x ", ncol(merged))
+  
+  ## Sort merged data by score
+  merged <- merged[order(merged[, score_column], decreasing = decreasing), ]
+  
+  ## Suppress very low scores corresponding to sequences with not a single hit
+  merged <- merged[merged$weight > -1000, ]
+  message("\tmerged table after cleaning: ", nrow(merged), " x ", ncol(merged))
+  
+  motifs <- unique(merged[, motif_column])
+  nmotifs <- length(motifs)
+  
+  #### Compute statistics for each motif #### 
+  cals_stats_per_motif <- function(x) {
+    result <- c(
+      "min" = min(x),
+      "max" = max(x),
+      "mean" = mean(x),
+      "median" = median(x)
+    )
+    return(result)
+  }
+
+  #### Compute basic descriptive stat about each motif ####
+  stats_per_motif <- do.call(data.frame, aggregate(weight ~ ft_name, data = merged, FUN = cals_stats_per_motif))
+  #stats_per_motif <- subset(stats_per_motif, select = -1)
+  stats_per_motif$pos <- do.call(data.frame, aggregate(weight ~ ft_name, data = pos_data, FUN = cals_stats_per_motif))
+  stats_per_motif$neg <- do.call(data.frame, aggregate(weight ~ ft_name, data = neg_data, FUN = cals_stats_per_motif))
+  
+  stats_per_motif <- do.call(data.frame, stats_per_motif)
+  row.names(stats_per_motif) <- stats_per_motif$ft_name
+  colnames(stats_per_motif)
+  rownames(stats_per_motif)
+  stats_per_motif <- 
+    subset(x = stats_per_motif, 
+           select = grep(pattern = "ft_name", 
+                         x = colnames(stats_per_motif),
+                         invert = TRUE))
+  
+  # View(stats_per_motif)
+  
+  #### Compute distributions of scores per motif ns derive classification statistics ####
+  score_table <- list()
+  roc_curves <- list()
+  
+  motif <- motifs[1] ## initialise for testing
+  i <- 0
+  for (motif in motifs) {
+    i <- i + 1
+    message("\t\t", dataset, "\t", TF, "\t", experiment, "\t", motif)
+    stats <- merged[merged$ft_name == motif, ]
+    
+    stats$true_label <- stats[,label_column] == pos_label
+    stats$pos <- cumsum(stats[,label_column] == pos_label) # number of positive     
+    stats$neg <- cumsum(stats[,label_column] == neg_label) # number of positive     
+    npos <- sum(stats[,label_column] == pos_label) # number of positive cases
+    nneg <- sum(stats$seq_type == neg_label)  # number of negative cases
+    # View(stats)
+    # head(stats)
+    # tail(stats)
+    stats$rank <- 1:nrow(stats)
+    stats$TP <- cumsum(stats$seq_type == "train")
+    stats$FP <- cumsum(stats$seq_type == "rand")
+    stats$FN <- npos - stats$TP
+    stats$TN <- nneg - stats$FP
+    
+    ## True Positive Rate (TPR) = Sensitivity = Coverage = Recall
+#    stats$TPR <- stats$TP / (stats$TP + stats$FN)
+    stats$TPR <- stats$TP / npos
+    
+    ## False Positive Rate (TPR)
+#    stats$FPR <- stats$FP / (stats$FP + stats$TN)
+    stats$FPR <- stats$FP / nneg
+
+    ## Positive Predictive Value (PPV) = Precision
+    stats$PPV <- stats$TP / (stats$TP + stats$FP)
+    
+    ## Compute stat per score (aggregate counts)
+    if (decreasing) {
+      new_score <- c(TRUE, stats[2:nrow(stats), score_column] 
+                     < stats[1:(nrow(stats)-1), score_column])
+    } else {
+      new_score <- c(TRUE, stats[2:nrow(stats),score_column] 
+                     > stats[1:(nrow(stats)-1),score_column])
+    }
+    
+    score_table[[motif]] <- stats[new_score, c(6, 8:ncol(stats))]
+    
+    ## Compute the area under the ROC curve
+    nscores <- nrow(score_table[[motif]])
+    x <- c(0, score_table[[motif]][, "FPR"])
+    y <- c(0, score_table[[motif]][, "TPR"])
+    xdiff <- x[2:length(x)] - x[1:(length(x)-1)]
+    ymean <- (y[2:length(x)] + y[1:(length(x)-1)])/2
+    stats_per_motif[motif, "AuROC"] <- as.vector(xdiff %*% ymean)
+    
+    
+    ## Compute the AuRoC using pROC package
+    ## This is for validation: I obtain the same values as 
+    ## computed manually above, with differences ~ 0.0001
+    roc_curves[[motif]] <- pROC::roc(
+      as.numeric(stats$true_label), 
+      as.vector(stats[, score_column]), 
+      direction="<")
+    auc_value <- auc(roc_curves[[motif]])
+    stats_per_motif[motif, "pROC.auc"] <- auc_value
+
+    ## Compute the area under the Precision/recall curve
+    x <- c(0, score_table[[motif]][, "TPR"])
+    y <- c(0, score_table[[motif]][, "PPV"])
+    xdiff <- x[2:length(x)] - x[1:(length(x)-1)]
+    ymean <- (y[2:length(x)] + y[1:(length(x)-1)])/2
+    stats_per_motif[motif, "AuPR"] <- as.vector(xdiff %*% ymean)
+  }  
+  
+  
+  result <- list(
+    experiment = experiment,
+    TF = TF,
+    dataset = dataset,
+    top_hits = top_hits,
+    motifs = motifs,
+    stats_per_motif = stats_per_motif,
+    score_table = score_table
+  )
+  return(result)  
+}
+  
+```
+
+
+```{r weight_hist, fig.width=8, fig.height=8, out.width="100%", fig.cap="Weight distributions for a given dataset"}
+plot_weights <- function(results,
+                         pos_label="train",
+                         neg_label="rand") {
+  Wpos <- top_hits[[pos_label]]$weight
+  Wneg <- top_hits[[neg_label]]$weight
+  
+  ## suppress weights corresponding to no hits (N sequences)
+  Wpos <- Wpos[Wpos > -1000]
+  Wneg <- Wneg[Wneg > -1000]
+  
+  Wmin <- floor(min(c(Wpos, Wneg))/10)*10
+  Wmax <- ceiling(max(c(Wpos, Wneg))/10)*10
+  
+#  par(mfrow=c(2,1))    
+  hist(Wpos, 
+       breaks = seq(from=Wmin, to=Wmax, by=0.5),
+       main=paste0(top_hits$experiment, " ", 
+                   top_hits$TF, " ",
+                   pos_label, "\n", dataset),
+       xlab = "Weight score (top hit per sequence)",
+       ylab = "Number of sequences",
+       las=1,
+       col = "palegreen")
+       
+  hist(Wneg, 
+       breaks = seq(from=Wmin, to=Wmax, by=0.5),
+       main=paste0(top_hits$experiment, " ", 
+                   top_hits$TF, " ",
+                   pos_label, "\n", dataset),
+       xlab = "Weight score (top hit per sequence)",
+       ylab = "Number of sequences",
+       las=1,
+       col = "pink")
+       
+#  par(mfrow=c(1,1))    
+
+}
+```
+
+
+```{r ROC, fig.width=8, fig.height=8, out.width="100%", fig.cap="ROC for a given dataset"}
+
+plot_curves <- function(classif_stat,
+                        type="ROC") {
+#  attach(classif_stat)
+  ## Initialise parameters for this result set
+  dataset <- classif_stat$dataset
+  TF <- classif_stat$TF
+  experiment <- classif_stat$experiment
+  stats_per_motif <- classif_stat$stats_per_motif
+  motifs <- classif_stat$motifs
+  nmotifs <- length(motifs)
+  
+  if (type == "ROC") {
+    xstat <- "FPR"
+    ystat <- "TPR"
+    legend_pos <- "bottomright"
+    performance_stat <- "AuROC"
+#    performance_stat <- "pROC.auc"
+    
+  } else if (type == "Precision/recall") {
+    xstat <- "TPR"
+    ystat <- "PPV"
+    legend_pos <- "bottomleft"
+    performance_stat <- "AuPR"
+#    performance_stat <- "pROC.auc"
+  } else {
+    stop('Invalid curve type for plot_curves(). Supported types :  "ROC",  "Precision/recall"')
+  }
+  
+  ## Extract performance per motif
+  # perf <- classif_stat$stats_per_motif[, performance_stat]
+  stats_per_motif$rank <- nmotifs + 1 - rank(classif_stat$stats_per_motif[, performance_stat])
+  
+  # stats_per_motif[, c("AuROC", "rank")]
+
+  ## Sort motifs by increasing performance to draw the most performing 
+  ## one at the end, so it appears above the other ones
+  motif_order <- order(stats_per_motif[, performance_stat], decreasing = FALSE)
+  sorted_motifs <- rownames(stats_per_motif)[motif_order]
+
+  stats_per_motif$color <- stats_per_motif$rank
+  stats_per_motif$lwd <- 2 - 1.5*(stats_per_motif$rank / nmotifs)
+  stats_per_motif$lty <- stats_per_motif$rank
+
+  message("Drawing ", type, " curve\t", experiment, "\t", TF, "\t", dataset, "\t", nmotifs, " motifs")
+  motif <- sorted_motifs[1]
+  stats <- classif_stat$score_table[[motif]]
+  
+  plot(stats[, xstat], 
+       stats[, ystat], 
+       lwd = stats_per_motif[motif, "lwd"],,
+       col = stats_per_motif[motif, "color"],
+       lty = stats_per_motif[motif, "lty"],
+       
+       main = paste0(type, ": ",
+                     TF, " ", 
+                     experiment, "\n", 
+                     dataset, " (", 
+                     nmotifs, " motifs)"),
+       
+       xlab = xstat, 
+       xlim = c(0,1),
+       ylab = ystat,
+       ylim = c(0,1),
+
+       type = "l",
+       las = 1,
+       panel.first = c(
+         abline(h=seq(0, 1, 0.1), col="#DDDDDD"),
+         abline(v=seq(0, 1, 0.1), col="#DDDDDD"),
+         abline(v = c(0, 1), col = "black"),
+         abline(h = c(0, 1), col = "black")
+       )
+  )
+  
+  if (type == "ROC") {
+    abline(a = 0, b = 1, col = "black")
+  }
+  
+  ## Draw lines
+  for (i in 2:nmotifs) {
+    motif <- sorted_motifs[[i]]
+    stats <- classif_stat$score_table[[motif]]
+    lines(stats[, xstat],
+          stats[, ystat], 
+          lwd = stats_per_motif[motif, "lwd"],,
+          col = stats_per_motif[motif, "color"],
+          lty = stats_per_motif[motif, "lty"])
+  }
+  
+  
+  perf <- round(digits = 3, 
+                stats_per_motif[sorted_motifs, performance_stat])
+  legend_text <- rev(paste0(sorted_motifs, " (", perf, ")"))
+  legend_text <- sub(pattern = "cluster_", "c", legend_text)
+  legend_text <- sub(pattern = "node_", "n", legend_text)
+  legend_text <- sub(pattern = "motifs", "m", legend_text)
+  legend(legend_pos,
+         legend = legend_text, 
+         col = rev(stats_per_motif[sorted_motifs, "color"]), 
+         lwd = rev(stats_per_motif[sorted_motifs, "lwd"]),
+         lty = rev(stats_per_motif[sorted_motifs, "lty"]),
+         cex = min(0.8, 10/nmotifs))
+#  detach(classif_stat)
+
+}
+  
+```
+
+## Performances
+
+```{r performance_analysis, fig.width=16, fig.height=8, out.width="100%", results='asis'}
+# View(metadata)
+
+
+## Initialise variables
+ndatasets <- length(datasets) 
+i <- 0
+
+## Test data
+tf <- "NACC2" ## for test
+experiment <- "HTS" ## for test
+# for (i in 1:length(datasets)) {
+for (tf in TFs) {
+  
+  cat(paste0("\n\n### ", tf, "\n\n"))
+  for (experiment in experiments) {
+    selection <- subset(metadata, EXPERIMENT == experiment & TF == tf)
+#    TF <- tf
+    if (nrow(selection) > 0) {
+      cat(paste0("\n\n#### ", 
+                 tf, " ", 
+                 experiment, 
+                 " (", nrow(selection), " datasets)\n\n"))
+      dataset <- selection$DATASET[1] ## for test
+      for (dataset in selection$DATASET) {
+        i <- i + 1
+#        if (i > 5) {break()}
+        if (experiment == "PBM") {
+          message ("Skipping PBM dataset ", dataset)
+          next()
+        }
+        
+        message("Analysing dataset ", i, "/", ndatasets, ": ", dataset, "\t", tf, "\t", experiment)
+        cat(paste0("\n\n##### ", tf, " ", experiment, " ", dataset, "\n\n"))
+        
+        ## Load the positive and negative datasets
+        top_hits <- load_dataset(dataset)
+        
+        
+        par(mfrow=c(1,2))
+        ## Compute performance statistics
+        classif_stat <- classif_statistics(top_hits)
+        
+        if (i == 1) {
+          stats_per_dataset_and_motif <- 
+            cbind(
+              tf, 
+              experiment, 
+              dataset, 
+              motif = row.names(classif_stat$stats_per_motif),
+              classif_stat$stats_per_motif)
+          # names(stats_per_dataset_and_motif)
+        } else {
+          stats_per_dataset_and_motif <- rbind(
+            stats_per_dataset_and_motif, 
+            cbind(
+              dataset, 
+              tf, 
+              experiment, 
+              motif = row.names(classif_stat$stats_per_motif),
+              classif_stat$stats_per_motif))
+        }
+        # View(stats_per_dataset_and_motif)
+        
+        plot_curves(classif_stat, type = "ROC")
+        plot_curves(classif_stat, type = "Precision/recall")
+        
+        
+        ## Check that the manual computation of AuROC corresponds to the result of pROC::auc
+        # plot(classif_stat$stats_per_motif[, c("AuROC",
+        #                                       "AuPR")], 
+        #      main = paste0("AuROC vs AuPR: ", TF, " ", experiment, "\n", dataset),
+        #      xlim=c(0,1),
+        #      ylim = c(0,1), 
+        #      las=1,
+        #      panel.first=c(
+        #        abline(h=seq(0,1, 0.1), col="#DDDDDD"),
+        #        abline(v=seq(0,1, 0.1), col="#DDDDDD"),
+        #        abline(a=0,b=1)
+        #      ),
+        #      col = "blue")
+        # par(mfrow=c(1,1))
+      }
+    }
+  }
+}
+
+## Compute the rank of motifs by TF or by TF+experiment to select the most performing motifs
+
+# dt <- data.table(data.frame(
+#   TF = rep(c("A", "B", "C"), each = 5),
+#   experiment = rep(1:5, 3),
+#   dataset = rep(1:5, 3),
+#   AuROC = c(0.7, 0.8, 0.75, 0.85, 0.9, 0.55, 0.65, 0.6, 0.7, 0.75, 0.2, 0.4, 0.3, 0.1, 0.35)
+# ))
+
+dt <- data.table(stats_per_dataset_and_motif)
+dt$tf_exp <- paste(sep=":", dt$tf, dt$experiment)
+# dt <- data.table(
+#   TF = stats_per_dataset_and_motif$TF,
+#   AuROC = stats_per_dataset_and_motif$AuROC)
+# dt <- dt [1:30]
+# print(dt)
+dt[, rank_tf := frank(-AuROC, ties.method = "first"), by = tf]
+dt[, rank_tf_exp := frank(-AuROC, ties.method = "first"), by = tf_exp]
+dt[, rank_dataset := frank(-AuROC, ties.method = "first"), by = dataset]
+dt[order(dt$rank_tf, ), c("tf", "experiment", "AuROC", "rank_tf", "rank_tf_exp")]
+# View(dt[,  c("TF", "experiment", "dataset", "AuROC", "rank")])
+
+
+#names(dt)
+# View(dt)
+
+#### Save the results ####
+result_dir <- file.path("results", board, "train")
+result_file <- file.path(result_dir, "performances_train_vs_rand.tsv")
+write.table(x = dt, file = result_file, quote = FALSE, sep = "\t", row.names = FALSE, col.names = TRUE)
+message("Performance table saved to file\n\t", result_file)
+
+```
+
