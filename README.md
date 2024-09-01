@@ -24,7 +24,7 @@ Documents
 | Final PWM | [submissions/final/PWM.txt](submissions/final/PWM.txt) |
 | Zip archive | [submissions/final/RSAT-team_IBIS-2024_final_submission.zip](submissions/final/RSAT-team_IBIS-2024_final_submission.zip) |
 | URL to the zip archive with the matrix file (`PWM.txt `) | [https://github.com/jvanheld/IBIS_2024/raw/main/submissions/final/RSAT-team_IBIS-2024_final_submission.zip](https://github.com/jvanheld/IBIS_2024/raw/main/submissions/final/RSAT-team_IBIS-2024_final_submission.zip)|
-| md5sum of this zip archive | 0db87c2ad60f12f2e1d98fbe54d615b5 |
+| md5sum of this zip archive | f37d12e2af6b4a3e7247afd4801b3ac3 |
 | URL of the method write-up | [https://github.com/jvanheld/IBIS_2024/raw/main/reports/IBIS-challenge-final-stage_method-write-up_RSAT-team_2024-09-01.docx](https://github.com/jvanheld/IBIS_2024/raw/main/reports/IBIS-challenge-final-stage_method-write-up_RSAT-team_2024-09-01.docx) |
 
 ## How to reproduce our results?
